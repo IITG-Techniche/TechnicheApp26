@@ -1,0 +1,99 @@
+import 'package:amazon_clone/constant/global.dart';
+import 'package:amazon_clone/controller/authController.dart';
+import 'package:amazon_clone/controller/provider_controller/user_provider.dart';
+import 'package:amazon_clone/router.dart';
+import 'package:amazon_clone/utils/bottomNavBar.dart';
+import 'package:amazon_clone/view/auth/authScreen.dart';
+import 'package:amazon_clone/view/landing_screen.dart'; // Import the new landing screen
+import 'package:amazon_clone/view/marathon_screen.dart'; // Import the marathon screen
+import 'package:amazon_clone/view/techniche_screen.dart'; // Import the techniche screen
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  runApp(MultiProvider(
+    providers: [ChangeNotifierProvider(create: (context) => UserProvider())],
+    child: const MyApp(),
+  ));
+}
+
+class MyApp extends StatefulWidget {
+  const MyApp({super.key});
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  final AuthController authController = AuthController();
+  bool _initialized = false;
+
+  @override
+  void initState() {
+    super.initState();
+    initializeApp();
+  }
+
+  Future<void> initializeApp() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      String? token = prefs.getString("token");
+
+      if (token != null && token.isNotEmpty) {
+        if (mounted) {
+          await authController.fetchUserData(context);
+        }
+      }
+    } catch (e) {
+      print("Error initializing app: $e");
+    } finally {
+      if (mounted) {
+        setState(() {
+          _initialized = true;
+        });
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      onGenerateRoute: (settings) => generateRoute(settings),
+      debugShowCheckedModeBanner: false,
+      title: 'Techniche 2025',
+      theme: ThemeData(
+        primarySwatch: Colors.red,
+        scaffoldBackgroundColor: const Color.fromARGB(255, 202, 202, 202),
+        colorScheme: ColorScheme.light(
+          primary: GlobalVariables.primaryColor,
+        ),
+        appBarTheme: const AppBarTheme(
+          systemOverlayStyle: SystemUiOverlayStyle(
+              statusBarColor: Colors.orange,
+              statusBarBrightness: Brightness.dark),
+          backgroundColor: Colors.orange,
+        ),
+      ),
+      // Define routes for our new screens
+      routes: {
+        '/': (context) => !_initialized
+            ? const Scaffold(
+                body: Center(
+                  child: CircularProgressIndicator(),
+                ),
+              )
+            : const LandingScreen(),
+        LandingScreen.routeName: (context) => const LandingScreen(),
+        AuthScreen.routeName: (context) => const AuthScreen(),
+        BottomNavBar.routeName: (context) => const BottomNavBar(),
+        MarathonScreen.routeName: (context) => const MarathonScreen(),
+        TechnicheScreen.routeName: (context) => const TechnicheScreen(),
+      },
+      // Use the landing screen as the initial route
+      initialRoute: '/',
+    );
+  }
+}
