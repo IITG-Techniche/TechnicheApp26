@@ -23,6 +23,9 @@ class _MarathonScreenState extends State<MarathonScreen>
   int _initialSteps = 0; // To keep track of steps at session start
   bool _isSessionActive = false;
 
+  // Add this variable to track the current system step count
+  int _currentSystemSteps = 0;
+
   // Activity calculation variables
   double _distance = 0.0; // in kilometers
   double _calories = 0.0;
@@ -55,12 +58,16 @@ class _MarathonScreenState extends State<MarathonScreen>
     WidgetsBinding.instance.addObserver(this);
     _requestPermissions();
 
-    // Initialize timer for elapsed time but don't start it yet
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+    // Use a less frequent timer to reduce UI updates
+    _timer = Timer.periodic(const Duration(milliseconds: 500), (timer) {
       if (_startTime != null && _isSessionActive) {
-        setState(() {
-          _elapsedTime = DateTime.now().difference(_startTime!);
-        });
+        final newElapsedTime = DateTime.now().difference(_startTime!);
+        // Only update if elapsed time changed by at least one second
+        if (newElapsedTime.inSeconds != _elapsedTime.inSeconds) {
+          setState(() {
+            _elapsedTime = newElapsedTime;
+          });
+        }
       }
     });
   }
@@ -118,16 +125,25 @@ class _MarathonScreenState extends State<MarathonScreen>
   }
 
   void _onStepCount(StepCount event) {
-    setState(() {
-      if (!_isSessionActive) {
-        // Just update the current step count but don't calculate metrics
-        _steps = event.steps;
-      } else {
-        // Calculate session steps (current - initial)
-        _steps = event.steps - _initialSteps;
-        _updateCalculations();
-      }
-    });
+    // Don't use setState for every step update - it's expensive
+    // Only update state when there's a meaningful change
+    int newSteps = event.steps - _initialSteps;
+    
+    // Only trigger a rebuild if the steps have changed significantly
+    if (newSteps != _steps || _steps == 0) {
+      setState(() {
+        _currentSystemSteps = event.steps;
+        _steps = newSteps;
+        
+        // Only recalculate metrics if session is active
+        if (_isSessionActive) {
+          _updateCalculations();
+        }
+      });
+    } else {
+      // Update values without rebuilding the UI
+      _currentSystemSteps = event.steps;
+    }
   }
 
   void _onStepCountError(error) {
@@ -136,14 +152,18 @@ class _MarathonScreenState extends State<MarathonScreen>
     });
   }
 
+  // Optimize calculations to avoid redundant work
   void _updateCalculations() {
-    _distance = _steps / _stepsPerKm;
-    _calories = _steps * _caloriesPerStep;
-
-    // Calculate average speed in km/h if we have elapsed time
-    if (_elapsedTime.inSeconds > 0) {
-      double hours = _elapsedTime.inSeconds / 3600;
-      _averageSpeed = _distance / hours;
+    // Only update calculations if we have actual steps
+    if (_steps > 0) {
+      _distance = _steps / _stepsPerKm;
+      _calories = _steps * _caloriesPerStep;
+      
+      // Calculate speed only if we have elapsed time
+      if (_elapsedTime.inSeconds > 0) {
+        double hours = _elapsedTime.inSeconds / 3600;
+        _averageSpeed = _distance / hours;
+      }
     }
   }
 
@@ -160,7 +180,7 @@ class _MarathonScreenState extends State<MarathonScreen>
     if (!_isSessionActive) {
       setState(() {
         _isSessionActive = true;
-        _initialSteps = _steps; // Store initial step count
+        _initialSteps = _currentSystemSteps; // Use current system count as baseline
         _steps = 0; // Reset session step count
         _distance = 0.0;
         _calories = 0.0;
@@ -186,6 +206,7 @@ class _MarathonScreenState extends State<MarathonScreen>
   void _resetPedometer() {
     setState(() {
       _isSessionActive = false;
+      _initialSteps = _currentSystemSteps; // Set the current step count as the new baseline
       _steps = 0;
       _distance = 0.0;
       _calories = 0.0;
