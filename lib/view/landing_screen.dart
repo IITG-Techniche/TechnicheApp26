@@ -17,15 +17,15 @@ class LandingScreen extends StatelessWidget {
     final screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFFF7E8C9),
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(screenHeight * 0.085),
         child: AppBar(
           systemOverlayStyle: const SystemUiOverlayStyle(
-            statusBarColor: Colors.orange,
+            statusBarColor: Color(0xFFF7E8C9),
             statusBarIconBrightness: Brightness.dark,
           ),
-          backgroundColor: Colors.orange,
+          backgroundColor: const Color(0xFFF7E8C9),
           flexibleSpace: SafeArea(
             child: LayoutBuilder(
               builder: (context, constraints) {
@@ -34,20 +34,12 @@ class LandingScreen extends StatelessWidget {
                     vertical: constraints.maxHeight * 0.1,
                     horizontal: screenWidth * 0.05,
                   ),
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(
-                      maxHeight: screenHeight * 0.07,
-                      maxWidth: screenWidth * 0.6,
-                      minHeight: screenHeight * 0.04,
-                      minWidth: screenWidth * 0.3,
-                    ),
-                    child: Container(
-                      decoration: const BoxDecoration(
-                        image: DecorationImage(
-                          image: AssetImage('assets/logo_withoutBG.png'),
-                          fit: BoxFit.contain,
-                        ),
-                      ),
+                  child: Container(
+                    width: screenWidth * 0.4, // Adjust logo width
+                    child: Image.asset(
+                      'assets/logo_withoutBG.png',
+                      fit: BoxFit.contain,
+                      alignment: Alignment.centerLeft,
                     ),
                   ),
                 );
@@ -63,17 +55,23 @@ class LandingScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Center(
-                child: Text(
-                  "Welcome to Techniche 2025",
-                  style: TextStyle(
-                    fontSize: screenWidth * 0.06,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
-                  ),
+              Text(
+                "Welcome to",
+                style: TextStyle(
+                  fontSize: screenWidth * 0.07,
+                    color: const Color(0xFF9E9C98),
+                  fontWeight: FontWeight.w500,
                 ),
               ),
-              SizedBox(height: screenHeight * 0.04),
+              Text(
+                "Techniche 2025",
+                style: TextStyle(
+                  fontSize: screenWidth * 0.09,
+                    color: const Color(0xFF0E1F48),
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              SizedBox(height: screenHeight * 0.01),
               Text(
                 "Select a section to continue:",
                 style: TextStyle(
@@ -82,113 +80,181 @@ class LandingScreen extends StatelessWidget {
                   color: Colors.black54,
                 ),
               ),
-              SizedBox(height: screenHeight * 0.04),
+              SizedBox(height: screenHeight * 0.03),
 
-              // Campus Ambassador Button
-              _buildSectionButton(
-                context: context,
-                title: "Campus Ambassador",
-                description: "Manage your CA profile and track your progress",
-                icon: Icons.school,
-                color: Colors.orange,
-                onTap: () async {
-                  try {
-                    // Show loading indicator
-                    showDialog(
-                      context: context,
-                      barrierDismissible: false,
-                      builder: (BuildContext context) {
-                        return const Center(
-                          child: CircularProgressIndicator(),
+              // Guwahati Half Marathon Image Section
+              GestureDetector(
+                onTap: () {
+                  Navigator.pushNamed(
+                    context,
+                    '/ghm-selection',
+                  );
+                },
+                child: Container(
+                  width: double.infinity,
+                  height: screenHeight * 0.35, 
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(24), 
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05), 
+                        spreadRadius: 0,
+                        blurRadius: 20,
+                        offset: const Offset(0, 0), 
+                      ),
+                    ],
+                  ),
+                  child: Stack(
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start, 
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.only(
+                              topLeft: Radius.circular(24),
+                              topRight: Radius.circular(24),
+                            ),
+                            child: Image.asset(
+                              'assets/marathon_banner.png', 
+                              fit: BoxFit.fill,
+                              width: double.infinity,
+                              height: screenHeight * 0.25, 
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(24, 10, 24, 24), 
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween, 
+                              children: [
+                                Text(
+                                  "Guwahati Half Marathon",
+                                  style: TextStyle(
+                                    fontSize: 18, 
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black87,
+                                  ),
+                                ),
+                                const SizedBox(height: 1),
+                                Text(
+                                  "Track your steps and participate in the event",
+                                  style: TextStyle(
+                                    fontSize: 14, 
+                                    color: Colors.black54,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      // Arrow indicator for marathon card
+                      Positioned(
+                        bottom: 50,
+                        right: 15,
+                        child: Icon(
+                          Icons.arrow_forward,
+                          size: 28,
+                          color: Colors.green.withOpacity(0.7),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              SizedBox(height: screenHeight * 0.03),
+
+              // Campus Ambassador and Techniche Buttons Side by Side
+              Row(
+                children: [
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () async {
+                        try {
+                          // Show loading indicator
+                          showDialog(
+                            context: context,
+                            barrierDismissible: false,
+                            builder: (BuildContext context) {
+                              return const Center(
+                                child: CircularProgressIndicator(),
+                              );
+                            },
+                          );
+
+                          // Check if user is authenticated
+                          bool isAuthenticated =
+                              await AuthController().isUserAuthenticated();
+
+                          // Dismiss loading indicator
+                          if (context.mounted) {
+                            Navigator.of(context).pop();
+                          }
+
+                          if (isAuthenticated) {
+                            // Validate token and fetch latest user data
+                            bool isValid = await AuthController()
+                                .validateTokenAndFetchUser(context);
+                            if (isValid) {
+                              if (context.mounted) {
+                                Navigator.pushNamed(context, BottomNavBar.routeName);
+                              }
+                            } else {
+                              if (context.mounted) {
+                                Navigator.pushNamed(context, AuthScreen.routeName);
+                              }
+                            }
+                          } else {
+                            // Navigate to auth screen
+                            if (context.mounted) {
+                              Navigator.pushNamed(context, AuthScreen.routeName);
+                            }
+                          }
+                        } catch (e) {
+                          // Handle any errors
+                          print("Error navigating to CA portal: $e");
+                          // Dismiss loading indicator if it's still showing
+                          if (context.mounted) {
+                            Navigator.of(context, rootNavigator: true).pop();
+                            // Show error message
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                  content: Text(
+                                      "Error accessing CA portal. Please try again.")),
+                            );
+                            // Navigate to auth as fallback
+                            Navigator.pushNamed(context, AuthScreen.routeName);
+                          }
+                        }
+                      },
+                      child: _buildBoxButton(
+                        title: "Campus Ambassador",
+                        description: "Manage your CA profile and track your progress",
+                        imagePath: 'assets/ca_icon.png',  // Changed from icon to imagePath
+                        color: Colors.orange,
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: screenWidth * 0.03),
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () {
+                        Navigator.pushNamed(
+                          context,
+                          '/techniche-screen',
                         );
                       },
-                    );
-
-                    // Check if user is authenticated
-                    bool isAuthenticated =
-                        await AuthController().isUserAuthenticated();
-
-                    // Dismiss loading indicator
-                    if (context.mounted) {
-                      Navigator.of(context).pop();
-                    }
-
-                    if (isAuthenticated) {
-                      // Validate token and fetch latest user data
-                      bool isValid = await AuthController()
-                          .validateTokenAndFetchUser(context);
-                      if (isValid) {
-                        if (context.mounted) {
-                          Navigator.pushNamed(context, BottomNavBar.routeName);
-                        }
-                      } else {
-                        if (context.mounted) {
-                          Navigator.pushNamed(context, AuthScreen.routeName);
-                        }
-                      }
-                    } else {
-                      // Navigate to auth screen
-                      if (context.mounted) {
-                        Navigator.pushNamed(context, AuthScreen.routeName);
-                      }
-                    }
-                  } catch (e) {
-                    // Handle any errors
-                    print("Error navigating to CA portal: $e");
-                    // Dismiss loading indicator if it's still showing
-                    if (context.mounted) {
-                      Navigator.of(context, rootNavigator: true).pop();
-                      // Show error message
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                            content: Text(
-                                "Error accessing CA portal. Please try again.")),
-                      );
-                      // Navigate to auth as fallback
-                      Navigator.pushNamed(context, AuthScreen.routeName);
-                    }
-                  }
-                },
-                screenWidth: screenWidth,
-                screenHeight: screenHeight,
-              ),
-
-              SizedBox(height: screenHeight * 0.03),
-
-              // Guwahati Half Marathon Button
-              _buildSectionButton(
-                context: context,
-                title: "Guwahati Half Marathon",
-                description: "Track your steps and participate in the event",
-                icon: Icons.directions_run,
-                color: Colors.green,
-                onTap: () {
-                  Navigator.pushNamed(
-                    context,
-                    '/ghm-screen', // You'll need to create this route
-                  );
-                },
-                screenWidth: screenWidth,
-                screenHeight: screenHeight,
-              ),
-
-              SizedBox(height: screenHeight * 0.03),
-
-              // Techniche Button
-              _buildSectionButton(
-                context: context,
-                title: "Techniche",
-                description: "Stay updated with the latest fest information",
-                icon: Icons.celebration,
-                color: Colors.blue,
-                onTap: () {
-                  Navigator.pushNamed(
-                    context,
-                    '/techniche-screen', // You'll need to create this route
-                  );
-                },
-                screenWidth: screenWidth,
-                screenHeight: screenHeight,
+                      child: _buildBoxButton(
+                        title: "Techniche",
+                        description: "Stay updated with the latest fest information",
+                        imagePath: 'assets/techniche_events.png',  // Changed from icon to imagePath
+                        color: Colors.blue,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -197,84 +263,80 @@ class LandingScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSectionButton({
-    required BuildContext context,
+  Widget _buildBoxButton({
     required String title,
     required String description,
-    required IconData icon,
+    required String imagePath,  // Changed from IconData icon to String imagePath
     required Color color,
-    required VoidCallback onTap,
-    required double screenWidth,
-    required double screenHeight,
   }) {
     return Container(
-      width: double.infinity,
+      width: 190,
+      height: 190,
+      padding: const EdgeInsets.all(15),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.2),
-            spreadRadius: 1,
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+            color: Colors.black.withOpacity(0.05),
+            spreadRadius: 0,
+            blurRadius: 20,
+            offset: const Offset(0, 0),
           ),
         ],
       ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(16),
-          child: Padding(
-            padding: EdgeInsets.all(screenWidth * 0.05),
-            child: Row(
-              children: [
-                Container(
-                  padding: EdgeInsets.all(screenWidth * 0.035),
-                  decoration: BoxDecoration(
-                    color: color.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Icon(
-                    icon,
-                    color: color,
-                    size: screenWidth * 0.08,
-                  ),
+      child: Stack(
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                SizedBox(width: screenWidth * 0.04),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
-                        style: TextStyle(
-                          fontSize: screenWidth * 0.045,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black87,
-                        ),
-                      ),
-                      SizedBox(height: screenHeight * 0.006),
-                      Text(
-                        description,
-                        style: TextStyle(
-                          fontSize: screenWidth * 0.035,
-                          color: Colors.black54,
-                        ),
-                      ),
-                    ],
+                child: Padding(
+                  padding: const EdgeInsets.all(0),
+                  child: Image.asset(
+                    imagePath,
+                    fit: BoxFit.contain,
                   ),
                 ),
-                Icon(
-                  Icons.arrow_forward_ios,
-                  color: Colors.grey,
-                  size: screenWidth * 0.04,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w800,
+                  color: Color(0xFF0E1F48),
+                  height: 1.2,
                 ),
-              ],
+              ),
+              const SizedBox(height: 4),
+              Text(
+                description,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: const Color(0xFF0E1F48).withOpacity(0.38),
+                ),
+              ),
+            ],
+          ),
+          // Arrow indicator
+          Positioned(
+            bottom: 0,
+            right: 0,
+            child: Icon(
+              Icons.arrow_forward,
+              size: 18,
+              color: color.withOpacity(0.7),
             ),
           ),
-        ),
+        ],
       ),
     );
   }
