@@ -125,20 +125,24 @@ class _MarathonScreenState extends State<MarathonScreen>
   }
 
   void _onStepCount(StepCount event) {
-    // Don't use setState for every step update - it's expensive
-    // Only update state when there's a meaningful change
+    // When initially receiving step count, just store the current system count
+    // but don't display it until session starts
+    if (!_isSessionActive) {
+      _currentSystemSteps = event.steps;
+      return;
+    }
+
+    // Only calculate steps if session is active
     int newSteps = event.steps - _initialSteps;
     
     // Only trigger a rebuild if the steps have changed significantly
-    if (newSteps != _steps || _steps == 0) {
+    if (newSteps != _steps) {
       setState(() {
         _currentSystemSteps = event.steps;
         _steps = newSteps;
         
         // Only recalculate metrics if session is active
-        if (_isSessionActive) {
-          _updateCalculations();
-        }
+        _updateCalculations();
       });
     } else {
       // Update values without rebuilding the UI
