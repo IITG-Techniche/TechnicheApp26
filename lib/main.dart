@@ -12,7 +12,8 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-void main() {
+void main() async  {
+
   WidgetsFlutterBinding.ensureInitialized();
   runApp(MultiProvider(
     providers: [ChangeNotifierProvider(create: (context) => UserProvider())],
@@ -66,7 +67,7 @@ class _MyAppState extends State<MyApp> {
       title: 'Techniche 2025',
       theme: ThemeData(
         primarySwatch: Colors.red,
-        scaffoldBackgroundColor: const Color.fromARGB(255, 202, 202, 202),
+        scaffoldBackgroundColor: const Color(0xFFF7E8C9),
         colorScheme: ColorScheme.light(
           primary: GlobalVariables.primaryColor,
         ),
