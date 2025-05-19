@@ -2,19 +2,23 @@ import 'package:amazon_clone/constant/global.dart';
 import 'package:amazon_clone/controller/authController.dart';
 import 'package:amazon_clone/controller/provider_controller/user_provider.dart';
 import 'package:amazon_clone/router.dart';
+import 'package:amazon_clone/services/notification_service.dart'; // Import NotificationService
 import 'package:amazon_clone/utils/bottomNavBar.dart';
 import 'package:amazon_clone/view/auth/authScreen.dart';
 import 'package:amazon_clone/view/landing_screen.dart'; // Import the new landing screen
 import 'package:amazon_clone/view/marathon_screen.dart'; // Import the marathon screen
 import 'package:amazon_clone/view/techniche_screen.dart'; // Import the techniche screen
+import 'package:firebase_core/firebase_core.dart'; // Import Firebase Core
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() async  {
-
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(); // Initialize Firebase
+  await NotificationService().initNotifications(); // Initialize NotificationService
+
   runApp(MultiProvider(
     providers: [ChangeNotifierProvider(create: (context) => UserProvider())],
     child: const MyApp(),
