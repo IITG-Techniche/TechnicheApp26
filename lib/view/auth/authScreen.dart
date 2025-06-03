@@ -1,4 +1,5 @@
 import 'package:amazon_clone/controller/authController.dart';
+import 'package:amazon_clone/utils/errorHandler.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -14,6 +15,7 @@ class AuthScreen extends StatefulWidget {
 class _AuthScreenState extends State<AuthScreen> {
   var signInKey = GlobalKey<FormState>();
   bool _isPasswordVisible = false;
+  bool _isSigningIn = false;
 
   void _submit(String email, String password) async {
     final isValid = signInKey.currentState!.validate();
@@ -22,14 +24,31 @@ class _AuthScreenState extends State<AuthScreen> {
     }
     signInKey.currentState!.save();
 
-    // Notice we don't need to handle navigation here as your AuthController
-    // already does the navigation on successful login
-    await AuthController().signInUser(
-      context: context,
-      email: email,
-      password: password,
-    );
-    // The AuthController will navigate to BottomNavBar on success
+    // Disable form inputs during sign-in
+    setState(() {
+      _isSigningIn = true;
+    });
+
+    try {
+      // Notice we don't need to handle navigation here as your AuthController
+      // already does the navigation on successful login
+      await AuthController().signInUser(
+        context: context,
+        email: email,
+        password: password,
+      );
+      // The AuthController will navigate to BottomNavBar on success
+    } catch (e) {
+      // In case of error
+      showMessage(context, "Failed to sign in. Please try again.", isError: true);
+    } finally {
+      // Re-enable form inputs if we're still on this screen
+      if (mounted) {
+        setState(() {
+          _isSigningIn = false;
+        });
+      }
+    }
   }
 
   final emailController = TextEditingController();
@@ -42,9 +61,7 @@ class _AuthScreenState extends State<AuthScreen> {
       url,
       mode: LaunchMode.externalApplication,
     )) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Could not launch $url')),
-      );
+      showMessage(context, 'Could not launch $url', isError: true);
     }
   }
 
@@ -144,6 +161,7 @@ class _AuthScreenState extends State<AuthScreen> {
                         controller: emailController,
                         keyboardType: TextInputType.emailAddress,
                         style: TextStyle(fontSize: bodyTextSize),
+                        enabled: !_isSigningIn,
                         validator: (value) {
                           if (value!.isEmpty ||
                               !RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
@@ -174,6 +192,9 @@ class _AuthScreenState extends State<AuthScreen> {
                           focusedBorder: const OutlineInputBorder(
                             borderSide: BorderSide(color: Colors.black),
                           ),
+                          disabledBorder: const OutlineInputBorder(
+                            borderSide: BorderSide(color: Colors.grey),
+                          ),
                         ),
                       ),
                       SizedBox(height: spaceBetween),
@@ -182,6 +203,7 @@ class _AuthScreenState extends State<AuthScreen> {
                         controller: passwordController,
                         keyboardType: TextInputType.visiblePassword,
                         style: TextStyle(fontSize: bodyTextSize),
+                        enabled: !_isSigningIn,
                         validator: (value) {
                           if (value!.isEmpty) {
                             return "Enter password";
@@ -211,6 +233,9 @@ class _AuthScreenState extends State<AuthScreen> {
                           focusedBorder: const OutlineInputBorder(
                             borderSide: BorderSide(color: Colors.black),
                           ),
+                          disabledBorder: const OutlineInputBorder(
+                            borderSide: BorderSide(color: Colors.grey),
+                          ),
                           suffixIcon: IconButton(
                             icon: Icon(
                               _isPasswordVisible
@@ -218,22 +243,26 @@ class _AuthScreenState extends State<AuthScreen> {
                                   : Icons.visibility_off,
                               size: bodyTextSize * 1.2,
                             ),
-                            onPressed: () {
-                              setState(() {
-                                _isPasswordVisible = !_isPasswordVisible;
-                              });
-                            },
+                            onPressed: _isSigningIn 
+                                ? null 
+                                : () {
+                                    setState(() {
+                                      _isPasswordVisible = !_isPasswordVisible;
+                                    });
+                                  },
                           ),
                         ),
                       ),
                       // Show Password CheckboxListTile
                       CheckboxListTile(
                         value: _isPasswordVisible,
-                        onChanged: (value) {
-                          setState(() {
-                            _isPasswordVisible = value!;
-                          });
-                        },
+                        onChanged: _isSigningIn 
+                            ? null 
+                            : (value) {
+                                setState(() {
+                                  _isPasswordVisible = value!;
+                                });
+                              },
                         title: Text(
                           "Show Password",
                           style: TextStyle(fontSize: bodyTextSize),
@@ -244,26 +273,37 @@ class _AuthScreenState extends State<AuthScreen> {
                         ),
                       ),
                       SizedBox(height: spaceBetween),
-                      // Sign In Button
+                      // Sign In Button with loading state
                       Center(
                         child: InkWell(
-                          onTap: () => _submit(
-                              emailController.text, passwordController.text),
+                          onTap: _isSigningIn 
+                              ? null 
+                              : () => _submit(
+                                  emailController.text, passwordController.text),
                           child: Container(
                             width: screenWidth * 0.9,
                             height: buttonHeight * 1.1,
                             decoration: BoxDecoration(
-                              color: Colors.orangeAccent,
+                              color: _isSigningIn ? Colors.grey.shade400 : Colors.orangeAccent,
                               borderRadius: BorderRadius.circular(4),
                             ),
                             child: Center(
-                              child: Text(
-                                "Sign In",
-                                style: TextStyle(
-                                  fontSize: bodyTextSize,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
+                              child: _isSigningIn
+                                  ? SizedBox(
+                                      height: bodyTextSize * 1.2,
+                                      width: bodyTextSize * 1.2,
+                                      child: const CircularProgressIndicator(
+                                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                        strokeWidth: 2,
+                                      ),
+                                    )
+                                  : Text(
+                                      "Sign In",
+                                      style: TextStyle(
+                                        fontSize: bodyTextSize,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
                             ),
                           ),
                         ),
@@ -281,12 +321,12 @@ class _AuthScreenState extends State<AuthScreen> {
                       // Create Account Button
                       Center(
                         child: InkWell(
-                          onTap: _launchURL,
+                          onTap: _isSigningIn ? null : _launchURL,
                           child: Container(
                             width: screenWidth * 0.9,
                             height: buttonHeight * 1.1,
                             decoration: BoxDecoration(
-                              color: Colors.orange[200],
+                              color: _isSigningIn ? Colors.grey.shade300 : Colors.orange[200],
                               borderRadius: BorderRadius.circular(4),
                             ),
                             child: Center(
@@ -295,6 +335,7 @@ class _AuthScreenState extends State<AuthScreen> {
                                 style: TextStyle(
                                   fontSize: bodyTextSize,
                                   fontWeight: FontWeight.w500,
+                                  color: _isSigningIn ? Colors.grey.shade700 : Colors.black87,
                                 ),
                               ),
                             ),
@@ -308,24 +349,33 @@ class _AuthScreenState extends State<AuthScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           TextButton(
-                            onPressed: () {},
+                            onPressed: _isSigningIn ? null : () {},
                             child: Text(
                               "Conditions for Use",
-                              style: TextStyle(fontSize: smallTextSize),
+                              style: TextStyle(
+                                fontSize: smallTextSize,
+                                color: _isSigningIn ? Colors.grey : null,
+                              ),
                             ),
                           ),
                           TextButton(
-                            onPressed: () {},
+                            onPressed: _isSigningIn ? null : () {},
                             child: Text(
                               "Privacy Notice",
-                              style: TextStyle(fontSize: smallTextSize),
+                              style: TextStyle(
+                                fontSize: smallTextSize,
+                                color: _isSigningIn ? Colors.grey : null,
+                              ),
                             ),
                           ),
                           TextButton(
-                            onPressed: () {},
+                            onPressed: _isSigningIn ? null : () {},
                             child: Text(
                               "Help",
-                              style: TextStyle(fontSize: smallTextSize),
+                              style: TextStyle(
+                                fontSize: smallTextSize,
+                                color: _isSigningIn ? Colors.grey : null,
+                              ),
                             ),
                           ),
                         ],

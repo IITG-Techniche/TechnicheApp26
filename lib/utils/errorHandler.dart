@@ -3,8 +3,37 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
+void showMessage(BuildContext context, String msg, {bool isError = false}) {
+  showDialog(
+    context: context,
+    builder: (context) => AlertDialog(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(15),
+      ),
+      title: Row(
+        children: [
+          Icon(
+            isError ? Icons.error_outline : Icons.check_circle_outline,
+            color: isError ? Colors.red : Colors.green,
+          ),
+          const SizedBox(width: 10),
+          Text(isError ? 'Alert' : 'Success'),
+        ],
+      ),
+      content: Text(msg),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('OK'),
+        ),
+      ],
+    ),
+  );
+}
+
+// Keeping this for backward compatibility, but it will use showMessage
 void showSnackBar(BuildContext context, String msg) {
-  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+  showMessage(context, msg);
 }
 
 void httpErrorHandler({
@@ -17,30 +46,30 @@ void httpErrorHandler({
       onSuccess();
       break;
     case 400:
-      showSnackBar(context, jsonDecode(response.body)['message']);
+      showMessage(context, jsonDecode(response.body)['message'], isError: true);
       break;
     case 409:
-      showSnackBar(context, jsonDecode(response.body)['message']);
+      showMessage(context, jsonDecode(response.body)['message'], isError: true);
       break;
     case 204:
-      showSnackBar(context, jsonDecode(response.body)['message']);
+      showMessage(context, jsonDecode(response.body)['message']);
       break;
     case 208:
-      showSnackBar(context, jsonDecode(response.body)['message']);
+      showMessage(context, jsonDecode(response.body)['message'], isError: true);
       break;
     case 500:
-      showSnackBar(context, jsonDecode(response.body)['message']);
+      showMessage(context, jsonDecode(response.body)['message'], isError: true);
       break;
     case 401:
-      showSnackBar(context, jsonDecode(response.body)['message']);
+      showMessage(context, jsonDecode(response.body)['message'], isError: true);
       break;
     case 403:
-      showSnackBar(context, jsonDecode(response.body)['message']);
+      showMessage(context, jsonDecode(response.body)['message'], isError: true);
       break;
     case 404:
-      showSnackBar(context, jsonDecode(response.body)['message']);
+      showMessage(context, jsonDecode(response.body)['message'], isError: true);
       break;
     default:
-      showSnackBar(context, response.body);
+      showMessage(context, response.body, isError: true);
   }
 }

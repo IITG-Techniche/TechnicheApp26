@@ -16,9 +16,7 @@ import 'package:flutter/foundation.dart'
 /// ```
 class DefaultFirebaseOptions {
   static FirebaseOptions get currentPlatform {
-    if (kIsWeb) {
-      return web;
-    }
+  
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
         return android;
@@ -85,4 +83,5 @@ class DefaultFirebaseOptions {
     storageBucket: 'techniche-269b1.firebasestorage.app',
     measurementId: 'G-8GC3WD55YQ',
   );
+
 }

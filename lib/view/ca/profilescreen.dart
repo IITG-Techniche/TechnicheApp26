@@ -1,5 +1,6 @@
 import 'package:amazon_clone/controller/provider_controller/user_provider.dart';
 import 'package:amazon_clone/controller/authController.dart';
+import 'package:amazon_clone/utils/errorHandler.dart';
 // ignore: unused_import
 import 'package:amazon_clone/model/userModel.dart'; // Import UserModel
 import 'package:flutter/material.dart';
@@ -34,23 +35,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
       // Optionally show a success message
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Profile updated"),
-            duration: Duration(seconds: 1),
-          ),
-        );
+        showMessage(context, "Profile updated");
       }
     } catch (e) {
       print("Error refreshing user data: $e");
       // Show an error message to the user
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Failed to update profile"),
-            backgroundColor: Colors.red,
-          ),
-        );
+        showMessage(context, "Failed to update profile", isError: true);
       }
     } finally {
       setState(() {

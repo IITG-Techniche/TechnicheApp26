@@ -14,6 +14,41 @@ class AuthController {
     required String email,
     required String password,
   }) async {
+    // Show loading dialog with better styling
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return Dialog(
+          elevation: 0,
+          backgroundColor: Colors.transparent,
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(15),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.orange),
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  "Signing in...",
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+
     try {
       const uri = GlobalVariables.baseUrl;
 
@@ -27,6 +62,11 @@ class AuthController {
           'password': password,
         }),
       );
+
+      // Hide loading dialog
+      if (context.mounted) {
+        Navigator.of(context).pop();
+      }
 
       if (response.statusCode == 200) {
         final responseData = jsonDecode(response.body);
@@ -48,10 +88,52 @@ class AuthController {
             await Provider.of<UserProvider>(context, listen: false)
                 .setUser(jsonEncode(userData));
 
+            // Show "Loading account..." dialog while fetching user data
+            if (context.mounted) {
+              showDialog(
+                context: context,
+                barrierDismissible: false,
+                builder: (BuildContext context) {
+                  return Dialog(
+                    elevation: 0,
+                    backgroundColor: Colors.transparent,
+                    child: Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(15),
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const CircularProgressIndicator(
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.orange),
+                          ),
+                          const SizedBox(height: 20),
+                          Text(
+                            "Loading account data...",
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              );
+            }
+
             // Add this critical line:
             await fetchUserData(context); // Fetches complete user profile
 
-            showSnackBar(context, "Logged in Successfully!");
+            // Hide the second loading dialog
+            if (context.mounted) {
+              Navigator.of(context).pop();
+            }
+
+            showMessage(context, "Logged in Successfully!");
             if (context.mounted) {
               Navigator.pushNamedAndRemoveUntil(
                   context, BottomNavBar.routeName, (route) => false);
@@ -59,17 +141,21 @@ class AuthController {
             return true;
           }
         } else {
-          showSnackBar(context, "Login failed - no token received");
+          showMessage(context, "Login failed - no token received", isError: true);
         }
       } else {
         final errorMessage =
             jsonDecode(response.body)['error'] ?? 'Login failed';
-        showSnackBar(context, errorMessage);
+        showMessage(context, errorMessage, isError: true);
       }
       return false;
     } catch (e) {
+      // Hide loading dialog in case of error
+      if (context.mounted) {
+        Navigator.of(context).pop();
+      }
       print("Login error: $e");
-      showSnackBar(context, "An error occurred during login");
+      showMessage(context, "An error occurred during login", isError: true);
       await _clearAuthData(context);
       return false;
     }
@@ -155,10 +241,35 @@ class AuthController {
         return false;
       }
 
+      // Show loading while fetching user data
+      if (context.mounted) {
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (BuildContext context) {
+            return const Center(
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.orange),
+              ),
+            );
+          },
+        );
+      }
+
       // If token is valid, fetch user data
       await fetchUserData(context);
+      
+      // Hide loading dialog
+      if (context.mounted) {
+        Navigator.of(context).pop();
+      }
+      
       return true;
     } catch (e) {
+      // Hide loading dialog in case of error
+      if (context.mounted) {
+        Navigator.of(context).pop();
+      }
       print("Token validation error: $e");
       await _clearAuthData(context);
       return false;
@@ -245,7 +356,7 @@ class AuthController {
       await _clearAuthData(context);
 
       // Show success message
-      showSnackBar(context, "Logged out successfully");
+      showMessage(context, "Logged out successfully");
 
       // Navigate to landing screen instead of auth screen
       if (context.mounted) {
@@ -257,7 +368,7 @@ class AuthController {
       }
     } catch (e) {
       print("Logout error: $e");
-      showSnackBar(context, "An error occurred during logout");
+      showMessage(context, "An error occurred during logout", isError: true);
 
       // Even if logout fails, try to clear auth data and redirect
       await _clearAuthData(context);

@@ -256,6 +256,7 @@ class LandingScreen extends StatelessWidget {
                   ),
                 ],
               ),
+              SizedBox(height: screenHeight * 0.03),
             ],
           ),
         ),
