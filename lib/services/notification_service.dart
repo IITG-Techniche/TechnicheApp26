@@ -87,65 +87,54 @@ class NotificationService {
   // Print diagnostics about the notification setup
   Future<void> _printNotificationDiagnostics() async {
     try {
-      print("\n======= NOTIFICATION DIAGNOSTICS =======");
+      print("\n========== FULL FCM DIAGNOSTICS ==========");
       print("FCM Token: $_fcmToken");
+      print("Token Length: ${_fcmToken?.length ?? 0}");
+      print("Last Token Refresh: $_lastTokenRefresh");
       print("Permission Denied: $_permissionDenied");
       print("Is Initialized: $_isInitialized");
-      print("Last Token Refresh: $_lastTokenRefresh");
-      
-      try {
-        // Check notification settings on iOS
-        if (Theme.of(GlobalKey<NavigatorState>().currentContext!).platform == TargetPlatform.iOS) {
-          final settings = await _firebaseMessaging.getNotificationSettings();
-          print("iOS Authorization Status: ${settings.authorizationStatus}");
-          print("iOS Alert Setting: ${settings.alert}");
-          print("iOS Badge Setting: ${settings.badge}");
-          print("iOS Sound Setting: ${settings.sound}");
+      print("----------------------------------------");
+      print("Notification Channels:");
+      final channels = await _flutterLocalNotificationsPlugin
+          .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+          ?.getNotificationChannels();
+      if (channels != null) {
+        for (var channel in channels) {
+          print("  - ${channel.id} (${channel.name})");
         }
-      } catch (e) {
-        print("Error getting iOS settings: $e");
       }
-      
-      try {
-        // Check APNs token on iOS
-        if (Theme.of(GlobalKey<NavigatorState>().currentContext!).platform == TargetPlatform.iOS) {
-          final apnsToken = await _firebaseMessaging.getAPNSToken();
-          print("APNS Token: $apnsToken");
-        }
-      } catch (e) {
-        print("Error getting APNS token: $e");
-      }
-
-      print("======= END DIAGNOSTICS =======\n");
+      print("========== END FCM DIAGNOSTICS ==========\n");
     } catch (e) {
-      print("Error printing diagnostics: $e");
+      print("Diagnostics Error: $e");
     }
   }
   
   // Set up debug listener to monitor incoming messages
   void _setDebugMessageListener() {
-    // Listen for incoming messages when app is in foreground
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      print("\n👉 DEBUG: RECEIVED MESSAGE IN FOREGROUND");
-      print("👉 DEBUG: Message ID: ${message.messageId}");
-      print("👉 DEBUG: Sent Time: ${message.sentTime}");
-      print("👉 DEBUG: TTL: ${message.ttl}");
-      
+      print("\n========== FCM MESSAGE RECEIVED ==========");
+      print("Message ID: ${message.messageId}");
+      print("Sent Time: ${message.sentTime}");
+      print("TTL: ${message.ttl}");
+      // print("Priority: ${message.priority}");
+      print("----------------------------------------");
       if (message.notification != null) {
-        print("👉 DEBUG: NOTIFICATION DATA:");
-        print("👉 DEBUG: Title: ${message.notification!.title}");
-        print("👉 DEBUG: Body: ${message.notification!.body}");
-      } else {
-        print("👉 DEBUG: No notification payload");
+        print("NOTIFICATION:");
+        print("  Title: ${message.notification!.title}");
+        print("  Body: ${message.notification!.body}");
+        if (message.notification!.android != null) {
+          print("  Android Channel: ${message.notification!.android?.channelId}");
+          print("  Android Priority: ${message.notification!.android?.priority}");
+        }
       }
-      
+      print("----------------------------------------");
       if (message.data.isNotEmpty) {
-        print("👉 DEBUG: DATA PAYLOAD: ${message.data}");
-      } else {
-        print("👉 DEBUG: No data payload");
+        print("DATA PAYLOAD:");
+        message.data.forEach((key, value) {
+          print("  $key: $value");
+        });
       }
-      
-      // Will be handled by the regular onMessage listener too
+      print("========== END MESSAGE ==========\n");
     });
   }
   
@@ -245,36 +234,44 @@ class NotificationService {
   // Subscribe to default topics - separated to handle errors gracefully
   Future<void> _subscribeToDefaultTopics() async {
     try {
-      // Explicitly subscribe to the 'all_users' topic to match backend sending
-      await FirebaseMessaging.instance.subscribeToTopic('all_users');
-      print("NotificationService: Successfully subscribed to topic 'all_users'");
+      // Wait a moment before subscribing
+      await Future.delayed(const Duration(seconds: 2));
+      
+      // Try to subscribe with better error handling
+      final success = await subscribeToTopic('all_users');
+      if (success) {
+        print("Successfully subscribed to default topics");
+      } else {
+        print("Failed to subscribe to default topics");
+      }
     } catch (e) {
-      // Just log the error without breaking the initialization process
-      print("NotificationService: Failed to subscribe to topic 'all_users': $e");
-      print("NotificationService: Topic subscription skipped - this won't affect receiving direct notifications");
+      print("Error in _subscribeToDefaultTopics: $e");
     }
   }
 
   // Create notification channel - this is crucial for Android notifications to work
   Future<void> _createNotificationChannel() async {
     try {
-      const androidNotificationChannel = AndroidNotificationChannel(
-        'high_importance_channel', // Channel ID
-        'High Importance Notifications', // Channel name
-        description: 'This channel is used for important notifications.', // Channel description
+      // Define the channel
+      const AndroidNotificationChannel channel = AndroidNotificationChannel(
+        'high_importance_channel',    // Change from default_notification_channel
+        'High Importance Notifications', // Change from Default Channel
+        description: 'This channel is used for important notifications.',
         importance: Importance.max,
         playSound: true,
         enableVibration: true,
         enableLights: true,
+        showBadge: true,
       );
 
+      // Create the channel
       await _flutterLocalNotificationsPlugin
           .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
-          ?.createNotificationChannel(androidNotificationChannel);
+          ?.createNotificationChannel(channel);
       
-      print("NotificationService: Created Android notification channel successfully");
+      print("Channel created: ${channel.id}");
     } catch (e) {
-      print("NotificationService: Failed to create notification channel: $e");
+      print("Channel creation failed: $e");
     }
   }
   
@@ -329,36 +326,31 @@ class NotificationService {
   // Get FCM token and store it
   Future<void> _getAndStoreToken() async {
     try {
+      // Request permissions first
+      await _firebaseMessaging.requestPermission(
+        alert: true,
+        badge: true,
+        sound: true,
+        provisional: false,
+      );
+      
       String? token = await _firebaseMessaging.getToken();
       if (token != null) {
         _fcmToken = token;
         _lastTokenRefresh = DateTime.now();
-        print("FCM Token (Device ID): $_fcmToken");
-        print("FCM Token Length: ${token.length}");
-        print("FCM Token First 10 chars: ${token.substring(0, 10)}...");
+        print("\n========== FCM TOKEN DETAILS ==========");
+        print("Token: $token");
+        print("Token Length: ${token.length}");
+        print("Refresh Time: $_lastTokenRefresh");
+        print("========== END TOKEN DETAILS ==========\n");
         
-        // Store token in shared preferences
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('fcmToken', token);
-        
-        // TODO: Send this token to your server to associate with the user
       } else {
-        print("Failed to get FCM token");
+        print("ERROR: FCM token is null");
       }
-      
-      // Listen for token refreshes
-      _firebaseMessaging.onTokenRefresh.listen((newToken) async {
-        _fcmToken = newToken;
-        _lastTokenRefresh = DateTime.now();
-        print("FCM Token Refreshed (Device ID): $_fcmToken");
-        
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('fcmToken', newToken);
-        
-        // TODO: Send the new token to your server
-      });
     } catch (e) {
-      print("Error getting FCM token: $e");
+      print("TOKEN ERROR: $e");
     }
   }
   
@@ -427,38 +419,27 @@ class NotificationService {
   
   // Show a local notification from a RemoteMessage
   Future<void> _showLocalNotification(RemoteMessage message) async {
-    final RemoteNotification? notification = message.notification; 
-    final AndroidNotification? android = message.notification?.android; // For logging
+    try {
+      final RemoteNotification? notification = message.notification;
+      final AndroidNotification? android = message.notification?.android;
 
-    print("_showLocalNotification: Attempting to show local notification.");
-    print("  Message ID: ${message.messageId}"); // Log message ID
-    print("  Notification Title from RemoteMessage: ${notification?.title}"); 
-    print("  Notification Body from RemoteMessage: ${notification?.body}");   
-    if (android != null) {
-      print("  Android Specifics from RemoteMessage: Exists (details like channelId: ${android.channelId})");
-    } else {
-      print("  Android Specifics from RemoteMessage: null (This is okay, we'll use default local notification settings)");
-    }
-
-    if (notification != null) { 
-      print("  Condition (notification != null) is TRUE. Proceeding to show.");
-      try {
+      if (notification != null) {
         await _flutterLocalNotificationsPlugin.show(
-          notification.hashCode, // Unique ID for the notification
+          notification.hashCode,
           notification.title,
           notification.body,
           NotificationDetails(
-            android: const AndroidNotificationDetails(
-              'high_importance_channel', // Channel ID - must match channel created earlier
-              'High Importance Notifications', // Channel Name
-              channelDescription: 'This channel is used for important notifications.',
+            android: AndroidNotificationDetails(
+              'default_notification_channel', // Must match channel ID above
+              'Default Channel',
+              channelDescription: 'Default notification channel for all messages',
               importance: Importance.max,
               priority: Priority.high,
-              ticker: 'ticker',
+              icon: '@mipmap/ic_launcher',
               playSound: true,
               enableVibration: true,
+              channelShowBadge: true,
               visibility: NotificationVisibility.public,
-              // icon: '@mipmap/ic_launcher', // Ensure this icon exists if uncommented
             ),
             iOS: const DarwinNotificationDetails(
               presentAlert: true,
@@ -466,15 +447,11 @@ class NotificationService {
               presentSound: true,
             ),
           ),
-          payload: message.data['route'], // Optional: data to pass when notification is tapped
         );
-        print("  flutter_local_notifications.show() called successfully for notification ID: ${notification.hashCode}.");
-      } catch (e) {
-        print("  Error calling flutter_local_notifications.show(): $e");
+        print("Local notification shown successfully: ${notification.title}");
       }
-    } else {
-      print("  Condition (notification != null) is FALSE. Local notification NOT shown.");
-      print("    Reason: message.notification was null (unexpected at this point if called from _handleForegroundMessage).");
+    } catch (e) {
+      print("Error showing local notification: $e");
     }
   }
 
@@ -517,11 +494,24 @@ class NotificationService {
   // Subscribe to a topic (for topic-based notifications) with error handling
   Future<bool> subscribeToTopic(String topic) async {
     try {
-      await _firebaseMessaging.subscribeToTopic(topic);
-      print('Subscribed to topic: $topic');
+      // Ensure we have a valid token first
+      if (_fcmToken == null) {
+        await _getAndStoreToken();
+      }
+      
+      // Clean the topic name to ensure it's valid
+      final cleanTopic = topic.replaceAll(RegExp(r'[^a-zA-Z0-9-_.~%]'), '');
+      
+      if (cleanTopic.isEmpty) {
+        print('Invalid topic name after cleaning');
+        return false;
+      }
+
+      await _firebaseMessaging.subscribeToTopic(cleanTopic);
+      print('Successfully subscribed to topic: $cleanTopic');
       return true;
     } catch (e) {
-      print('Failed to subscribe to topic: $topic - Error: $e');
+      print('Error subscribing to topic: $topic - Error: $e');
       return false;
     }
   }
@@ -553,20 +543,23 @@ class NotificationService {
   // Test notification - use this method to send a test notification
   Future<void> showTestNotification() async {
     try {
-      print("Attempting to show test notification...");
+      print("\n=== SENDING TEST NOTIFICATION ===");
+      final id = DateTime.now().millisecondsSinceEpoch ~/ 1000;
       
       const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
-        'high_importance_channel',
+        'high_importance_channel', // Must match channel ID above
         'High Importance Notifications',
         channelDescription: 'This channel is used for important notifications.',
         importance: Importance.max,
         priority: Priority.high,
+        showWhen: true,
+        icon: '@mipmap/ic_launcher',
+        largeIcon: DrawableResourceAndroidBitmap('@mipmap/ic_launcher'),
         playSound: true,
         enableVibration: true,
         visibility: NotificationVisibility.public,
-        channelShowBadge: true,
       );
-      
+
       const NotificationDetails platformDetails = NotificationDetails(
         android: androidDetails,
         iOS: DarwinNotificationDetails(
@@ -575,21 +568,19 @@ class NotificationService {
           presentSound: true,
         ),
       );
-      
-      final id = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-      
+
       await _flutterLocalNotificationsPlugin.show(
         id,
         'Test Notification',
-        'This is a test notification sent at ${DateTime.now().toString()}',
+        'This is a test notification sent at ${DateTime.now()}',
         platformDetails,
       );
       
-      print("Test notification sent successfully with ID: $id");
-      return Future.value();
+      print("SUCCESS: Test notification sent with ID: $id");
+      print("=== END TEST NOTIFICATION ===\n");
+      
     } catch (e) {
-      print("Error sending test notification: $e");
-      return Future.error(e);
+      print("ERROR: Failed to send test notification: $e");
     }
   }
   

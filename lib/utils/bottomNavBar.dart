@@ -2,7 +2,7 @@
 import 'package:amazon_clone/view/ca/homescreen.dart';
 import 'package:amazon_clone/view/ca/leaderboard.dart';
 import 'package:amazon_clone/view/ca/profilescreen.dart';
-import 'package:amazon_clone/view/taskscreen.dart';
+import 'package:amazon_clone/view/ca/taskscreen.dart';
 import 'package:flutter/material.dart';
 
 class BottomNavBar extends StatefulWidget {

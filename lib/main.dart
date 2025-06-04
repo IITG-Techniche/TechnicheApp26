@@ -14,17 +14,29 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'firebase_options.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
   try {
+    // Initialize Firebase first
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
-    await NotificationService().initNotifications(subscribeToTopics: false);
+
+    // Initialize notifications without topics first
+    final notificationService = NotificationService();
+    await notificationService.initNotifications(subscribeToTopics: false);
+    
+    // Wait a moment for FCM to fully initialize
+    await Future.delayed(const Duration(seconds: 3));
+    
+    // Then try to subscribe to topics
+    await notificationService.subscribeToTopic('all_users');
+    
   } catch (e) {
-    print("Initialization error: $e");
+    print("Firebase/Notification Initialization error: $e");
   }
 
   runApp(MultiProvider(
