@@ -25,15 +25,30 @@ void main() async {
       options: DefaultFirebaseOptions.currentPlatform,
     );
 
-    // Initialize notifications without topics first
+    // Initialize notifications without topics
     final notificationService = NotificationService();
+    
+    // Force a token refresh before initializing
+    await notificationService.resetFcmToken();
+    
+    // Initialize notifications after token refresh
     await notificationService.initNotifications(subscribeToTopics: false);
     
-    // Wait a moment for FCM to fully initialize
-    await Future.delayed(const Duration(seconds: 3));
+    // Wait for token to be fully ready
+    String? token;
+    int attempts = 0;
+    while (token == null && attempts < 3) {
+      token = await notificationService.getDeviceToken();
+      if (token == null) {
+        attempts++;
+        await Future.delayed(const Duration(seconds: 2));
+      }
+    }
     
-    // Then try to subscribe to topics
-    await notificationService.subscribeToTopic('all_users');
+    if (token != null) {
+      // Try to subscribe to topics
+      await notificationService.subscribeToTopic('all_users');
+    }
     
   } catch (e) {
     print("Firebase/Notification Initialization error: $e");

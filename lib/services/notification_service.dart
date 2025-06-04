@@ -494,24 +494,29 @@ class NotificationService {
   // Subscribe to a topic (for topic-based notifications) with error handling
   Future<bool> subscribeToTopic(String topic) async {
     try {
-      // Ensure we have a valid token first
-      if (_fcmToken == null) {
-        await _getAndStoreToken();
-      }
-      
-      // Clean the topic name to ensure it's valid
-      final cleanTopic = topic.replaceAll(RegExp(r'[^a-zA-Z0-9-_.~%]'), '');
-      
-      if (cleanTopic.isEmpty) {
-        print('Invalid topic name after cleaning');
-        return false;
+      print("\n===== SUBSCRIBING TO TOPIC =====");
+      // Ensure we have a valid token
+      if (_fcmToken == null || _fcmToken!.isEmpty) {
+        print("No valid token, attempting reset...");
+        await resetFcmToken();
+        if (_fcmToken == null) {
+          print("Failed to obtain valid token for subscription");
+          return false;
+        }
       }
 
-      await _firebaseMessaging.subscribeToTopic(cleanTopic);
-      print('Successfully subscribed to topic: $cleanTopic');
+      // Add delay before subscription
+      await Future.delayed(const Duration(seconds: 3));
+      
+      print("Attempting to subscribe to topic: $topic");
+      print("Using token: ${_fcmToken!.substring(0, 10)}...");
+      
+      await _firebaseMessaging.subscribeToTopic(topic);
+      print("Successfully subscribed to topic: $topic");
+      print("===== SUBSCRIPTION COMPLETE =====\n");
       return true;
     } catch (e) {
-      print('Error subscribing to topic: $topic - Error: $e');
+      print("ERROR subscribing to topic: $e");
       return false;
     }
   }
@@ -587,24 +592,45 @@ class NotificationService {
   // Reset FCM token - useful for testing
   Future<void> resetFcmToken() async {
     try {
+      print("\n===== STARTING FCM TOKEN RESET =====");
+      
+      // Delete existing token
       await _firebaseMessaging.deleteToken();
       _fcmToken = null;
-      print("FCM Token deleted");
+      print("Old FCM Token deleted");
       
-      // Request a new token
-      _fcmToken = await _firebaseMessaging.getToken();
-      _lastTokenRefresh = DateTime.now();
-      print("New FCM Token: $_fcmToken");
+      // Wait before requesting new token
+      await Future.delayed(const Duration(seconds: 2));
       
-      // Store new token
-      final prefs = await SharedPreferences.getInstance();
-      if (_fcmToken != null) {
-        await prefs.setString('fcmToken', _fcmToken!);
-      } else {
-        await prefs.remove('fcmToken');
+      // Request a new token with multiple attempts
+      int attempts = 0;
+      while (_fcmToken == null && attempts < 3) {
+        _fcmToken = await _firebaseMessaging.getToken();
+        if (_fcmToken == null) {
+          attempts++;
+          print("Token request attempt $attempts failed, retrying...");
+          await Future.delayed(const Duration(seconds: 2));
+        }
       }
+      
+      if (_fcmToken != null) {
+        _lastTokenRefresh = DateTime.now();
+        print("\nNEW FCM TOKEN DETAILS:");
+        print("Token: $_fcmToken");
+        print("Length: ${_fcmToken!.length}");
+        print("Generated at: $_lastTokenRefresh");
+        
+        // Store new token
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('fcmToken', _fcmToken!);
+        print("Token stored in SharedPreferences");
+      } else {
+        print("ERROR: Failed to obtain new FCM token after multiple attempts");
+      }
+      
+      print("===== FCM TOKEN RESET COMPLETE =====\n");
     } catch (e) {
-      print("Error resetting FCM token: $e");
+      print("ERROR during FCM token reset: $e");
     }
   }
 }
