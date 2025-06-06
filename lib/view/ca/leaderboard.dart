@@ -164,30 +164,41 @@ class TopThreeWidget extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final isSmallScreen = constraints.maxWidth < 600;
+        final itemWidth = (constraints.maxWidth - 48) / 3; // Account for padding
 
         return Container(
           padding: const EdgeInsets.all(16.0),
+          width: constraints.maxWidth,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               if (topThree.length > 1)
-                PodiumItem(
-                  entry: topThree[1],
-                  position: 2,
-                  height: isSmallScreen ? 140.0 : 180.0,
+                SizedBox(
+                  width: itemWidth,
+                  child: PodiumItem(
+                    entry: topThree[1],
+                    position: 2,
+                    height: isSmallScreen ? 140.0 : 180.0,
+                  ),
                 ),
               if (topThree.isNotEmpty)
-                PodiumItem(
-                  entry: topThree[0],
-                  position: 1,
-                  height: isSmallScreen ? 160.0 : 200.0,
+                SizedBox(
+                  width: itemWidth,
+                  child: PodiumItem(
+                    entry: topThree[0],
+                    position: 1,
+                    height: isSmallScreen ? 160.0 : 200.0,
+                  ),
                 ),
               if (topThree.length > 2)
-                PodiumItem(
-                  entry: topThree[2],
-                  position: 3,
-                  height: isSmallScreen ? 120.0 : 160.0,
+                SizedBox(
+                  width: itemWidth,
+                  child: PodiumItem(
+                    entry: topThree[2],
+                    position: 3,
+                    height: isSmallScreen ? 120.0 : 160.0,
+                  ),
                 ),
             ],
           ),
@@ -244,6 +255,8 @@ class PodiumItem extends StatelessWidget {
           entry.name,
           style: Theme.of(context).textTheme.titleMedium,
           textAlign: TextAlign.center,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
         ),
         const SizedBox(height: 4),
         Text(
@@ -254,7 +267,7 @@ class PodiumItem extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         Container(
-          width: 80,
+          width: 70,  // Reduced width from 80 to 70
           height: height,
           decoration: BoxDecoration(
             color: _getPositionColor(),

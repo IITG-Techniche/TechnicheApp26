@@ -2,19 +2,58 @@ import 'package:amazon_clone/constant/global.dart';
 import 'package:amazon_clone/controller/authController.dart';
 import 'package:amazon_clone/controller/provider_controller/user_provider.dart';
 import 'package:amazon_clone/router.dart';
+import 'package:amazon_clone/services/notification_service.dart';
 import 'package:amazon_clone/utils/bottomNavBar.dart';
 import 'package:amazon_clone/view/auth/authScreen.dart';
-import 'package:amazon_clone/view/landing_screen.dart'; // Import the new landing screen
-import 'package:amazon_clone/view/marathon_screen.dart'; // Import the marathon screen
-import 'package:amazon_clone/view/techniche_screen.dart'; // Import the techniche screen
+import 'package:amazon_clone/view/landing_screen.dart';
+import 'package:amazon_clone/view/ghm/marathon_screen.dart';
+import 'package:amazon_clone/view/techniche_screen.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'firebase_options.dart';
+import 'package:permission_handler/permission_handler.dart';
 
-void main() async  {
-
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  try {
+    // Initialize Firebase first
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+
+    // Initialize notifications without topics
+    final notificationService = NotificationService();
+    
+    // Force a token refresh before initializing
+    await notificationService.resetFcmToken();
+    
+    // Initialize notifications after token refresh
+    await notificationService.initNotifications(subscribeToTopics: false);
+    
+    // Wait for token to be fully ready
+    String? token;
+    int attempts = 0;
+    while (token == null && attempts < 3) {
+      token = await notificationService.getDeviceToken();
+      if (token == null) {
+        attempts++;
+        await Future.delayed(const Duration(seconds: 2));
+      }
+    }
+    
+    if (token != null) {
+      // Try to subscribe to topics
+      await notificationService.subscribeToTopic('all_users');
+    }
+    
+  } catch (e) {
+    print("Firebase/Notification Initialization error: $e");
+  }
+
   runApp(MultiProvider(
     providers: [ChangeNotifierProvider(create: (context) => UserProvider())],
     child: const MyApp(),

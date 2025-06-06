@@ -1,9 +1,9 @@
 import 'package:amazon_clone/view/auth/authScreen.dart';
 import 'package:amazon_clone/utils/bottomNavBar.dart';
 import 'package:amazon_clone/view/landing_screen.dart';
-import 'package:amazon_clone/view/marathon_screen.dart';
-import 'package:amazon_clone/view/ghm_selection.dart';
-import 'package:amazon_clone/view/ghm_registration.dart';
+import 'package:amazon_clone/view/ghm/marathon_screen.dart';
+import 'package:amazon_clone/view/ghm/ghm_selection.dart';
+import 'package:amazon_clone/view/ghm/ghm_registration.dart';
 import 'package:amazon_clone/view/techniche_screen.dart';
 
 import 'package:flutter/material.dart';
@@ -33,7 +33,7 @@ Route<dynamic> generateRoute(RouteSettings routeSettings) {
         settings: routeSettings,
         builder: (_) => const GHMScreen(),
       );
-     case GHMRegistrationScreen.routeName:  // Add this case
+     case GHMRegistrationScreen.routeName:
       return MaterialPageRoute(
         settings: routeSettings,
         builder: (_) => const GHMRegistrationScreen(),
@@ -50,8 +50,6 @@ Route<dynamic> generateRoute(RouteSettings routeSettings) {
         settings: routeSettings,
         builder: (_) => const TechnicheScreen(),
       );
-
-    // Include all your other routes here
 
     default:
       return MaterialPageRoute(
