@@ -1,0 +1,370 @@
+[
+    {
+        "year": "2023",
+        "language": "English",
+        "name": "2023 Hauts Question Paper",
+        "url": "https://technothlon.techniche.org.in/static/media/Hauts%20English%2023.45864d2ae475b199c8c8.pdf",
+        "squad": "Hauts",
+        "category": "Question Paper"
+    },
+    {
+        "year": "2023",
+        "language": "English",
+        "name": "2023 Juniors Question Paper",
+        "url": "https://technothlon.techniche.org.in/static/media/Juniors%20English%2023.7fc698f0e67bc4c891b6.pdf",
+        "squad": "Juniors",
+        "category": "Question Paper"
+    },
+    {
+        "year": "2023",
+        "language": "Hindi",
+        "name": "2023 Hauts Question Paper",
+        "url": "https://technothlon.techniche.org.in/static/media/Hauts%20Hindi%2023.eaa801e296a9c1bf4507.pdf",
+        "squad": "Hauts",
+        "category": "Question Paper"
+    },
+    {
+        "year": "2023",
+        "language": "Hindi",
+        "name": "2023 Juniors Question Paper",
+        "url": "https://technothlon.techniche.org.in/static/media/Juniors%20Hindi%2023.f30571f45d082cd88965.pdf",
+        "squad": "Juniors",
+        "category": "Question Paper"
+    },
+    {
+        "year": "2023",
+        "language": "English",
+        "name": "2023 Hauts Answer Key",
+        "url": "https://technothlon.techniche.org.in/static/media/Hauts%20Key%2023.3f4818a96a56a5e24527.pdf",
+        "squad": "Hauts",
+        "category": "Answer Key"
+    },
+    {
+        "year": "2023",
+        "language": "English",
+        "name": "2023 Juniors Answer Key",
+        "url": "https://technothlon.techniche.org.in/static/media/Juniors%20Key%2023.8cf4964bbb8f977264a9.pdf",
+        "squad": "Juniors",
+        "category": "Answer Key"
+    },
+    {
+        "year": "2022",
+        "language": "English",
+        "name": "2022 Hauts Question Paper",
+        "url": "https://technothlon.techniche.org.in/static/media/Hauts%20english%2022.f753fc4d5ed99ba8ae58.pdf",
+        "squad": "Hauts",
+        "category": "Question Paper"
+    },
+    {
+        "year": "2022",
+        "language": "English",
+        "name": "2022 Juniors Question Paper",
+        "url": "https://technothlon.techniche.org.in/static/media/Juniors%2022%20English.50a801349e6bb33c69dc.pdf",
+        "squad": "Juniors",
+        "category": "Question Paper"
+    },
+    {
+        "year": "2022",
+        "language": "Hindi",
+        "name": "2022 Hauts Question Paper",
+        "url": "https://technothlon.techniche.org.in/static/media/Hauts%20Hindi%2022.68f9cbf8dac569624cf1.pdf",
+        "squad": "Hauts",
+        "category": "Question Paper"
+    },
+    {
+        "year": "2022",
+        "language": "Hindi",
+        "name": "2022 Juniors Question Paper",
+        "url": "https://technothlon.techniche.org.in/static/media/Juniors%20Hindi%2022.32974cf8611e65427d19.pdf",
+        "squad": "Juniors",
+        "category": "Question Paper"
+    },
+    {
+        "year": "2022",
+        "language": "English",
+        "name": "2022 Hauts Answer Key",
+        "url": "https://technothlon.techniche.org.in/static/media/Hauts%20key%2022.1b2016b0746399cea867.pdf",
+        "squad": "Hauts",
+        "category": "Answer Key"
+    },
+    {
+        "year": "2022",
+        "language": "English",
+        "name": "2022 Juniors Answer Key",
+        "url": "https://technothlon.techniche.org.in/static/media/Juniors%20Key%2022.f73fe459ddac47d36d30.pdf",
+        "squad": "Juniors",
+        "category": "Answer Key"
+    },
+    {
+        "year": "2021",
+        "language": "English",
+        "name": "2021 Hauts Question Paper",
+        "url": "https://technothlon.techniche.org.in/static/media/Hauts%20English%2021.b359b0c462c466e4f5ef.pdf",
+        "squad": "Hauts",
+        "category": "Question Paper"
+    },
+    {
+        "year": "2021",
+        "language": "English",
+        "name": "2021 Juniors Question Paper",
+        "url": "https://technothlon.techniche.org.in/static/media/Juniors%20English%202021.ff34e6b3236a42dae5d3.pdf",
+        "squad": "Juniors",
+        "category": "Question Paper"
+    },
+    {
+        "year": "2021",
+        "language": "Hindi",
+        "name": "2021 Hauts Question Paper",
+        "url": "https://technothlon.techniche.org.in/static/media/Hauts%20Hindi%2021.aac7b09b289681966010.pdf",
+        "squad": "Hauts",
+        "category": "Question Paper"
+    },
+    {
+        "year": "2021",
+        "language": "Hindi",
+        "name": "2021 Juniors Question Paper",
+        "url": "https://technothlon.techniche.org.in/static/media/Juniors%20Hindi%2021.ba023e0ff8a82dd0fc80.pdf",
+        "squad": "Juniors",
+        "category": "Question Paper"
+    },
+    {
+        "year": "2021",
+        "language": "English",
+        "name": "2021 Hauts Answer Key",
+        "url": "https://technothlon.techniche.org.in/static/media/Hauts%20Key%2021.8fb782a14c985982fcd8.pdf",
+        "squad": "Hauts",
+        "category": "Answer Key"
+    },
+    {
+        "year": "2021",
+        "language": "English",
+        "name": "2021 Juniors Answer Key",
+        "url": "https://technothlon.techniche.org.in/static/media/Juniors%20Key%2021.75c8b1a1930b3956332c.pdf",
+        "squad": "Juniors",
+        "category": "Answer Key"
+    },
+    {
+        "year": "2020",
+        "language": "English",
+        "name": "2020 Hauts Question Paper",
+        "url": "https://technothlon.techniche.org.in/static/media/Hauts%20English%2020.0988b7ce3bfbd88275d4.pdf",
+        "squad": "Hauts",
+        "category": "Question Paper"
+    },
+    {
+        "year": "2020",
+        "language": "English",
+        "name": "2020 Juniors Question Paper",
+        "url": "https://technothlon.techniche.org.in/static/media/Juniors%20English%2020.d29933bdd3465f5c0123.pdf",
+        "squad": "Juniors",
+        "category": "Question Paper"
+    },
+    {
+        "year": "2019",
+        "language": "English",
+        "name": "2019 Hauts Question Paper",
+        "url": "https://technothlon.techniche.org.in/static/media/2019hauts.669672443df660a331f3.pdf",
+        "squad": "Hauts",
+        "category": "Question Paper"
+    },
+    {
+        "year": "2019",
+        "language": "English",
+        "name": "2019 Juniors Question Paper",
+        "url": "https://technothlon.techniche.org.in/static/media/2019juniors.9fa4480d8edce49360cd.pdf",
+        "squad": "Juniors",
+        "category": "Question Paper"
+    },
+    {
+        "year": "2019",
+        "language": "English",
+        "name": "2019 Hauts Answer Key",
+        "url": "https://technothlon.techniche.org.in/static/media/2019hautssolutions.943b5afda58056856ab7.pdf",
+        "squad": "Hauts",
+        "category": "Answer Key"
+    },
+    {
+        "year": "2019",
+        "language": "English",
+        "name": "2019 Juniors Answer Key",
+        "url": "https://technothlon.techniche.org.in/static/media/2019JuniorSolutions.19a8979ca241407f9fde.pdf",
+        "squad": "Juniors",
+        "category": "Answer Key"
+    },
+    {
+        "year": "2018",
+        "language": "English",
+        "name": "2018 Hauts Question Paper",
+        "url": "https://technothlon.techniche.org.in/static/media/HAUTS-ENGLISH.552b69b7799f1f31f627.pdf",
+        "squad": "Hauts",
+        "category": "Question Paper"
+    },
+    {
+        "year": "2018",
+        "language": "English",
+        "name": "2018 Juniors Question Paper",
+        "url": "https://technothlon.techniche.org.in/static/media/JUNIORS-ENGLISH.27eb36186595e503dcc7.pdf",
+        "squad": "Juniors",
+        "category": "Question Paper"
+    },
+    {
+        "year": "2018",
+        "language": "Hindi",
+        "name": "2018 Hauts Question Paper",
+        "url": "https://technothlon.techniche.org.in/static/media/HAUTS-HINDI.2ae8326c7c80afd523e7.pdf",
+        "squad": "Hauts",
+        "category": "Question Paper"
+    },
+    {
+        "year": "2018",
+        "language": "Hindi",
+        "name": "2018 Juniors Question Paper",
+        "url": "NA",
+        "squad": "Juniors",
+        "category": "Question Paper"
+    },
+    {
+        "year": "2017",
+        "language": "English",
+        "name": "2017 Hauts Question Paper",
+        "url": "https://technothlon.techniche.org.in/static/media/Technothlon_2017_HE.cdff712ddb1b5808079b.pdf",
+        "squad": "Hauts",
+        "category": "Question Paper"
+    },
+    {
+        "year": "2017",
+        "language": "English",
+        "name": "2017 Juniors Question Paper",
+        "url": "https://technothlon.techniche.org.in/static/media/Technothlon_2017_JE.49f65c2d9275a49fad34.pdf",
+        "squad": "Juniors",
+        "category": "Question Paper"
+    },
+    {
+        "year": "2016",
+        "language": "English",
+        "name": "2016 Hauts Question Paper",
+        "url": "https://technothlon.techniche.org.in/static/media/Technothlon_2016_HE.b37f3d3b025b5f31d3c9.pdf",
+        "squad": "Hauts",
+        "category": "Question Paper"
+    },
+    {
+        "year": "2016",
+        "language": "English",
+        "name": "2016 Juniors Question Paper",
+        "url": "https://technothlon.techniche.org.in/static/media/Technothlon_2016_JE.5039097ae5fbea1326cf.pdf",
+        "squad": "Juniors",
+        "category": "Question Paper"
+    },
+    {
+        "year": "2015",
+        "language": "English",
+        "name": "2015 Hauts Question Paper",
+        "url": "https://technothlon.techniche.org.in/static/media/2015HE.48031df239a0e2952052.pdf",
+        "squad": "Hauts",
+        "category": "Question Paper"
+    },
+    {
+        "year": "2015",
+        "language": "English",
+        "name": "2015 Juniors Question Paper",
+        "url": "https://technothlon.techniche.org.in/static/media/Technothlon_2015_JUNIOR(en).e1a6da0d24f1d302bb66.pdf",
+        "squad": "Juniors",
+        "category": "Question Paper"
+    },
+    {
+        "year": "2014",
+        "language": "English",
+        "name": "2014 Hauts Question Paper",
+        "url": "https://technothlon.techniche.org.in/static/media/2014HE.cbabd2c858e0455d323b.pdf",
+        "squad": "Hauts",
+        "category": "Question Paper"
+    },
+    {
+        "year": "2014",
+        "language": "English",
+        "name": "2014 Juniors Question Paper",
+        "url": "https://technothlon.techniche.org.in/static/media/Technothlon_2014_Juniors(en).bd9411eec28f71ca82d9.pdf",
+        "squad": "Juniors",
+        "category": "Question Paper"
+    },
+    {
+        "year": "2013",
+        "language": "English",
+        "name": "2013 Hauts Question Paper",
+        "url": "NA",
+        "squad": "Hauts",
+        "category": "Question Paper"
+    },
+    {
+        "year": "2013",
+        "language": "English",
+        "name": "2013 Juniors Question Paper",
+        "url": "https://technothlon.techniche.org.in/static/media/Technothlon_2013_Juniors.8ea14c725a264898ec24.pdf",
+        "squad": "Juniors",
+        "category": "Question Paper"
+    },
+    {
+        "year": "2012",
+        "language": "English",
+        "name": "2012 Hauts Question Paper",
+        "url": "NA",
+        "squad": "Hauts",
+        "category": "Question Paper"
+    },
+    {
+        "year": "2012",
+        "language": "English",
+        "name": "2012 Juniors Question Paper",
+        "url": "https://technothlon.techniche.org.in/static/media/Technothlon_2012_Juniors.cc9c25b3a9c8998c5243.pdf",
+        "squad": "Juniors",
+        "category": "Question Paper"
+    },
+    {
+        "year": "2011",
+        "language": "English",
+        "name": "2011 Hauts Question Paper",
+        "url": "NA",
+        "squad": "Hauts",
+        "category": "Question Paper"
+    },
+    {
+        "year": "2011",
+        "language": "English",
+        "name": "2011 Juniors Question Paper",
+        "url": "https://technothlon.techniche.org.in/static/media/Technothlon_2011_Juniors.ce41adc07acf907f7910.pdf",
+        "squad": "Juniors",
+        "category": "Question Paper"
+    },
+    {
+        "year": "2010",
+        "language": "English",
+        "name": "2010 Hauts Question Paper",
+        "url": "https://technothlon.techniche.org.in/static/media/Technothlon_2010_Hauts.69bb28342f6131a34474.pdf",
+        "squad": "Hauts",
+        "category": "Question Paper"
+    },
+    {
+        "year": "2010",
+        "language": "English",
+        "name": "2010 Juniors Question Paper",
+        "url": "https://technothlon.techniche.org.in/static/media/Technothlon_2010_Juniors.bd10f6649ae825b457b3.pdf",
+        "squad": "Juniors",
+        "category": "Question Paper"
+    },
+    {
+        "year": "2009",
+        "language": "English",
+        "name": "2009 Hauts Question Paper",
+        "url": "https://technothlon.techniche.org.in/static/media/Technothlon_2009_Hauts.23ab5d710f48741e5837.pdf",
+        "squad": "Hauts",
+        "category": "Question Paper"
+    },
+    {
+        "year": "2009",
+        "language": "English",
+        "name": "2009 Juniors Question Paper",
+        "url": "https://technothlon.techniche.org.in/static/media/Technothlon_2009_Juniors.cece57a63c98cddc2ecc.pdf",
+        "squad": "Juniors",
+        "category": "Question Paper"
+    }
+]

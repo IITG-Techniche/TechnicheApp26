@@ -8,6 +8,7 @@ import 'package:amazon_clone/view/auth/authScreen.dart';
 import 'package:amazon_clone/view/landing_screen.dart';
 import 'package:amazon_clone/view/ghm/marathon_screen.dart';
 import 'package:amazon_clone/view/techniche_screen.dart';
+import 'package:amazon_clone/view/techno/papers_display.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -18,7 +19,7 @@ import 'package:permission_handler/permission_handler.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   try {
     // Initialize Firebase first
     await Firebase.initializeApp(
@@ -27,13 +28,13 @@ void main() async {
 
     // Initialize notifications without topics
     final notificationService = NotificationService();
-    
+
     // Force a token refresh before initializing
     await notificationService.resetFcmToken();
-    
+
     // Initialize notifications after token refresh
     await notificationService.initNotifications(subscribeToTopics: false);
-    
+
     // Wait for token to be fully ready
     String? token;
     int attempts = 0;
@@ -44,12 +45,11 @@ void main() async {
         await Future.delayed(const Duration(seconds: 2));
       }
     }
-    
+
     if (token != null) {
       // Try to subscribe to topics
       await notificationService.subscribeToTopic('all_users');
     }
-    
   } catch (e) {
     print("Firebase/Notification Initialization error: $e");
   }
@@ -131,6 +131,7 @@ class _MyAppState extends State<MyApp> {
         BottomNavBar.routeName: (context) => const BottomNavBar(),
         MarathonScreen.routeName: (context) => const MarathonScreen(),
         TechnicheScreen.routeName: (context) => const TechnicheScreen(),
+        TechnothlonScreen.routeName: (context) => TechnothlonScreen(),
       },
       // Use the landing screen as the initial route
       initialRoute: '/',

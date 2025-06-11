@@ -59,7 +59,7 @@ class LandingScreen extends StatelessWidget {
                 "Welcome to",
                 style: TextStyle(
                   fontSize: screenWidth * 0.07,
-                    color: const Color(0xFF9E9C98),
+                  color: const Color(0xFF9E9C98),
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -67,7 +67,7 @@ class LandingScreen extends StatelessWidget {
                 "Techniche 2025",
                 style: TextStyle(
                   fontSize: screenWidth * 0.09,
-                    color: const Color(0xFF0E1F48),
+                  color: const Color(0xFF0E1F48),
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -92,23 +92,23 @@ class LandingScreen extends StatelessWidget {
                 },
                 child: Container(
                   width: double.infinity,
-                  height: screenHeight * 0.35, 
+                  height: screenHeight * 0.35 + 21,
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(24), 
+                    borderRadius: BorderRadius.circular(24),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.05), 
+                        color: Colors.black.withOpacity(0.05),
                         spreadRadius: 0,
                         blurRadius: 20,
-                        offset: const Offset(0, 0), 
+                        offset: const Offset(0, 0),
                       ),
                     ],
                   ),
                   child: Stack(
                     children: [
                       Column(
-                        crossAxisAlignment: CrossAxisAlignment.start, 
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           ClipRRect(
                             borderRadius: BorderRadius.only(
@@ -116,22 +116,22 @@ class LandingScreen extends StatelessWidget {
                               topRight: Radius.circular(24),
                             ),
                             child: Image.asset(
-                              'assets/marathon_banner.png', 
+                              'assets/marathon_banner.png',
                               fit: BoxFit.fill,
                               width: double.infinity,
-                              height: screenHeight * 0.25, 
+                              height: screenHeight * 0.25,
                             ),
                           ),
                           Padding(
-                            padding: const EdgeInsets.fromLTRB(24, 10, 24, 24), 
+                            padding: const EdgeInsets.fromLTRB(24, 10, 24, 24),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween, 
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
                                   "Guwahati Half Marathon",
                                   style: TextStyle(
-                                    fontSize: 18, 
+                                    fontSize: 18,
                                     fontWeight: FontWeight.bold,
                                     color: Colors.black87,
                                   ),
@@ -140,7 +140,7 @@ class LandingScreen extends StatelessWidget {
                                 Text(
                                   "Track your steps and participate in the event",
                                   style: TextStyle(
-                                    fontSize: 14, 
+                                    fontSize: 14,
                                     color: Colors.black54,
                                   ),
                                 ),
@@ -199,17 +199,20 @@ class LandingScreen extends StatelessWidget {
                                 .validateTokenAndFetchUser(context);
                             if (isValid) {
                               if (context.mounted) {
-                                Navigator.pushNamed(context, BottomNavBar.routeName);
+                                Navigator.pushNamed(
+                                    context, BottomNavBar.routeName);
                               }
                             } else {
                               if (context.mounted) {
-                                Navigator.pushNamed(context, AuthScreen.routeName);
+                                Navigator.pushNamed(
+                                    context, AuthScreen.routeName);
                               }
                             }
                           } else {
                             // Navigate to auth screen
                             if (context.mounted) {
-                              Navigator.pushNamed(context, AuthScreen.routeName);
+                              Navigator.pushNamed(
+                                  context, AuthScreen.routeName);
                             }
                           }
                         } catch (e) {
@@ -231,8 +234,10 @@ class LandingScreen extends StatelessWidget {
                       },
                       child: _buildBoxButton(
                         title: "Campus Ambassador",
-                        description: "Manage your CA profile and track your progress",
-                        imagePath: 'assets/ca_icon.png',  // Changed from icon to imagePath
+                        description:
+                            "Manage your CA profile and track your progress",
+                        imagePath:
+                            'assets/ca_icon.png', // Changed from icon to imagePath
                         color: Colors.orange,
                       ),
                     ),
@@ -248,15 +253,42 @@ class LandingScreen extends StatelessWidget {
                       },
                       child: _buildBoxButton(
                         title: "Techniche",
-                        description: "Stay updated with the latest fest information",
-                        imagePath: 'assets/techniche_events.png',  // Changed from icon to imagePath
+                        description:
+                            "Stay updated with the latest fest information",
+                        imagePath:
+                            'assets/techniche_events.png', // Changed from icon to imagePath
                         color: Colors.blue,
                       ),
                     ),
                   ),
                 ],
               ),
-              SizedBox(height: screenHeight * 0.03),
+              SizedBox(height: screenHeight * 0.015),
+
+              //SizedBox(height: screenHeight * 0.03),
+              Row(
+                children: [
+                  SizedBox(
+                    width: (screenWidth - screenWidth * 0.03) / 2,
+                    height: 190,
+                    child: GestureDetector(
+                      onTap: () {
+                        Navigator.pushNamed(
+                          context,
+                          '/technothlon-screen',
+                        );
+                      },
+                      child: _buildBoxButton(
+                        title: "Techniche",
+                        description:
+                            "Stay updated with the latest fest information",
+                        imagePath: 'assets/techniche_events.png',
+                        color: Colors.blue,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ],
           ),
         ),
@@ -267,7 +299,7 @@ class LandingScreen extends StatelessWidget {
   Widget _buildBoxButton({
     required String title,
     required String description,
-    required String imagePath,  // Changed from IconData icon to String imagePath
+    required String imagePath, // Changed from IconData icon to String imagePath
     required Color color,
   }) {
     return Container(
