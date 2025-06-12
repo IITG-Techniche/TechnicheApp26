@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:amazon_clone/model/techno_paper_model.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart' show rootBundle;
+import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class TechnothlonScreen extends StatefulWidget {
@@ -32,19 +32,31 @@ class _TechnothlonScreenState extends State<TechnothlonScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.green[50],
+      backgroundColor: const Color(0xFF181A20),
       appBar: AppBar(
-        title: Text(
+        title: const Text(
           "Technothlon PYQs",
-          style: TextStyle(color: Colors.white),
+          style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 22,
+              letterSpacing: 1.1),
         ),
-        backgroundColor: Colors.green[700],
+        backgroundColor: const Color(0xFF23242B),
+        elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.white),
+        automaticallyImplyLeading: true,
+        systemOverlayStyle: SystemUiOverlayStyle(
+          statusBarColor: Color(0xFF181A20),
+          statusBarIconBrightness: Brightness.light,
+        ),
       ),
       body: FutureBuilder<List<TechnoPaperModel>>(
         future: papersFuture,
         builder: (context, snapshot) {
           if (!snapshot.hasData)
-            return const Center(child: CircularProgressIndicator());
+            return const Center(
+                child: CircularProgressIndicator(color: Colors.blueAccent));
 
           final data = snapshot.data!;
           final years = data.map((e) => e.year).toSet().toList()
@@ -52,8 +64,8 @@ class _TechnothlonScreenState extends State<TechnothlonScreen> {
           for (var y in years) {
             expandedMap.putIfAbsent(y, () => false);
           }
-          SizedBox(height: 8);
           return ListView(
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 0),
             children: years.map((year) {
               final filtered = data.where((e) => e.year == year).toList();
 
@@ -80,44 +92,67 @@ class _TechnothlonScreenState extends State<TechnothlonScreen> {
                 rows.add(_buildRow("Answer Key", matrix['Answer Key']));
 
               return Card(
-                margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                child: ExpansionTile(
-                  initiallyExpanded: expandedMap[year]!,
-                  title: Text(
-                    "Technothlon $year",
-                    style: TextStyle(
-                      color:
-                          expandedMap[year]! ? Colors.green[600] : Colors.black,
-                      fontWeight: FontWeight.bold,
-                    ),
+                color: const Color(0xFF23242B),
+                margin:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(18),
+                  side: BorderSide(
+                      color: Colors.blueGrey.withOpacity(0.18), width: 1.2),
+                ),
+                child: Theme(
+                  data: Theme.of(context).copyWith(
+                    dividerColor: Colors.transparent,
+                    splashColor: Colors.blueAccent.withOpacity(0.08),
                   ),
-                  onExpansionChanged: (val) {
-                    setState(() {
-                      expandedMap[year] = val;
-                    });
-                  },
-                  children: [
-                    if (rows.isNotEmpty)
-                      Padding(
-                        padding: const EdgeInsets.all(12),
-                        child: Table(
-                          columnWidths: const {
-                            0: FlexColumnWidth(3),
-                            1: FlexColumnWidth(2),
-                            2: FlexColumnWidth(2),
-                          },
-                          children: rows,
-                        ),
-                      )
-                    else
-                      const Padding(
-                        padding: EdgeInsets.all(12.0),
-                        child: Text(
-                          "No papers available for this year.",
-                          style: TextStyle(color: Colors.grey),
-                        ),
+                  child: ExpansionTile(
+                    initiallyExpanded: expandedMap[year]!,
+                    title: Text(
+                      "Technothlon $year",
+                      style: TextStyle(
+                        color: expandedMap[year]!
+                            ? Colors.blueAccent
+                            : Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                        letterSpacing: 0.7,
                       ),
-                  ],
+                    ),
+                    onExpansionChanged: (val) {
+                      setState(() {
+                        expandedMap[year] = val;
+                      });
+                    },
+                    children: [
+                      if (rows.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.all(12),
+                          child: Table(
+                            columnWidths: const {
+                              0: FlexColumnWidth(3),
+                              1: FlexColumnWidth(2),
+                              2: FlexColumnWidth(2),
+                            },
+                            border: TableBorder(
+                              horizontalInside: BorderSide(
+                                  color: Colors.blueGrey.withOpacity(0.18)),
+                            ),
+                            children: rows,
+                          ),
+                        )
+                      else
+                        const Padding(
+                          padding: EdgeInsets.all(12.0),
+                          child: Text(
+                            "No papers available for this year.",
+                            style: TextStyle(
+                                color: Colors.grey,
+                                fontStyle: FontStyle.italic),
+                          ),
+                        ),
+                    ],
+                  ),
                 ),
               );
             }).toList(),
@@ -135,11 +170,13 @@ class _TechnothlonScreenState extends State<TechnothlonScreen> {
 
   TableRow _buildRow(String title, Map<String, TechnoPaperModel?>? row) {
     return TableRow(
+      decoration: const BoxDecoration(color: Color(0xFF23242B)),
       children: [
         Padding(
           padding: const EdgeInsets.all(8),
-          child:
-              Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+          child: Text(title,
+              style: const TextStyle(
+                  fontWeight: FontWeight.bold, color: Colors.white)),
         ),
         _buildCell(row?['Hauts']),
         _buildCell(row?['Juniors']),
@@ -151,24 +188,35 @@ class _TechnothlonScreenState extends State<TechnothlonScreen> {
     if (paper == null || paper.url == null || paper.url == "NA") {
       return const Padding(
         padding: EdgeInsets.all(8.0),
-        child: Text("-"),
+        child: Text("-", style: TextStyle(color: Colors.grey)),
       );
     }
 
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: InkWell(
+        borderRadius: BorderRadius.circular(8),
         onTap: () async {
           final uri = Uri.parse(paper.url!);
           if (await canLaunchUrl(uri)) {
             await launchUrl(uri, mode: LaunchMode.externalApplication);
           }
         },
-        child: Text(
-          paper.squad,
-          style: TextStyle(
-            color: Colors.green[900],
-            decoration: TextDecoration.underline,
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 10),
+          decoration: BoxDecoration(
+            color: Colors.blueAccent.withOpacity(0.13),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Text(
+            paper.squad,
+            style: const TextStyle(
+              color: Colors.blueAccent,
+              fontWeight: FontWeight.w600,
+              decoration: TextDecoration.underline,
+              fontSize: 15,
+              letterSpacing: 0.2,
+            ),
           ),
         ),
       ),

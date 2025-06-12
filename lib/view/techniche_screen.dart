@@ -12,16 +12,24 @@ class TechnicheScreen extends StatelessWidget {
     final screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFF181A20),
       appBar: AppBar(
         systemOverlayStyle: const SystemUiOverlayStyle(
-          statusBarColor: Colors.blue,
-          statusBarIconBrightness: Brightness.dark,
+          statusBarColor: Color(0xFF181A20),
+          statusBarIconBrightness: Brightness.light,
         ),
-        backgroundColor: Colors.blue,
-        title: const Text('Techniche 2025'),
+        backgroundColor: const Color(0xFF23242B),
         centerTitle: true,
         elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.white),
+        title: SizedBox(
+          width: screenWidth * 0.38,
+          child: Image.asset(
+            'assets/logo_withoutBG.png',
+            fit: BoxFit.contain,
+            color: Colors.white,
+          ),
+        ),
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -29,25 +37,14 @@ class TechnicheScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                width: double.infinity,
-                height: screenHeight * 0.25,
-                decoration: BoxDecoration(
-                  color: Colors.blue.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(16),
-                  image: const DecorationImage(
-                    image: AssetImage('assets/logo_withoutBG.png'),
-                    fit: BoxFit.contain,
-                  ),
-                ),
-              ),
               SizedBox(height: screenHeight * 0.03),
               Text(
                 "About Techniche",
                 style: TextStyle(
                   fontSize: screenWidth * 0.06,
                   fontWeight: FontWeight.bold,
-                  color: Colors.blue[800],
+                  color: Colors.blueAccent,
+                  letterSpacing: 0.7,
                 ),
               ),
               SizedBox(height: screenHeight * 0.01),
@@ -55,7 +52,9 @@ class TechnicheScreen extends StatelessWidget {
                 "Techniche is the annual techno-management festival of IIT Guwahati. It serves as a platform for students to showcase their technical and managerial skills through various events, workshops, and competitions.",
                 style: TextStyle(
                   fontSize: screenWidth * 0.04,
-                  color: Colors.grey[700],
+                  color: Colors.white.withOpacity(0.82),
+                  fontWeight: FontWeight.w400,
+                  height: 1.5,
                 ),
               ),
               SizedBox(height: screenHeight * 0.03),
@@ -93,20 +92,25 @@ class TechnicheScreen extends StatelessWidget {
                     Navigator.pop(context);
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue,
+                    backgroundColor: const Color(0xFF23242B),
                     padding: EdgeInsets.symmetric(
                       horizontal: screenWidth * 0.1,
                       vertical: screenWidth * 0.04,
                     ),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
+                      side: const BorderSide(
+                          color: Colors.blueAccent, width: 1.2),
                     ),
+                    elevation: 0,
                   ),
                   child: Text(
                     "Back to Home",
                     style: TextStyle(
                       fontSize: screenWidth * 0.045,
                       fontWeight: FontWeight.bold,
+                      color: Colors.blueAccent,
+                      letterSpacing: 0.5,
                     ),
                   ),
                 ),
@@ -125,17 +129,25 @@ class TechnicheScreen extends StatelessWidget {
 
     return Container(
       padding: EdgeInsets.all(screenWidth * 0.04),
+      margin: EdgeInsets.only(bottom: screenWidth * 0.01),
       decoration: BoxDecoration(
-        color: Colors.grey[100],
+        color: const Color(0xFF23242B),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.blue.withOpacity(0.3)),
+        border: Border.all(color: Colors.blueAccent.withOpacity(0.18)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.blueAccent.withOpacity(0.07),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Icon(
             icon,
-            color: Colors.blue,
+            color: Colors.blueAccent,
             size: screenWidth * 0.07,
           ),
           SizedBox(width: screenWidth * 0.03),
@@ -148,7 +160,7 @@ class TechnicheScreen extends StatelessWidget {
                   style: TextStyle(
                     fontSize: screenWidth * 0.045,
                     fontWeight: FontWeight.bold,
-                    color: Colors.black87,
+                    color: Colors.white,
                   ),
                 ),
                 SizedBox(height: screenWidth * 0.01),
@@ -156,7 +168,7 @@ class TechnicheScreen extends StatelessWidget {
                   description,
                   style: TextStyle(
                     fontSize: screenWidth * 0.035,
-                    color: Colors.grey[700],
+                    color: Colors.white.withOpacity(0.7),
                   ),
                 ),
               ],

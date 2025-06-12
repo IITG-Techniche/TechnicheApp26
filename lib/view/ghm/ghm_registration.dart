@@ -15,6 +15,8 @@ class GHMRegistrationScreen extends StatefulWidget {
 }
 
 class _GHMRegistrationScreenState extends State<GHMRegistrationScreen> {
+  // Toggle this variable to open/close registration
+  static const bool registrationsOpen = false;
   final _formKey = GlobalKey<FormState>();
   String? gender;
   String? marathonCategory;
@@ -37,146 +39,197 @@ class _GHMRegistrationScreenState extends State<GHMRegistrationScreen> {
     final screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
-      backgroundColor: const Color.fromRGBO(255, 246, 228, 1),
+      backgroundColor: const Color(0xFF181A20),
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(screenHeight * 0.085),
         child: AppBar(
           systemOverlayStyle: const SystemUiOverlayStyle(
-            statusBarColor: Color(0xFFF7E8C9),
-            statusBarIconBrightness: Brightness.dark,
+            statusBarColor: Color(0xFF181A20),
+            statusBarIconBrightness: Brightness.light,
           ),
-          backgroundColor: const Color(0xFFF7E8C9),
+          backgroundColor: const Color(0xFF23242B),
           title: const Text(
             'Marathon Registration',
             style: TextStyle(
-              color: Colors.black87,
+              color: Colors.white,
               fontWeight: FontWeight.bold,
             ),
           ),
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: Colors.black87),
+            icon: const Icon(Icons.arrow_back, color: Colors.white),
             onPressed: () => Navigator.pop(context),
           ),
           elevation: 0,
         ),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: ListView(
-            children: [
-              _buildTextField(
-                label: "Full Name",
-                validator: (value) =>
-                    value?.isEmpty ?? true ? "Please enter your name" : null,
-                controller: _nameController,
-              ),
-              _buildTextField(
-                label: "Age",
-                keyboardType: TextInputType.number,
-                validator: (value) =>
-                    value?.isEmpty ?? true ? "Please enter your age" : null,
-                controller: _ageController,
-              ),
-              _buildDropdown(
-                label: "Gender",
-                items: ["Male", "Female", "Prefer not to say"],
-                value: gender,
-                onChanged: (value) => setState(() => gender = value),
-              ),
-              _buildTextField(
-                label: "College/Institution/Company",
-                validator: (value) =>
-                    value?.isEmpty ?? true ? "This field is required" : null,
-                controller: _institutionController,
-              ),
-              _buildTextField(
-                label: "Contact No",
-                keyboardType: TextInputType.phone,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return "Please enter your contact number";
-                  }
-                  if (value.length != 10) {
-                    return "Contact number must be 10 digits";
-                  }
-                  if (!RegExp(r'^[0-9]{10}$').hasMatch(value)) {
-                    return "Please enter valid contact number";
-                  }
-                  return null;
-                },
-                controller: _contactController,
-                maxLength: 10,
-                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-              ),
-              _buildTextField(
-                label: "Email",
-                keyboardType: TextInputType.emailAddress,
-                validator: (value) =>
-                    value?.isEmpty ?? true ? "Please enter your email" : null,
-                controller: _emailController,
-              ),
-              _buildTextField(label: "Country", controller: _countryController),
-              _buildTextField(label: "State", controller: _stateController),
-              _buildTextField(label: "City/District", controller: _cityController),
-              _buildDropdown(
-                label: "Marathon Category",
-                items: ["21km", "6km"],
-                value: marathonCategory,
-                onChanged: (value) => setState(() => marathonCategory = value),
-                icon: Icon(
-                  Icons.directions_run,
-                  color: Colors.blue,
-                ),
-                prefixIcon: Icons.directions_run,
-              ),
-              _buildChampionshipSection(),
-              _buildDropdown(
-                label: "How did you come to know about the marathon?",
-                items: ["Social Media", "Friends", "Website", "Other"],
-                value: sourceOfInfo,
-                onChanged: (value) => setState(() => sourceOfInfo = value),
-              ),
-              const SizedBox(height: 20),
-              if (marathonCategory != null)
-                Container(
-                  width: double.infinity,
-                  margin: const EdgeInsets.symmetric(vertical: 16),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.blue.withOpacity(0.3),
-                        blurRadius: 8,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: ElevatedButton(
-                    onPressed: _submitForm,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color.fromRGBO(14, 31, 72,1),
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      elevation: 0,
+      body: registrationsOpen
+          ? Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Form(
+                key: _formKey,
+                child: ListView(
+                  children: [
+                    _buildTextField(
+                      label: "Full Name",
+                      validator: (value) =>
+                          value?.isEmpty ?? true ? "Please enter your name" : null,
+                      controller: _nameController,
                     ),
-                    child: const Text(
-                      "Pay and Register",
+                    _buildTextField(
+                      label: "Age",
+                      keyboardType: TextInputType.number,
+                      validator: (value) =>
+                          value?.isEmpty ?? true ? "Please enter your age" : null,
+                      controller: _ageController,
+                    ),
+                    _buildDropdown(
+                      label: "Gender",
+                      items: ["Male", "Female", "Prefer not to say"],
+                      value: gender,
+                      onChanged: (value) => setState(() => gender = value),
+                    ),
+                    _buildTextField(
+                      label: "College/Institution/Company",
+                      validator: (value) =>
+                          value?.isEmpty ?? true ? "This field is required" : null,
+                      controller: _institutionController,
+                    ),
+                    _buildTextField(
+                      label: "Contact No",
+                      keyboardType: TextInputType.phone,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return "Please enter your contact number";
+                        }
+                        if (value.length != 10) {
+                          return "Contact number must be 10 digits";
+                        }
+                        if (!RegExp(r'^[0-9]{10}$').hasMatch(value)) {
+                          return "Please enter valid contact number";
+                        }
+                        return null;
+                      },
+                      controller: _contactController,
+                      maxLength: 10,
+                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                    ),
+                    _buildTextField(
+                      label: "Email",
+                      keyboardType: TextInputType.emailAddress,
+                      validator: (value) =>
+                          value?.isEmpty ?? true ? "Please enter your email" : null,
+                      controller: _emailController,
+                    ),
+                    _buildTextField(label: "Country", controller: _countryController),
+                    _buildTextField(label: "State", controller: _stateController),
+                    _buildTextField(label: "City/District", controller: _cityController),
+                    _buildDropdown(
+                      label: "Marathon Category",
+                      items: ["21km", "6km"],
+                      value: marathonCategory,
+                      onChanged: (value) => setState(() => marathonCategory = value),
+                      icon: Icon(
+                        Icons.directions_run,
+                        color: Colors.blue,
+                      ),
+                      prefixIcon: Icons.directions_run,
+                    ),
+                    _buildChampionshipSection(),
+                    _buildDropdown(
+                      label: "How did you come to know about the marathon?",
+                      items: ["Social Media", "Friends", "Website", "Other"],
+                      value: sourceOfInfo,
+                      onChanged: (value) => setState(() => sourceOfInfo = value),
+                    ),
+                    const SizedBox(height: 20),
+                    if (marathonCategory != null)
+                      Container(
+                        width: double.infinity,
+                        margin: const EdgeInsets.symmetric(vertical: 16),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.blue.withOpacity(0.3),
+                              blurRadius: 8,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: ElevatedButton(
+                          onPressed: _submitForm,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color.fromRGBO(14, 31, 72,1),
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            elevation: 0,
+                          ),
+                          child: const Text(
+                            "Pay and Register",
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            )
+          : Center(
+              child: Container(
+                padding: const EdgeInsets.all(32),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF23242B),
+                  borderRadius: BorderRadius.circular(24),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.18),
+                      blurRadius: 24,
+                    ),
+                  ],
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.event_busy, color: Colors.redAccent, size: 54),
+                    const SizedBox(height: 24),
+                    Text(
+                      'Registrations Closed',
+                      style: TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        letterSpacing: 1.2,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Registrations for\nGuwahati Half Marathon 2025\nare closed.\n\nSee you next year!',
+                      textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 18,
-                        fontWeight: FontWeight.bold,
+                        color: Colors.white.withOpacity(0.85),
+                        fontWeight: FontWeight.w500,
+                        height: 1.5,
                         letterSpacing: 0.5,
+                        shadows: [
+                          Shadow(
+                            color: Colors.blueAccent.withOpacity(0.2),
+                            blurRadius: 8,
+                            offset: Offset(0, 2),
+                          ),
+                        ],
                       ),
                     ),
-                  ),
+                  ],
                 ),
-            ],
-          ),
-        ),
-      ),
+              ),
+            ),
     );
   }
 

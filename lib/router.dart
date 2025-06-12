@@ -5,6 +5,7 @@ import 'package:amazon_clone/view/ghm/marathon_screen.dart';
 import 'package:amazon_clone/view/ghm/ghm_selection.dart';
 import 'package:amazon_clone/view/ghm/ghm_registration.dart';
 import 'package:amazon_clone/view/techniche_screen.dart';
+import 'package:amazon_clone/view/techno/papers_display.dart';
 
 import 'package:flutter/material.dart';
 
@@ -27,18 +28,18 @@ Route<dynamic> generateRoute(RouteSettings routeSettings) {
         settings: routeSettings,
         builder: (_) => const BottomNavBar(),
       );
-    
+
     case GHMScreen.routeName:
       return MaterialPageRoute(
         settings: routeSettings,
         builder: (_) => const GHMScreen(),
       );
-     case GHMRegistrationScreen.routeName:
+    case GHMRegistrationScreen.routeName:
       return MaterialPageRoute(
         settings: routeSettings,
         builder: (_) => const GHMRegistrationScreen(),
       );
-      
+
     case MarathonScreen.routeName:
       return MaterialPageRoute(
         settings: routeSettings,
@@ -49,6 +50,12 @@ Route<dynamic> generateRoute(RouteSettings routeSettings) {
       return MaterialPageRoute(
         settings: routeSettings,
         builder: (_) => const TechnicheScreen(),
+      );
+
+    case TechnothlonScreen.routeName:
+      return MaterialPageRoute(
+        settings: routeSettings,
+        builder: (_) => const TechnothlonScreen(),
       );
 
     default:

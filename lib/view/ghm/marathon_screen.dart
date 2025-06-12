@@ -33,12 +33,12 @@ class _MarathonScreenState extends State<MarathonScreen>
   double _stepsPerKm = 1300; // Average steps per km (can be adjusted)
   double _caloriesPerStep = 0.04; // Average calories per step
 
-  // Theme colors
-  final Color primaryColor = const Color(0xFF2E7D32); // Green 800
-  final Color accentColor = const Color(0xFF81C784); // Green 300
-  final Color lightColor = const Color(0xFFC8E6C9); // Green 100
-  final Color backgroundColor = Colors.white;
-  final Color textColor = const Color(0xFF1B5E20); // Green 900
+  // Theme colors (override for dark/futuristic look)
+  final Color primaryColor = const Color(0xFF23242B); // Futuristic dark
+  final Color accentColor = Colors.blueAccent;
+  final Color lightColor = const Color(0xFF23242B);
+  final Color backgroundColor = const Color(0xFF181A20);
+  final Color textColor = Colors.white;
 
   // Timer for periodic updates
   Timer? _timer;
@@ -134,13 +134,13 @@ class _MarathonScreenState extends State<MarathonScreen>
 
     // Only calculate steps if session is active
     int newSteps = event.steps - _initialSteps;
-    
+
     // Only trigger a rebuild if the steps have changed significantly
     if (newSteps != _steps) {
       setState(() {
         _currentSystemSteps = event.steps;
         _steps = newSteps;
-        
+
         // Only recalculate metrics if session is active
         _updateCalculations();
       });
@@ -162,7 +162,7 @@ class _MarathonScreenState extends State<MarathonScreen>
     if (_steps > 0) {
       _distance = _steps / _stepsPerKm;
       _calories = _steps * _caloriesPerStep;
-      
+
       // Calculate speed only if we have elapsed time
       if (_elapsedTime.inSeconds > 0) {
         double hours = _elapsedTime.inSeconds / 3600;
@@ -184,7 +184,8 @@ class _MarathonScreenState extends State<MarathonScreen>
     if (!_isSessionActive) {
       setState(() {
         _isSessionActive = true;
-        _initialSteps = _currentSystemSteps; // Use current system count as baseline
+        _initialSteps =
+            _currentSystemSteps; // Use current system count as baseline
         _steps = 0; // Reset session step count
         _distance = 0.0;
         _calories = 0.0;
@@ -210,7 +211,8 @@ class _MarathonScreenState extends State<MarathonScreen>
   void _resetPedometer() {
     setState(() {
       _isSessionActive = false;
-      _initialSteps = _currentSystemSteps; // Set the current step count as the new baseline
+      _initialSteps =
+          _currentSystemSteps; // Set the current step count as the new baseline
       _steps = 0;
       _distance = 0.0;
       _calories = 0.0;
@@ -225,13 +227,22 @@ class _MarathonScreenState extends State<MarathonScreen>
       backgroundColor: backgroundColor,
       appBar: AppBar(
         systemOverlayStyle: SystemUiOverlayStyle(
-          statusBarColor: primaryColor,
+          statusBarColor: backgroundColor,
           statusBarIconBrightness: Brightness.light,
         ),
         backgroundColor: primaryColor,
-        title: const Text('Guwahati Half Marathon'),
+        title: const Text(
+          'GHM: Steps Tracker',
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            fontSize: 20,
+            letterSpacing: 1.2,
+          ),
+        ),
         centerTitle: true,
         elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: SafeArea(
         child: Column(
@@ -240,9 +251,8 @@ class _MarathonScreenState extends State<MarathonScreen>
             StatusHeader(
               status: _isSessionActive ? _status : 'Ready',
               isActive: _isSessionActive,
-              primaryColor: primaryColor,
+              primaryColor: accentColor,
             ),
-
             // Main metrics display
             Expanded(
               child: Padding(
@@ -253,13 +263,11 @@ class _MarathonScreenState extends State<MarathonScreen>
                     // Steps counter - primary metric
                     StepCounter(
                       steps: _steps,
-                      primaryColor: primaryColor,
+                      primaryColor: accentColor,
                       lightColor: lightColor,
                       isActive: _isSessionActive,
                     ),
-
                     const SizedBox(height: 30),
-
                     // Session results (average speed) - shown only after session ends
                     if (_showResults)
                       SessionResultCard(
@@ -267,9 +275,7 @@ class _MarathonScreenState extends State<MarathonScreen>
                         accentColor: accentColor,
                         textColor: textColor,
                       ),
-
                     if (!_showResults) const SizedBox(height: 10),
-
                     // Additional metrics
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -283,7 +289,6 @@ class _MarathonScreenState extends State<MarathonScreen>
                           accentColor: accentColor,
                           textColor: textColor,
                         ),
-
                         // Time metric
                         MetricCard(
                           icon: Icons.timer,
@@ -293,7 +298,6 @@ class _MarathonScreenState extends State<MarathonScreen>
                           accentColor: accentColor,
                           textColor: textColor,
                         ),
-
                         // Calories metric
                         MetricCard(
                           icon: Icons.local_fire_department,
@@ -309,10 +313,9 @@ class _MarathonScreenState extends State<MarathonScreen>
                 ),
               ),
             ),
-
             // Action buttons
             ActionButtons(
-              primaryColor: primaryColor,
+              primaryColor: accentColor,
               isSessionActive: _isSessionActive,
               onStart: _startSession,
               onStop: _stopSession,
@@ -413,7 +416,12 @@ class StatusHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-      color: primaryColor.withOpacity(0.1),
+      decoration: BoxDecoration(
+        color: primaryColor.withOpacity(0.13),
+        border: Border(
+          bottom: BorderSide(color: Colors.blueAccent.withOpacity(0.18)),
+        ),
+      ),
       child: Row(
         children: [
           Icon(
@@ -422,13 +430,13 @@ class StatusHeader extends StatelessWidget {
                 : status == 'Ready'
                     ? Icons.sports_score
                     : Icons.accessibility_new,
-            color: primaryColor,
+            color: Colors.blueAccent,
           ),
           const SizedBox(width: 8),
           Text(
             isActive ? 'Session Active - Status: $status' : 'Status: $status',
             style: TextStyle(
-              color: primaryColor,
+              color: Colors.white,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -437,8 +445,8 @@ class StatusHeader extends StatelessWidget {
               margin: const EdgeInsets.only(left: 8),
               width: 8,
               height: 8,
-              decoration: BoxDecoration(
-                color: Colors.green,
+              decoration: const BoxDecoration(
+                color: Colors.greenAccent,
                 shape: BoxShape.circle,
               ),
             ),
@@ -468,10 +476,10 @@ class StepCounter extends StatelessWidget {
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: lightColor,
+        color: const Color(0xFF23242B), // dark
         boxShadow: [
           BoxShadow(
-            color: primaryColor.withOpacity(0.2),
+            color: Colors.blueAccent.withOpacity(0.18),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -481,9 +489,9 @@ class StepCounter extends StatelessWidget {
         padding: const EdgeInsets.all(50),
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: Colors.white,
+          color: const Color(0xFF181A20), // even darker
           border: Border.all(
-            color: isActive ? primaryColor : primaryColor.withOpacity(0.5),
+            color: isActive ? Colors.blueAccent : Colors.blueGrey,
             width: isActive ? 3 : 2,
           ),
         ),
@@ -492,10 +500,10 @@ class StepCounter extends StatelessWidget {
           children: [
             Text(
               steps.toString(),
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 48,
                 fontWeight: FontWeight.bold,
-                color: primaryColor,
+                color: Colors.white,
               ),
             ),
             Text(
@@ -503,7 +511,7 @@ class StepCounter extends StatelessWidget {
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
-                color: primaryColor.withOpacity(0.7),
+                color: Colors.blueAccent.withOpacity(0.7),
                 letterSpacing: 2,
               ),
             ),
@@ -515,7 +523,7 @@ class StepCounter extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
-                    color: primaryColor.withOpacity(0.7),
+                    color: Colors.blueAccent.withOpacity(0.7),
                   ),
                 ),
               ),
@@ -549,11 +557,11 @@ class MetricCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: const Color(0xFF23242B), // dark
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: accentColor.withOpacity(0.2),
+            color: accentColor.withOpacity(0.13),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -635,7 +643,7 @@ class ActionButtons extends StatelessWidget {
             icon: Icon(isSessionActive ? Icons.stop : Icons.play_arrow),
             label: Text(isSessionActive ? 'STOP' : 'START'),
             style: ElevatedButton.styleFrom(
-              backgroundColor: isSessionActive ? Colors.red : primaryColor,
+              backgroundColor: isSessionActive ? Colors.red : Colors.blueAccent,
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(
                 horizontal: 24,
@@ -646,41 +654,39 @@ class ActionButtons extends StatelessWidget {
               ),
             ),
           ),
-
           // Reset Button
           ElevatedButton.icon(
             onPressed: onReset,
             icon: const Icon(Icons.refresh),
             label: const Text('Reset'),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.white,
-              foregroundColor: primaryColor,
+              backgroundColor: const Color(0xFF23242B),
+              foregroundColor: Colors.blueAccent,
               padding: const EdgeInsets.symmetric(
                 horizontal: 20,
                 vertical: 12,
               ),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
-                side: BorderSide(color: primaryColor),
+                side: const BorderSide(color: Colors.blueAccent),
               ),
             ),
           ),
-
           // Home Button
           ElevatedButton.icon(
             onPressed: onBack,
             icon: const Icon(Icons.home),
             label: const Text('Home'),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.white,
-              foregroundColor: primaryColor,
+              backgroundColor: const Color(0xFF23242B),
+              foregroundColor: Colors.blueAccent,
               padding: const EdgeInsets.symmetric(
                 horizontal: 20,
                 vertical: 12,
               ),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
-                side: BorderSide(color: primaryColor),
+                side: const BorderSide(color: Colors.blueAccent),
               ),
             ),
           ),
