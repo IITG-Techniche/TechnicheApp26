@@ -66,14 +66,17 @@ class LandingScreen extends StatelessWidget {
                     description: 'See unique question papers of Technothlon!',
                     imagePath: 'assets/techno_logo.jpg',
                     color: const Color(0xFF23242B),
-                    onTap: () => Navigator.pushNamed(context, '/technothlon-screen'),
+                    onTap: () =>
+                        Navigator.pushNamed(context, '/technothlon-screen'),
                   ),
                   _gridItem(
                     title: 'Events',
-                    description: 'Stay updated with the latest fest information',
+                    description:
+                        'Stay updated with the latest fest information',
                     imagePath: 'assets/techniche_events.png',
                     color: const Color(0xFF23242B),
-                    onTap: () => Navigator.pushNamed(context, '/techniche-screen'),
+                    onTap: () =>
+                        Navigator.pushNamed(context, '/techniche-screen'),
                   ),
                   _gridItem(
                     title: 'GHM',
@@ -141,7 +144,8 @@ class LandingScreen extends StatelessWidget {
               blurRadius: 24,
             ),
           ],
-          border: Border.all(color: Colors.blueAccent.withOpacity(0.18), width: 1.5),
+          border: Border.all(
+              color: Colors.blueAccent.withOpacity(0.18), width: 1.5),
         ),
         child: Stack(
           children: [

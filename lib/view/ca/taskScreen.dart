@@ -4,6 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:provider/provider.dart';
+import 'package:flutter_html/flutter_html.dart';
+import 'package:html/parser.dart' as html_parser;
+import 'package:url_launcher/url_launcher.dart';
 
 // Main screen widget
 class TasksScreen extends StatefulWidget {
@@ -296,13 +299,9 @@ class _TasksScreenState extends State<TasksScreen> {
               ],
             ),
             const SizedBox(height: 12),
-            Text(
-              task['descriptions'] ?? '',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey.shade700,
-              ),
-            ),
+            // Description (HTML rendering with Read More)
+            if ((task['descriptions'] ?? '').isNotEmpty)
+              _ExpandableHtmlDescription(htmlData: task['descriptions']),
             const SizedBox(height: 8),
             Text(
               'Last Date For Submission: ${task['dateOfSub'] ?? ''}',
@@ -637,6 +636,107 @@ class TaskStatusView extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _ExpandableHtmlDescription extends StatefulWidget {
+  final String htmlData;
+  const _ExpandableHtmlDescription({Key? key, required this.htmlData})
+      : super(key: key);
+
+  @override
+  State<_ExpandableHtmlDescription> createState() =>
+      _ExpandableHtmlDescriptionState();
+}
+
+class _ExpandableHtmlDescriptionState
+    extends State<_ExpandableHtmlDescription> {
+  bool expanded = false;
+  static const int previewCharLimit = 100;
+
+  String get _plainTextPreview {
+    final document = html_parser.parse(widget.htmlData);
+    final text = document.body?.text ?? '';
+    if (text.length <= previewCharLimit) return text;
+    return text.substring(0, previewCharLimit) + '...';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (!expanded)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 4.0),
+            child: Text(
+              _plainTextPreview,
+              style: TextStyle(
+                color: Colors.grey.shade800,
+                fontSize: 14,
+              ),
+              maxLines: 8,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        if (expanded)
+          Html(
+            data: widget.htmlData,
+            style: {
+              "body": Style(
+                margin: Margins.zero,
+                padding: HtmlPaddings.zero,
+                color: Colors.grey.shade800,
+                fontSize: FontSize(14),
+              ),
+            },
+            onAnchorTap: (url, attributes, element) {
+              if (url != null) {
+                final uri = Uri.tryParse(url);
+                if (uri != null) {
+                  launchUrl(uri, mode: LaunchMode.externalApplication);
+                }
+              }
+            },
+          ),
+        if ((html_parser.parse(widget.htmlData).body?.text.length ?? 0) >
+                previewCharLimit &&
+            !expanded)
+          GestureDetector(
+            onTap: () => setState(() => expanded = true),
+            child: Padding(
+              padding: const EdgeInsets.only(top: 4.0),
+              child: Text(
+                'Read More',
+                style: TextStyle(
+                  color: Theme.of(context).primaryColor,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                  decoration: TextDecoration.underline,
+                ),
+              ),
+            ),
+          ),
+        if (expanded &&
+            (html_parser.parse(widget.htmlData).body?.text.length ?? 0) >
+                previewCharLimit)
+          GestureDetector(
+            onTap: () => setState(() => expanded = false),
+            child: Padding(
+              padding: const EdgeInsets.only(top: 4.0),
+              child: Text(
+                'Show Less',
+                style: TextStyle(
+                  color: Theme.of(context).primaryColor,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                  decoration: TextDecoration.underline,
+                ),
+              ),
+            ),
+          ),
+      ],
     );
   }
 }

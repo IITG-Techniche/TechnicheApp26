@@ -71,15 +71,17 @@ class _GHMRegistrationScreenState extends State<GHMRegistrationScreen> {
                   children: [
                     _buildTextField(
                       label: "Full Name",
-                      validator: (value) =>
-                          value?.isEmpty ?? true ? "Please enter your name" : null,
+                      validator: (value) => value?.isEmpty ?? true
+                          ? "Please enter your name"
+                          : null,
                       controller: _nameController,
                     ),
                     _buildTextField(
                       label: "Age",
                       keyboardType: TextInputType.number,
-                      validator: (value) =>
-                          value?.isEmpty ?? true ? "Please enter your age" : null,
+                      validator: (value) => value?.isEmpty ?? true
+                          ? "Please enter your age"
+                          : null,
                       controller: _ageController,
                     ),
                     _buildDropdown(
@@ -90,8 +92,9 @@ class _GHMRegistrationScreenState extends State<GHMRegistrationScreen> {
                     ),
                     _buildTextField(
                       label: "College/Institution/Company",
-                      validator: (value) =>
-                          value?.isEmpty ?? true ? "This field is required" : null,
+                      validator: (value) => value?.isEmpty ?? true
+                          ? "This field is required"
+                          : null,
                       controller: _institutionController,
                     ),
                     _buildTextField(
@@ -116,18 +119,23 @@ class _GHMRegistrationScreenState extends State<GHMRegistrationScreen> {
                     _buildTextField(
                       label: "Email",
                       keyboardType: TextInputType.emailAddress,
-                      validator: (value) =>
-                          value?.isEmpty ?? true ? "Please enter your email" : null,
+                      validator: (value) => value?.isEmpty ?? true
+                          ? "Please enter your email"
+                          : null,
                       controller: _emailController,
                     ),
-                    _buildTextField(label: "Country", controller: _countryController),
-                    _buildTextField(label: "State", controller: _stateController),
-                    _buildTextField(label: "City/District", controller: _cityController),
+                    _buildTextField(
+                        label: "Country", controller: _countryController),
+                    _buildTextField(
+                        label: "State", controller: _stateController),
+                    _buildTextField(
+                        label: "City/District", controller: _cityController),
                     _buildDropdown(
                       label: "Marathon Category",
                       items: ["21km", "6km"],
                       value: marathonCategory,
-                      onChanged: (value) => setState(() => marathonCategory = value),
+                      onChanged: (value) =>
+                          setState(() => marathonCategory = value),
                       icon: Icon(
                         Icons.directions_run,
                         color: Colors.blue,
@@ -139,7 +147,8 @@ class _GHMRegistrationScreenState extends State<GHMRegistrationScreen> {
                       label: "How did you come to know about the marathon?",
                       items: ["Social Media", "Friends", "Website", "Other"],
                       value: sourceOfInfo,
-                      onChanged: (value) => setState(() => sourceOfInfo = value),
+                      onChanged: (value) =>
+                          setState(() => sourceOfInfo = value),
                     ),
                     const SizedBox(height: 20),
                     if (marathonCategory != null)
@@ -159,7 +168,8 @@ class _GHMRegistrationScreenState extends State<GHMRegistrationScreen> {
                         child: ElevatedButton(
                           onPressed: _submitForm,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color.fromRGBO(14, 31, 72,1),
+                            backgroundColor:
+                                const Color.fromRGBO(14, 31, 72, 1),
                             padding: const EdgeInsets.symmetric(vertical: 16),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
@@ -247,7 +257,7 @@ class _GHMRegistrationScreenState extends State<GHMRegistrationScreen> {
         decoration: InputDecoration(
           labelText: label,
           labelStyle: const TextStyle(
-            color: Color.fromRGBO(14, 31, 72, 1), 
+            color: Color.fromRGBO(14, 31, 72, 1),
             fontSize: 16,
           ),
           border: UnderlineInputBorder(
@@ -257,9 +267,11 @@ class _GHMRegistrationScreenState extends State<GHMRegistrationScreen> {
             borderSide: BorderSide(color: Colors.grey[400]!),
           ),
           focusedBorder: const UnderlineInputBorder(
-            borderSide: BorderSide(color: Color.fromRGBO(14, 31, 72, 1), width: 2),
+            borderSide:
+                BorderSide(color: Color.fromRGBO(14, 31, 72, 1), width: 2),
           ),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 0, vertical: 16),
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 0, vertical: 16),
         ),
         style: const TextStyle(
           color: Color.fromRGBO(14, 31, 72, 1),
@@ -288,12 +300,12 @@ class _GHMRegistrationScreenState extends State<GHMRegistrationScreen> {
         decoration: InputDecoration(
           labelText: label,
           labelStyle: const TextStyle(
-            color: Color.fromRGBO(14, 31, 72, 1),  // Updated label color
+            color: Color.fromRGBO(14, 31, 72, 1), // Updated label color
             fontSize: 16,
           ),
-          prefixIcon: prefixIcon != null 
-            ? Icon(prefixIcon, color: Color.fromRGBO(14, 31, 72, 1))
-            : null,
+          prefixIcon: prefixIcon != null
+              ? Icon(prefixIcon, color: Color.fromRGBO(14, 31, 72, 1))
+              : null,
           border: UnderlineInputBorder(
             borderSide: BorderSide(color: Colors.grey[400]!),
           ),
@@ -301,21 +313,25 @@ class _GHMRegistrationScreenState extends State<GHMRegistrationScreen> {
             borderSide: BorderSide(color: Colors.grey[400]!),
           ),
           focusedBorder: const UnderlineInputBorder(
-            borderSide: BorderSide(color: Color.fromRGBO(14, 31, 72, 1), width: 2),
+            borderSide:
+                BorderSide(color: Color.fromRGBO(14, 31, 72, 1), width: 2),
           ),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 0, vertical: 16),
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 0, vertical: 16),
         ),
         value: value,
-        items: items.map((e) => DropdownMenuItem(
-          value: e,
-          child: Text(
-            e,
-            style: const TextStyle(
-              fontSize: 16,
-              color: Color.fromRGBO(14, 31, 72, 1),
-            ),
-          ),
-        )).toList(),
+        items: items
+            .map((e) => DropdownMenuItem(
+                  value: e,
+                  child: Text(
+                    e,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      color: Color.fromRGBO(14, 31, 72, 1),
+                    ),
+                  ),
+                ))
+            .toList(),
         onChanged: onChanged,
         icon: icon ?? const Icon(Icons.arrow_drop_down_circle_outlined),
         iconSize: 24,
@@ -334,13 +350,12 @@ class _GHMRegistrationScreenState extends State<GHMRegistrationScreen> {
                 return AlertDialog(
                   title: const Text("General Championship Information"),
                   content: const Text(
-                    "The General Championship trophy will be awarded to the college, "
-                    "institution, or group whose total distance covered by its runners "
-                    "is the highest. To find the total distance covered, sum the "
-                    "distances of all runners.\n\n"
-                    "For example, if 10 runners cover 21 km each and 15 runners "
-                    "cover 6 km each, the total is 300 km."
-                  ),
+                      "The General Championship trophy will be awarded to the college, "
+                      "institution, or group whose total distance covered by its runners "
+                      "is the highest. To find the total distance covered, sum the "
+                      "distances of all runners.\n\n"
+                      "For example, if 10 runners cover 21 km each and 15 runners "
+                      "cover 6 km each, the total is 300 km."),
                   actions: [
                     TextButton(
                       child: const Text("Close"),
@@ -364,10 +379,8 @@ class _GHMRegistrationScreenState extends State<GHMRegistrationScreen> {
                   ),
                 ),
                 SizedBox(width: 4),
-                Icon(Icons.info_outline, 
-                  color: Color.fromRGBO(14, 31, 72, 1), 
-                  size: 16
-                ),
+                Icon(Icons.info_outline,
+                    color: Color.fromRGBO(14, 31, 72, 1), size: 16),
               ],
             ),
           ),
@@ -376,7 +389,8 @@ class _GHMRegistrationScreenState extends State<GHMRegistrationScreen> {
           label: "Would you like to participate in General Championship?",
           items: ["Yes", "No"],
           value: participateInChampionship,
-          onChanged: (value) => setState(() => participateInChampionship = value),
+          onChanged: (value) =>
+              setState(() => participateInChampionship = value),
         ),
       ],
     );
@@ -434,7 +448,8 @@ class _GHMRegistrationScreenState extends State<GHMRegistrationScreen> {
                   children: [
                     Text('Registration ID: ${responseData['registrationId']}'),
                     const SizedBox(height: 10),
-                    const Text('Please check your email for confirmation details.'),
+                    const Text(
+                        'Please check your email for confirmation details.'),
                   ],
                 ),
                 actions: [
