@@ -1,17 +1,35 @@
 import 'package:amazon_clone/view/auth/authScreen.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:amazon_clone/utils/bottomNavBar.dart';
 import 'package:amazon_clone/controller/authController.dart';
+import 'package:upgrader/upgrader.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter/services.dart';
 
-class LandingScreen extends StatelessWidget {
+class LandingScreen extends StatefulWidget {
   static const String routeName = '/landing-screen';
 
   const LandingScreen({Key? key}) : super(key: key);
 
   @override
+  State<LandingScreen> createState() => _LandingScreenState();
+}
+
+class _LandingScreenState extends State<LandingScreen> {
+  @override
   Widget build(BuildContext context) {
+    return UpgradeAlert(
+      upgrader: Upgrader(
+        debugLogging: kDebugMode,
+        debugDisplayAlways: kDebugMode,
+        durationUntilAlertAgain: const Duration(days: 1),
+      ),
+      child: _buildScaffold(context),
+    );
+  }
+
+  Widget _buildScaffold(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
@@ -215,16 +233,18 @@ class _ImageCarousel extends StatefulWidget {
 
 class _ImageCarouselState extends State<_ImageCarousel> {
   final List<String> imageUrls = [
-    'assets/smash_kart.jpg',
-    'assets/bgmi.jpg',
-    'assets/chess.jpg',
-    'assets/valo.jpg',
+    'assets/robo.jpg',
+    'assets/aqua.png',
+    'assets/micro.jpg',
+    'assets/track.jpg',
+    'assets/escalade.jpg',
   ];
   final List<String> links = [
-    'https://unstop.com/events/funniche-week-smash-karts-showdown-iit-guwahati-1500082',
-    'https://unstop.com/events/funniche-week-bgmi-championship-iit-guwahati-1499627',
-    'https://unstop.com/events/funniche-week-chess-championship-iit-guwahati-1499631',
-    'https://unstop.com/events/funniche-week-valorant-championship-iit-guwahati-1499628',
+    'https://unstop.com/competitions/robowars-iit-guwahati-1499332',
+    'https://unstop.com/competitions/aquawars-30-iit-guwahati-1479317',
+    'https://unstop.com/competitions/micromouse-2025-iit-guwahati-1509198',
+    'https://unstop.com/competitions/track-titans-iit-guwahati-1509142',
+    'https://unstop.com/competitions/escalade-140-iit-guwahati-1477498',
   ];
   int _current = 0;
   late PageController _controller;
