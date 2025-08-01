@@ -37,7 +37,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
     },
     {
       "title": "Guwahati Half Marathon",
-      "subtitle": "Step counter & registration",
+      "subtitle": "Run for a Better Tomorrow",
       "lottie": "assets/ghm.json",
     },
     {
@@ -108,21 +108,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       body: Stack(children: [
-        // animated gradient background
-        AnimatedContainer(
-          duration: const Duration(seconds: 3),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                const Color.fromARGB(255, 0, 0, 0),
-                const Color.fromARGB(255, 52, 52, 52),
-                const Color.fromARGB(255, 70, 70, 70)
-              ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-          ),
-        ),
+        const AnimatedGradientBackground(),
 
         // the PageView “carousel”
         PageView.builder(

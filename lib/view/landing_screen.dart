@@ -33,13 +33,14 @@ class _LandingScreenState extends State<LandingScreen> {
     final screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF181A20),
+      backgroundColor: Colors.transparent,
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
         systemOverlayStyle: const SystemUiOverlayStyle(
-          statusBarColor: Color(0xFF181A20),
+          statusBarColor: Colors.transparent,
           statusBarIconBrightness: Brightness.light,
         ),
-        backgroundColor: const Color(0xFF23242B),
+        backgroundColor: Colors.transparent,
         centerTitle: true,
         title: SizedBox(
           width: screenWidth * 0.4,
@@ -51,63 +52,75 @@ class _LandingScreenState extends State<LandingScreen> {
         ),
         elevation: 0,
       ),
-      body: Padding(
-        padding: EdgeInsets.all(screenWidth * 0.06),
-        child: Column(
-          children: [
-            Flexible(
-              flex: 4,
-              child: AspectRatio(
-                aspectRatio: 1,
-                child: _ImageCarousel(),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Flexible(
-              flex: 6,
-              child: GridView.count(
-                crossAxisCount: 2,
-                crossAxisSpacing: screenWidth * 0.04,
-                mainAxisSpacing: screenWidth * 0.04,
-                physics: const NeverScrollableScrollPhysics(),
-                childAspectRatio: 0.95,
+      body: Stack(
+        children: [
+          const AnimatedGradientBackground(),
+          // ensure content sits below status bar and app bar
+          SafeArea(
+            top: true,
+            bottom: false,
+            child: Padding(
+              padding: EdgeInsets.all(screenWidth * 0.06),
+              child: Column(
                 children: [
-                  _gridItem(
-                    title: 'CA Portal',
-                    description: 'Manage tasks and track your progress',
-                    imagePath: 'assets/ca_icon.png',
-                    color: const Color(0xFF23242B),
-                    onTap: () => _handleAuthNavigation(context),
+                  Flexible(
+                    flex: 4,
+                    child: AspectRatio(
+                      aspectRatio: 1,
+                      child: _ImageCarousel(),
+                    ),
                   ),
-                  _gridItem(
-                    title: 'Technothlon',
-                    description: 'See unique question papers of Technothlon!',
-                    imagePath: 'assets/techno_logo.jpg',
-                    color: const Color(0xFF23242B),
-                    onTap: () =>
-                        Navigator.pushNamed(context, '/technothlon-screen'),
-                  ),
-                  _gridItem(
-                    title: 'Events',
-                    description:
-                        'Stay updated with the latest fest information',
-                    imagePath: 'assets/techniche_events.png',
-                    color: const Color(0xFF23242B),
-                    onTap: () =>
-                        Navigator.pushNamed(context, '/techniche-screen'),
-                  ),
-                  _gridItem(
-                    title: 'GHM',
-                    description: 'Track your steps and participate',
-                    imagePath: 'assets/ghm_logo.jpg',
-                    color: const Color(0xFF23242B),
-                    onTap: () => Navigator.pushNamed(context, '/ghm-selection'),
+                  const SizedBox(height: 16),
+                  Flexible(
+                    flex: 6,
+                    child: GridView.count(
+                      crossAxisCount: 2,
+                      crossAxisSpacing: screenWidth * 0.04,
+                      mainAxisSpacing: screenWidth * 0.04,
+                      physics: const NeverScrollableScrollPhysics(),
+                      childAspectRatio: 0.95,
+                      children: [
+                        _gridItem(
+                          title: 'CA Portal',
+                          description: 'Manage tasks and track your progress',
+                          imagePath: 'assets/ca_icon.png',
+                          color: const Color(0xFF23242B),
+                          onTap: () => _handleAuthNavigation(context),
+                        ),
+                        _gridItem(
+                          title: 'Technothlon',
+                          description:
+                              'See unique question papers of Technothlon!',
+                          imagePath: 'assets/techno_logo.jpg',
+                          color: const Color(0xFF23242B),
+                          onTap: () => Navigator.pushNamed(
+                              context, '/technothlon-screen'),
+                        ),
+                        _gridItem(
+                          title: 'Events',
+                          description:
+                              'Stay updated with the latest fest information',
+                          imagePath: 'assets/techniche_events.png',
+                          color: const Color(0xFF23242B),
+                          onTap: () =>
+                              Navigator.pushNamed(context, '/techniche-screen'),
+                        ),
+                        _gridItem(
+                          title: 'GHM',
+                          description: 'Track your steps and participate',
+                          imagePath: 'assets/ghm_logo.jpg',
+                          color: const Color(0xFF23242B),
+                          onTap: () =>
+                              Navigator.pushNamed(context, '/ghm-selection'),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -163,7 +176,9 @@ class _LandingScreenState extends State<LandingScreen> {
             ),
           ],
           border: Border.all(
-              color: Colors.blueAccent.withOpacity(0.18), width: 1.5),
+            color: Colors.blueAccent.withOpacity(0.18),
+            width: 1.5,
+          ),
         ),
         child: Stack(
           children: [
@@ -226,6 +241,80 @@ class _LandingScreenState extends State<LandingScreen> {
   }
 }
 
+// AnimatedGradientBackground Widget
+class AnimatedGradientBackground extends StatefulWidget {
+  const AnimatedGradientBackground({Key? key}) : super(key: key);
+
+  @override
+  State<AnimatedGradientBackground> createState() =>
+      _AnimatedGradientBackgroundState();
+}
+
+class _AnimatedGradientBackgroundState extends State<AnimatedGradientBackground>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _animation;
+
+  final List<List<Color>> gradients = [
+    [const Color(0xFF181A20), const Color(0xFF23242B), const Color(0xFF35363C)],
+    [const Color(0xFF23242B), const Color(0xFF35363C), const Color(0xFF181A20)],
+    [const Color(0xFF35363C), const Color(0xFF23242B), const Color(0xFF181A20)],
+    [const Color(0xFF181A20), const Color(0xFF35363C), const Color(0xFF23242B)],
+  ];
+
+  int _currentGradient = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 1),
+    )
+      ..addListener(() {
+        setState(() {});
+      })
+      ..addStatusListener((status) {
+        if (status == AnimationStatus.completed) {
+          _currentGradient = (_currentGradient + 1) % gradients.length;
+          _controller.forward(from: 0);
+        }
+      });
+    _animation = CurvedAnimation(parent: _controller, curve: Curves.easeInOut);
+    _controller.forward();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final nextGradient = gradients[(_currentGradient + 1) % gradients.length];
+    final currentGradient = gradients[_currentGradient];
+    return AnimatedBuilder(
+      animation: _animation,
+      builder: (context, child) {
+        return Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: List.generate(currentGradient.length, (i) {
+                return Color.lerp(
+                    currentGradient[i], nextGradient[i], _animation.value)!;
+              }),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+// ImageCarousel Widget
 class _ImageCarousel extends StatefulWidget {
   @override
   State<_ImageCarousel> createState() => _ImageCarouselState();
@@ -285,7 +374,17 @@ class _ImageCarouselState extends State<_ImageCarousel> {
           itemCount: imageUrls.length,
           onPageChanged: (i) => setState(() => _current = i),
           itemBuilder: (context, i) => GestureDetector(
-            onTap: () async => await launchUrl(Uri.parse(links[i])),
+            onTap: () async {
+              try {
+                await launchUrl(Uri.parse(links[i]));
+              } catch (e) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Failed to launch URL: \$e')),
+                  );
+                }
+              }
+            },
             child: ClipRRect(
               borderRadius: BorderRadius.circular(16),
               child: Container(
