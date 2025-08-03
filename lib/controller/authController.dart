@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:amazon_clone/constant/global.dart';
 import 'package:amazon_clone/controller/provider_controller/user_provider.dart';
-import 'package:amazon_clone/utils/bottomNavBar.dart';
+import 'package:amazon_clone/utils/ca_bottom_nav_bar.dart';
 import 'package:amazon_clone/utils/errorHandler.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -136,7 +136,7 @@ class AuthController {
             showMessage(context, "Logged in Successfully!");
             if (context.mounted) {
               Navigator.pushNamedAndRemoveUntil(
-                  context, BottomNavBar.routeName, (route) => false);
+                  context, CaBottomNavBar.routeName, (route) => false);
             }
             return true;
           }

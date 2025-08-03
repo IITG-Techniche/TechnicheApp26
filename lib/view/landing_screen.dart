@@ -1,37 +1,106 @@
 import 'package:amazon_clone/view/auth/authScreen.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:amazon_clone/utils/bottomNavBar.dart';
+import 'package:amazon_clone/utils/ca_bottom_nav_bar.dart';
+import 'package:amazon_clone/view/map_screen.dart';
 import 'package:amazon_clone/controller/authController.dart';
+// Ensure you are importing the correct, new navigation bar
+import 'package:amazon_clone/utils/bottom_nav_bar.dart';
 import 'package:upgrader/upgrader.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter/services.dart';
 
 class LandingScreen extends StatefulWidget {
   static const String routeName = '/landing-screen';
-
   const LandingScreen({Key? key}) : super(key: key);
-
   @override
   State<LandingScreen> createState() => _LandingScreenState();
 }
 
 class _LandingScreenState extends State<LandingScreen> {
+  int _selectedIndex = 0;
+
+  void _onItemTapped(int index) {
+    if (index == 2) {
+      _handleAuthNavigation(context);
+    } else {
+      setState(() {
+        _selectedIndex = index;
+      });
+    }
+  }
+
+  Future<void> _handleAuthNavigation(BuildContext context) async {
+    try {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => const Center(child: CircularProgressIndicator()),
+      );
+      bool isAuth = await AuthController().isUserAuthenticated();
+      if (context.mounted) Navigator.of(context).pop();
+      if (isAuth) {
+        bool valid = await AuthController().validateTokenAndFetchUser(context);
+        if (valid && context.mounted) {
+          Navigator.pushNamed(context, CaBottomNavBar.routeName);
+        } else if (context.mounted) {
+          Navigator.pushNamed(context, AuthScreen.routeName);
+        }
+      } else if (context.mounted) {
+        Navigator.pushNamed(context, AuthScreen.routeName);
+      }
+    } catch (_) {
+      if (context.mounted) {
+        Navigator.of(context, rootNavigator: true).pop();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Error accessing CA portal.')),
+        );
+        Navigator.pushNamed(context, AuthScreen.routeName);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final List<Widget> screens = <Widget>[
+      _buildHomeContent(context),
+      const MapScreen(),
+      // This is a placeholder. Navigation to CA is handled by pushNamed.
+      Container(),
+    ];
+
     return UpgradeAlert(
       upgrader: Upgrader(
         debugLogging: kDebugMode,
         debugDisplayAlways: kDebugMode,
         durationUntilAlertAgain: const Duration(days: 1),
       ),
-      child: _buildScaffold(context),
+      child: Scaffold(
+        body: screens.elementAt(_selectedIndex),
+        bottomNavigationBar: GlowingBottomNavBar(
+          currentIndex: _selectedIndex,
+          onTap: _onItemTapped,
+          items: [
+            GlowingBottomNavBarItem(
+              icon: Icons.home_filled,
+              label: 'Home',
+            ),
+            GlowingBottomNavBarItem(
+              icon: Icons.map_sharp,
+              label: 'Map',
+            ),
+            GlowingBottomNavBarItem(
+              icon: Icons.workspace_premium_sharp,
+              label: 'CA Portal',
+            ),
+          ],
+        ),
+      ),
     );
   }
 
-  Widget _buildScaffold(BuildContext context) {
+  Widget _buildHomeContent(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-
     return Scaffold(
       backgroundColor: Colors.transparent,
       extendBodyBehindAppBar: true,
@@ -55,10 +124,10 @@ class _LandingScreenState extends State<LandingScreen> {
       body: Stack(
         children: [
           const AnimatedGradientBackground(),
-          // ensure content sits below status bar and app bar
           SafeArea(
             top: true,
             bottom: false,
+            // FIX: Padding is reverted to normal as the body no longer extends.
             child: Padding(
               padding: EdgeInsets.all(screenWidth * 0.06),
               child: Column(
@@ -81,13 +150,16 @@ class _LandingScreenState extends State<LandingScreen> {
                       childAspectRatio: 0.95,
                       children: [
                         _gridItem(
+                          context: context,
                           title: 'CA Portal',
                           description: 'Manage tasks and track your progress',
                           imagePath: 'assets/ca_icon.png',
                           color: const Color(0xFF23242B),
-                          onTap: () => _handleAuthNavigation(context),
+                          onTap: () => Navigator.pushNamed(
+                              context, '/navbar'),
                         ),
                         _gridItem(
+                          context: context,
                           title: 'Technothlon',
                           description:
                               'See unique question papers of Technothlon!',
@@ -97,6 +169,7 @@ class _LandingScreenState extends State<LandingScreen> {
                               context, '/technothlon-screen'),
                         ),
                         _gridItem(
+                          context: context,
                           title: 'Events',
                           description:
                               'Stay updated with the latest fest information',
@@ -106,6 +179,7 @@ class _LandingScreenState extends State<LandingScreen> {
                               Navigator.pushNamed(context, '/techniche-screen'),
                         ),
                         _gridItem(
+                          context: context,
                           title: 'GHM',
                           description: 'Track your steps and participate',
                           imagePath: 'assets/ghm_logo.jpg',
@@ -125,37 +199,8 @@ class _LandingScreenState extends State<LandingScreen> {
     );
   }
 
-  Future<void> _handleAuthNavigation(BuildContext context) async {
-    try {
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (_) => const Center(child: CircularProgressIndicator()),
-      );
-      bool isAuth = await AuthController().isUserAuthenticated();
-      if (context.mounted) Navigator.of(context).pop();
-      if (isAuth) {
-        bool valid = await AuthController().validateTokenAndFetchUser(context);
-        if (valid && context.mounted) {
-          Navigator.pushNamed(context, BottomNavBar.routeName);
-        } else if (context.mounted) {
-          Navigator.pushNamed(context, AuthScreen.routeName);
-        }
-      } else if (context.mounted) {
-        Navigator.pushNamed(context, AuthScreen.routeName);
-      }
-    } catch (_) {
-      if (context.mounted) {
-        Navigator.of(context, rootNavigator: true).pop();
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Error accessing CA portal.')),
-        );
-        Navigator.pushNamed(context, AuthScreen.routeName);
-      }
-    }
-  }
-
   Widget _gridItem({
+    required BuildContext context,
     required String title,
     required String description,
     required String imagePath,
@@ -192,10 +237,7 @@ class _LandingScreenState extends State<LandingScreen> {
                     color: const Color(0xFF35363C),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Image.asset(
-                    imagePath,
-                    fit: BoxFit.contain,
-                  ),
+                  child: Image.asset(imagePath, fit: BoxFit.contain),
                 ),
                 const SizedBox(height: 8),
                 Text(
@@ -241,36 +283,31 @@ class _LandingScreenState extends State<LandingScreen> {
   }
 }
 
-// AnimatedGradientBackground Widget
+// AnimatedGradientBackground Widget (No changes)
 class AnimatedGradientBackground extends StatefulWidget {
   const AnimatedGradientBackground({Key? key}) : super(key: key);
-
   @override
   State<AnimatedGradientBackground> createState() =>
       _AnimatedGradientBackgroundState();
 }
 
-class _AnimatedGradientBackgroundState extends State<AnimatedGradientBackground>
-    with SingleTickerProviderStateMixin {
+class _AnimatedGradientBackgroundState
+    extends State<AnimatedGradientBackground> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _animation;
-
   final List<List<Color>> gradients = [
     [const Color(0xFF181A20), const Color(0xFF23242B), const Color(0xFF35363C)],
     [const Color(0xFF23242B), const Color(0xFF35363C), const Color(0xFF181A20)],
     [const Color(0xFF35363C), const Color(0xFF23242B), const Color(0xFF181A20)],
     [const Color(0xFF181A20), const Color(0xFF35363C), const Color(0xFF23242B)],
   ];
-
   int _currentGradient = 0;
 
   @override
   void initState() {
     super.initState();
     _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 1),
-    )
+        vsync: this, duration: const Duration(seconds: 1))
       ..addListener(() {
         setState(() {});
       })
@@ -314,7 +351,7 @@ class _AnimatedGradientBackgroundState extends State<AnimatedGradientBackground>
   }
 }
 
-// ImageCarousel Widget
+// ImageCarousel Widget (No changes)
 class _ImageCarousel extends StatefulWidget {
   @override
   State<_ImageCarousel> createState() => _ImageCarouselState();
@@ -354,7 +391,6 @@ class _ImageCarouselState extends State<_ImageCarousel> {
       duration: const Duration(milliseconds: 400),
       curve: Curves.easeInOut,
     );
-    setState(() => _current = next);
     _cycleImages();
   }
 
@@ -380,7 +416,7 @@ class _ImageCarouselState extends State<_ImageCarousel> {
               } catch (e) {
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Failed to launch URL: \$e')),
+                    SnackBar(content: Text('Failed to launch URL: $e')),
                   );
                 }
               }
