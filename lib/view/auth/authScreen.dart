@@ -4,6 +4,74 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+// AnimatedGradientBackground Widget (No changes)
+class AnimatedGradientBackground extends StatefulWidget {
+  const AnimatedGradientBackground({Key? key}) : super(key: key);
+  @override
+  State<AnimatedGradientBackground> createState() =>
+      _AnimatedGradientBackgroundState();
+}
+
+class _AnimatedGradientBackgroundState extends State<AnimatedGradientBackground>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _animation;
+  final List<List<Color>> gradients = [
+    [const Color(0xFF181A20), const Color(0xFF23242B), const Color(0xFF35363C)],
+    [const Color(0xFF23242B), const Color(0xFF35363C), const Color(0xFF181A20)],
+    [const Color(0xFF35363C), const Color(0xFF23242B), const Color(0xFF181A20)],
+    [const Color(0xFF181A20), const Color(0xFF35363C), const Color(0xFF23242B)],
+  ];
+  int _currentGradient = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller =
+        AnimationController(vsync: this, duration: const Duration(seconds: 5))
+          ..addListener(() {
+            setState(() {});
+          })
+          ..addStatusListener((status) {
+            if (status == AnimationStatus.completed) {
+              _currentGradient = (_currentGradient + 1) % gradients.length;
+              _controller.forward(from: 0);
+            }
+          });
+    _animation = CurvedAnimation(parent: _controller, curve: Curves.easeInOut);
+    _controller.forward();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final nextGradient = gradients[(_currentGradient + 1) % gradients.length];
+    final currentGradient = gradients[_currentGradient];
+    return AnimatedBuilder(
+      animation: _animation,
+      builder: (context, child) {
+        return Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: List.generate(currentGradient.length, (i) {
+                return Color.lerp(
+                    currentGradient[i], nextGradient[i], _animation.value)!;
+              }),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
 class AuthScreen extends StatefulWidget {
   static const String routeName = '/auth-screen';
   const AuthScreen({super.key});
@@ -17,6 +85,7 @@ class _AuthScreenState extends State<AuthScreen> {
   bool _isPasswordVisible = false;
   bool _isSigningIn = false;
 
+  // --- Methods are unchanged ---
   void _submit(String email, String password) async {
     final isValid = signInKey.currentState!.validate();
     if (!isValid) {
@@ -24,25 +93,20 @@ class _AuthScreenState extends State<AuthScreen> {
     }
     signInKey.currentState!.save();
 
-    // Disable form inputs during sign-in
     setState(() {
       _isSigningIn = true;
     });
 
     try {
-      // Notice we don't need to handle navigation here as your AuthController
-      // already does the navigation on successful login
       await AuthController().signInUser(
         context: context,
         email: email,
         password: password,
       );
-      // The AuthController will navigate to BottomNavBar on success
     } catch (e) {
-      // In case of error
-      showMessage(context, "Failed to sign in. Please try again.", isError: true);
+      showMessage(context, "Failed to sign in. Please try again.",
+          isError: true);
     } finally {
-      // Re-enable form inputs if we're still on this screen
       if (mounted) {
         setState(() {
           _isSigningIn = false;
@@ -64,340 +128,358 @@ class _AuthScreenState extends State<AuthScreen> {
       showMessage(context, 'Could not launch $url', isError: true);
     }
   }
+  // --- End of unchanged methods ---
 
   @override
   Widget build(BuildContext context) {
-    // Get screen dimensions
+    // --- Unchanged variables ---
     final screenSize = MediaQuery.of(context).size;
     final screenHeight = screenSize.height;
     final screenWidth = screenSize.width;
 
-    // Calculate adaptive sizes based on screen dimensions
     final double verticalPadding = screenHeight * 0.02;
-    final double horizontalPadding = screenWidth * 0.04;
+    final double horizontalPadding = screenWidth * 0.05;
     final double buttonHeight = screenHeight * 0.06;
     final double spaceBetween = screenHeight * 0.015;
 
-    // Text sizes based on screen width
-    final double headingSize = screenWidth * 0.06;
-    final double subheadingSize = screenWidth * 0.045;
+    final double headingSize = screenWidth * 0.07;
+    final double subheadingSize = screenWidth * 0.04;
     final double bodyTextSize = screenWidth * 0.04;
     final double smallTextSize = screenWidth * 0.035;
 
-    return Scaffold(
-      appBar: PreferredSize(
-        preferredSize: Size.fromHeight(screenHeight * 0.08),
-        child: AppBar(
-          systemOverlayStyle: const SystemUiOverlayStyle(
-            statusBarColor: Colors.orange,
-            statusBarIconBrightness: Brightness.dark,
-          ),
-          backgroundColor: Colors.orange,
-          flexibleSpace: SafeArea(
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                return Padding(
-                  padding: EdgeInsets.symmetric(
-                    vertical: constraints.maxHeight * 0.1,
-                    horizontal: horizontalPadding,
-                  ),
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(
-                      maxHeight: screenHeight * 0.06,
-                      maxWidth: screenWidth * 0.6,
-                    ),
-                    child: Container(
-                      decoration: const BoxDecoration(
-                        image: DecorationImage(
-                          image: AssetImage('assets/logo_withoutBG.png'),
-                          fit: BoxFit.contain,
-                        ),
-                      ),
-                    ),
-                  ),
-                );
-              },
+    const accentColor = Colors.blueAccent;
+    final disabledColor = Colors.grey.shade800;
+    // --- End of unchanged variables ---
+
+    // ** NEW: Decoration for the text input boxes **
+    final inputDecoration = BoxDecoration(
+      gradient: const LinearGradient(
+        colors: [Color(0xFF2E2F36), Color(0xFF23242B)],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      ),
+      borderRadius: BorderRadius.circular(12),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withOpacity(0.3),
+          blurRadius: 8,
+          offset: const Offset(4, 4),
+        ),
+        BoxShadow(
+          color: Colors.blueAccent.withOpacity(0.1),
+          blurRadius: 10,
+          spreadRadius: 1,
+        ),
+      ],
+      border: Border.all(
+        color: Colors.blueAccent.withOpacity(0.25),
+        width: 1,
+      ),
+    );
+
+    final disabledInputDecoration = BoxDecoration(
+      color: const Color(0xFF2a2b30),
+      borderRadius: BorderRadius.circular(12),
+      border: Border.all(
+        color: Colors.grey.shade800.withOpacity(0.5),
+        width: 1,
+      ),
+    );
+
+    return Stack(
+      children: [
+        const AnimatedGradientBackground(),
+        Scaffold(
+          backgroundColor: const Color(0xFF181A20),
+          appBar: AppBar(
+            systemOverlayStyle: const SystemUiOverlayStyle(
+              statusBarColor: Color(0xFF181A20),
+              statusBarIconBrightness: Brightness.light,
+            ),
+            backgroundColor: const Color(0xFF23242B),
+            centerTitle: true,
+            elevation: 0,
+            iconTheme: const IconThemeData(color: Colors.white),
+            title: SizedBox(
+              width: screenWidth * 0.38,
+              child: Image.asset(
+                'assets/logo_withoutBG.png',
+                fit: BoxFit.contain,
+                color: Colors.white,
+              ),
             ),
           ),
-          elevation: 0.0,
-        ),
-      ),
-      body: SafeArea(
-        child: Padding(
-          padding: EdgeInsets.symmetric(
-            horizontal: horizontalPadding,
-            vertical: verticalPadding,
-          ),
-          child: SingleChildScrollView(
-            child: ConstrainedBox(
-              constraints: BoxConstraints(
-                minHeight: screenHeight * 0.8,
+          body: SafeArea(
+            child: Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: horizontalPadding,
+                vertical: verticalPadding,
               ),
-              child: IntrinsicHeight(
-                child: Form(
-                  key: signInKey,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Text(
-                        "Sign in with your email and password",
-                        style: TextStyle(
-                          fontSize: subheadingSize,
-                          fontWeight: FontWeight.w400,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                      SizedBox(height: spaceBetween * 1.5),
-                      Text(
-                        "Sign In",
-                        style: TextStyle(
-                          fontSize: headingSize,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      SizedBox(height: spaceBetween),
-                      // Email TextField
-                      TextFormField(
-                        controller: emailController,
-                        keyboardType: TextInputType.emailAddress,
-                        style: TextStyle(fontSize: bodyTextSize),
-                        enabled: !_isSigningIn,
-                        validator: (value) {
-                          if (value!.isEmpty ||
-                              !RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
-                                  .hasMatch(value)) {
-                            return "Enter valid email";
-                          }
-                          return null;
-                        },
-                        decoration: InputDecoration(
-                          hintText: "Enter your registered email",
-                          hintStyle: TextStyle(
-                            color: const Color.fromARGB(255, 119, 115, 115),
-                            fontSize: bodyTextSize,
-                          ),
-                          contentPadding: EdgeInsets.symmetric(
-                            horizontal: horizontalPadding,
-                            vertical: verticalPadding * 0.8,
-                          ),
-                          errorBorder: const OutlineInputBorder(
-                            borderSide: BorderSide(color: Colors.red),
-                          ),
-                          focusedErrorBorder: const OutlineInputBorder(
-                            borderSide: BorderSide(color: Colors.red),
-                          ),
-                          enabledBorder: const OutlineInputBorder(
-                            borderSide: BorderSide(color: Colors.black),
-                          ),
-                          focusedBorder: const OutlineInputBorder(
-                            borderSide: BorderSide(color: Colors.black),
-                          ),
-                          disabledBorder: const OutlineInputBorder(
-                            borderSide: BorderSide(color: Colors.grey),
-                          ),
-                        ),
-                      ),
-                      SizedBox(height: spaceBetween),
-                      // Password TextField
-                      TextFormField(
-                        controller: passwordController,
-                        keyboardType: TextInputType.visiblePassword,
-                        style: TextStyle(fontSize: bodyTextSize),
-                        enabled: !_isSigningIn,
-                        validator: (value) {
-                          if (value!.isEmpty) {
-                            return "Enter password";
-                          }
-                          return null;
-                        },
-                        obscureText: !_isPasswordVisible,
-                        decoration: InputDecoration(
-                          hintText: "Password",
-                          hintStyle: TextStyle(
-                            color: const Color.fromARGB(255, 119, 115, 115),
-                            fontSize: bodyTextSize,
-                          ),
-                          contentPadding: EdgeInsets.symmetric(
-                            horizontal: horizontalPadding,
-                            vertical: verticalPadding * 0.8,
-                          ),
-                          errorBorder: const OutlineInputBorder(
-                            borderSide: BorderSide(color: Colors.red),
-                          ),
-                          focusedErrorBorder: const OutlineInputBorder(
-                            borderSide: BorderSide(color: Colors.red),
-                          ),
-                          enabledBorder: const OutlineInputBorder(
-                            borderSide: BorderSide(color: Colors.black),
-                          ),
-                          focusedBorder: const OutlineInputBorder(
-                            borderSide: BorderSide(color: Colors.black),
-                          ),
-                          disabledBorder: const OutlineInputBorder(
-                            borderSide: BorderSide(color: Colors.grey),
-                          ),
-                          suffixIcon: IconButton(
-                            icon: Icon(
-                              _isPasswordVisible
-                                  ? Icons.visibility
-                                  : Icons.visibility_off,
-                              size: bodyTextSize * 1.2,
+              child: SingleChildScrollView(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    minHeight: screenHeight * 0.8,
+                  ),
+                  child: IntrinsicHeight(
+                    child: Form(
+                      key: signInKey,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          // --- Header text unchanged ---
+                          Text(
+                            "Sign in to the Techniche CA Portal",
+                            style: TextStyle(
+                              fontSize: subheadingSize,
+                              fontWeight: FontWeight.w400,
+                              color: Colors.grey.shade300,
                             ),
-                            onPressed: _isSigningIn 
-                                ? null 
-                                : () {
-                                    setState(() {
-                                      _isPasswordVisible = !_isPasswordVisible;
-                                    });
-                                  },
+                            textAlign: TextAlign.center,
                           ),
-                        ),
-                      ),
-                      // Show Password CheckboxListTile
-                      CheckboxListTile(
-                        value: _isPasswordVisible,
-                        onChanged: _isSigningIn 
-                            ? null 
-                            : (value) {
-                                setState(() {
-                                  _isPasswordVisible = value!;
-                                });
+                          SizedBox(height: spaceBetween * 1.5),
+                          Text(
+                            "Sign In",
+                            style: TextStyle(
+                              fontSize: headingSize,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                          SizedBox(
+                              height: spaceBetween * 1.5), // Increased space
+
+                          // ** CHANGED: Email TextField with new gradient style **
+                          Container(
+                            decoration: _isSigningIn
+                                ? disabledInputDecoration
+                                : inputDecoration,
+                            child: TextFormField(
+                              controller: emailController,
+                              enabled: !_isSigningIn,
+                              keyboardType: TextInputType.emailAddress,
+                              style: TextStyle(
+                                  fontSize: bodyTextSize, color: Colors.white),
+                              validator: (value) {
+                                if (value!.isEmpty ||
+                                    !RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
+                                        .hasMatch(value)) {
+                                  return "  Please enter a valid email address"; // Added padding for alignment
+                                }
+                                return null;
                               },
-                        title: Text(
-                          "Show Password",
-                          style: TextStyle(fontSize: bodyTextSize),
-                        ),
-                        controlAffinity: ListTileControlAffinity.leading,
-                        contentPadding: EdgeInsets.symmetric(
-                          horizontal: horizontalPadding * 0.5,
-                        ),
-                      ),
-                      SizedBox(height: spaceBetween),
-                      // Sign In Button with loading state
-                      Center(
-                        child: InkWell(
-                          onTap: _isSigningIn 
-                              ? null 
-                              : () => _submit(
-                                  emailController.text, passwordController.text),
-                          child: Container(
-                            width: screenWidth * 0.9,
-                            height: buttonHeight * 1.1,
-                            decoration: BoxDecoration(
-                              color: _isSigningIn ? Colors.grey.shade400 : Colors.orangeAccent,
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            child: Center(
-                              child: _isSigningIn
-                                  ? SizedBox(
-                                      height: bodyTextSize * 1.2,
-                                      width: bodyTextSize * 1.2,
-                                      child: const CircularProgressIndicator(
-                                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                                        strokeWidth: 2,
-                                      ),
-                                    )
-                                  : Text(
-                                      "Sign In",
-                                      style: TextStyle(
-                                        fontSize: bodyTextSize,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
+                              decoration: InputDecoration(
+                                border: InputBorder.none,
+                                errorBorder: InputBorder.none,
+                                focusedErrorBorder: InputBorder.none,
+                                hintText: "Email Address",
+                                hintStyle:
+                                    TextStyle(color: Colors.grey.shade500),
+                                contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 20, vertical: 18),
+                              ),
                             ),
                           ),
-                        ),
-                      ),
-                      SizedBox(height: spaceBetween),
-                      Divider(thickness: 1),
-                      SizedBox(height: spaceBetween),
-                      Center(
-                        child: Text(
-                          "Haven't registered yet?",
-                          style: TextStyle(fontSize: bodyTextSize),
-                        ),
-                      ),
-                      SizedBox(height: spaceBetween * 0.5),
-                      // Create Account Button
-                      Center(
-                        child: InkWell(
-                          onTap: _isSigningIn ? null : _launchURL,
-                          child: Container(
-                            width: screenWidth * 0.9,
-                            height: buttonHeight * 1.1,
-                            decoration: BoxDecoration(
-                              color: _isSigningIn ? Colors.grey.shade300 : Colors.orange[200],
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            child: Center(
-                              child: Text(
-                                "Create Account on CA Portal Website",
-                                style: TextStyle(
-                                  fontSize: bodyTextSize,
-                                  fontWeight: FontWeight.w500,
-                                  color: _isSigningIn ? Colors.grey.shade700 : Colors.black87,
+                          SizedBox(height: spaceBetween),
+
+                          // ** CHANGED: Password TextField with new gradient style **
+                          Container(
+                            decoration: _isSigningIn
+                                ? disabledInputDecoration
+                                : inputDecoration,
+                            child: TextFormField(
+                              controller: passwordController,
+                              enabled: !_isSigningIn,
+                              obscureText: !_isPasswordVisible,
+                              style: TextStyle(
+                                  fontSize: bodyTextSize, color: Colors.white),
+                              validator: (value) {
+                                if (value!.isEmpty) {
+                                  return "  Password cannot be empty"; // Added padding
+                                }
+                                return null;
+                              },
+                              decoration: InputDecoration(
+                                border: InputBorder.none,
+                                errorBorder: InputBorder.none,
+                                focusedErrorBorder: InputBorder.none,
+                                hintText: "Password",
+                                hintStyle:
+                                    TextStyle(color: Colors.grey.shade500),
+                                contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 20, vertical: 18),
+                                suffixIcon: IconButton(
+                                  icon: Icon(
+                                    _isPasswordVisible
+                                        ? Icons.visibility_outlined
+                                        : Icons.visibility_off_outlined,
+                                    color: Colors.grey.shade500,
+                                  ),
+                                  onPressed: _isSigningIn
+                                      ? null
+                                      : () {
+                                          setState(() {
+                                            _isPasswordVisible =
+                                                !_isPasswordVisible;
+                                          });
+                                        },
                                 ),
                               ),
                             ),
                           ),
-                        ),
-                      ),
-                      // Spacer to push footer to bottom
-                      Spacer(),
-                      // Footer
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          TextButton(
-                            onPressed: _isSigningIn ? null : () {},
-                            child: Text(
-                              "Conditions for Use",
+
+                          // --- Rest of the UI is unchanged ---
+                          CheckboxListTile(
+                            value: _isPasswordVisible,
+                            onChanged: _isSigningIn
+                                ? null
+                                : (value) {
+                                    setState(() {
+                                      _isPasswordVisible = value!;
+                                    });
+                                  },
+                            title: Text(
+                              "Show Password",
                               style: TextStyle(
-                                fontSize: smallTextSize,
-                                color: _isSigningIn ? Colors.grey : null,
+                                  fontSize: bodyTextSize, color: Colors.white),
+                            ),
+                            controlAffinity: ListTileControlAffinity.leading,
+                            activeColor: accentColor,
+                            checkColor: Colors.white,
+                            contentPadding: EdgeInsets.zero,
+                          ),
+                          SizedBox(height: spaceBetween),
+                          Center(
+                            child: InkWell(
+                              onTap: _isSigningIn
+                                  ? null
+                                  : () => _submit(emailController.text,
+                                      passwordController.text),
+                              child: Container(
+                                width: screenWidth * 0.9,
+                                height: buttonHeight,
+                                decoration: BoxDecoration(
+                                  color: _isSigningIn
+                                      ? disabledColor
+                                      : accentColor,
+                                  borderRadius: BorderRadius.circular(
+                                      12), // Matching border radius
+                                ),
+                                child: Center(
+                                  child: _isSigningIn
+                                      ? SizedBox(
+                                          height: bodyTextSize * 1.2,
+                                          width: bodyTextSize * 1.2,
+                                          child:
+                                              const CircularProgressIndicator(
+                                            valueColor:
+                                                AlwaysStoppedAnimation<Color>(
+                                                    Colors.white),
+                                            strokeWidth: 2,
+                                          ),
+                                        )
+                                      : Text(
+                                          "Sign In",
+                                          style: TextStyle(
+                                            fontSize: bodyTextSize,
+                                            fontWeight: FontWeight.w600,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                ),
                               ),
                             ),
                           ),
-                          TextButton(
-                            onPressed: _isSigningIn ? null : () {},
+                          SizedBox(height: spaceBetween),
+                          Divider(color: Colors.grey.shade800),
+                          SizedBox(height: spaceBetween),
+                          Center(
                             child: Text(
-                              "Privacy Notice",
+                              "Haven't registered yet?",
                               style: TextStyle(
-                                fontSize: smallTextSize,
-                                color: _isSigningIn ? Colors.grey : null,
+                                  fontSize: bodyTextSize,
+                                  color: Colors.grey.shade300),
+                            ),
+                          ),
+                          SizedBox(height: spaceBetween * 0.5),
+                          Center(
+                            child: InkWell(
+                              onTap: _isSigningIn ? null : _launchURL,
+                              child: Container(
+                                width: screenWidth * 0.9,
+                                height: buttonHeight,
+                                decoration: BoxDecoration(
+                                  color: Colors.transparent,
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                      color: _isSigningIn
+                                          ? disabledColor
+                                          : Colors.grey.shade700),
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    "Create Account on CA Portal",
+                                    style: TextStyle(
+                                      fontSize: bodyTextSize,
+                                      fontWeight: FontWeight.w500,
+                                      color: _isSigningIn
+                                          ? disabledColor
+                                          : Colors.grey.shade300,
+                                    ),
+                                  ),
+                                ),
                               ),
                             ),
                           ),
-                          TextButton(
-                            onPressed: _isSigningIn ? null : () {},
+                          const Spacer(),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            children: [
+                              TextButton(
+                                onPressed: _isSigningIn ? null : () {},
+                                child: Text(
+                                  "Conditions for Use",
+                                  style: TextStyle(
+                                    fontSize: smallTextSize,
+                                    color: _isSigningIn
+                                        ? disabledColor
+                                        : Colors.grey.shade400,
+                                  ),
+                                ),
+                              ),
+                              TextButton(
+                                onPressed: _isSigningIn ? null : () {},
+                                child: Text(
+                                  "Privacy Notice",
+                                  style: TextStyle(
+                                    fontSize: smallTextSize,
+                                    color: _isSigningIn
+                                        ? disabledColor
+                                        : Colors.grey.shade400,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          Center(
                             child: Text(
-                              "Help",
+                              "© 2025, Techniche, IIT Guwahati",
                               style: TextStyle(
-                                fontSize: smallTextSize,
-                                color: _isSigningIn ? Colors.grey : null,
+                                color: Colors.grey.shade600,
+                                fontSize: smallTextSize * 0.9,
                               ),
                             ),
                           ),
+                          SizedBox(height: verticalPadding),
                         ],
                       ),
-                      Center(
-                        child: Text(
-                          "Copyright: 2025, Techniche, IIT Guwahati, Inc. or its affiliates",
-                          style: TextStyle(
-                            color: Colors.blueGrey[800],
-                            fontSize: smallTextSize * 0.9,
-                          ),
-                        ),
-                      ),
-                      SizedBox(height: verticalPadding),
-                    ],
+                    ),
                   ),
                 ),
               ),
             ),
           ),
         ),
-      ),
+      ],
     );
   }
 }

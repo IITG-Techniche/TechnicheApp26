@@ -1,5 +1,5 @@
+import 'package:amazon_clone/utils/ca_bottom_nav_bar.dart';
 import 'package:amazon_clone/view/auth/authScreen.dart';
-import 'package:amazon_clone/utils/bottomNavBar.dart';
 import 'package:amazon_clone/view/landing_screen.dart';
 import 'package:amazon_clone/view/ghm/marathon_screen.dart';
 import 'package:amazon_clone/view/ghm/ghm_selection.dart';
@@ -23,10 +23,10 @@ Route<dynamic> generateRoute(RouteSettings routeSettings) {
         builder: (_) => const AuthScreen(),
       );
 
-    case BottomNavBar.routeName:
+    case CaBottomNavBar.routeName:
       return MaterialPageRoute(
         settings: routeSettings,
-        builder: (_) => const BottomNavBar(),
+        builder: (_) => const CaBottomNavBar(),
       );
 
     case GHMScreen.routeName:

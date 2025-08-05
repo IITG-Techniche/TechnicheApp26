@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:amazon_clone/controller/authController.dart';
-import 'package:amazon_clone/utils/bottomNavBar.dart';
+import 'package:amazon_clone/utils/ca_bottom_nav_bar.dart';
 import 'package:amazon_clone/view/landing_screen.dart';
 
 class OnboardingScreen extends StatefulWidget {
@@ -91,7 +91,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
     String? token = prefs.getString("token");
     if (token != null && token.isNotEmpty) {
       await AuthController().fetchUserData(context);
-      Navigator.pushReplacementNamed(context, BottomNavBar.routeName);
+      Navigator.pushReplacementNamed(context, CaBottomNavBar.routeName);
     } else {
       Navigator.pushReplacementNamed(context, LandingScreen.routeName);
     }

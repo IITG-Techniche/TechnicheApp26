@@ -1,18 +1,19 @@
 //import 'package:amazon_clone/view/auth/authScreen.dart';
+import 'package:amazon_clone/utils/bottom_nav_bar.dart';
 import 'package:amazon_clone/view/ca/homescreen.dart';
 import 'package:amazon_clone/view/ca/leaderboard.dart';
 import 'package:amazon_clone/view/ca/profilescreen.dart';
 import 'package:amazon_clone/view/ca/taskscreen.dart';
 import 'package:flutter/material.dart';
 
-class BottomNavBar extends StatefulWidget {
-  const BottomNavBar({super.key});
+class CaBottomNavBar extends StatefulWidget {
+  const CaBottomNavBar({super.key});
   static const String routeName = '/navbar';
   @override
-  State<BottomNavBar> createState() => _BottomNavBarState();
+  State<CaBottomNavBar> createState() => _CaBottomNavBarState();
 }
 
-class _BottomNavBarState extends State<BottomNavBar> {
+class _CaBottomNavBarState extends State<CaBottomNavBar> {
   List<Widget> screens = [
     Homescreen(),
     TasksScreen(),
@@ -31,35 +32,24 @@ class _BottomNavBarState extends State<BottomNavBar> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: screens[screen_index],
-      bottomNavigationBar: BottomNavigationBar(
+      bottomNavigationBar: GlowingBottomNavBar(
         onTap: updateScreen,
         currentIndex: screen_index,
-        type: BottomNavigationBarType.fixed, // Add this line
-        selectedItemColor: Colors.amber, // Add this line
-        unselectedItemColor: Colors.black,
         items: [
-          BottomNavigationBarItem(
-            icon: Icon(
-              Icons.workspace_premium_sharp,
-            ),
+          GlowingBottomNavBarItem(
+            icon: Icons.home_filled,
             label: "Home",
           ),
-          BottomNavigationBarItem(
-            icon: Icon(
-              Icons.task_alt_sharp,
-            ),
+          GlowingBottomNavBarItem(
+            icon: Icons.task_alt_outlined,
             label: "Tasks",
           ),
-          BottomNavigationBarItem(
-            icon: Icon(
-              Icons.leaderboard_sharp,
-            ),
+          GlowingBottomNavBarItem(
+            icon: Icons.leaderboard_sharp,
             label: "Leaderboard",
           ),
-          BottomNavigationBarItem(
-            icon: Icon(
-              Icons.account_circle_sharp,
-            ),
+          GlowingBottomNavBarItem(
+            icon: Icons.account_circle_sharp,
             label: "Profile",
           ),
         ],

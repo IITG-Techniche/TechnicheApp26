@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:amazon_clone/controller/authController.dart';
-import 'package:amazon_clone/utils/bottomNavBar.dart';
+import 'package:amazon_clone/utils/ca_bottom_nav_bar.dart';
 import 'package:amazon_clone/view/landing_screen.dart';
 import 'package:amazon_clone/view/onboarding_screen.dart';
 import 'splash_screen.dart';
@@ -44,7 +44,7 @@ class _SplashScreenWrapperState extends State<SplashScreenWrapper> {
       if (token != null && token.isNotEmpty) {
         if (mounted) {
           await AuthController().fetchUserData(context);
-          Navigator.pushReplacementNamed(context, BottomNavBar.routeName);
+          Navigator.pushReplacementNamed(context, CaBottomNavBar.routeName);
         }
       } else {
         if (mounted) {
