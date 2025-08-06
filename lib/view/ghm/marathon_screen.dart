@@ -15,41 +15,32 @@ class MarathonScreen extends StatefulWidget {
 
 class _MarathonScreenState extends State<MarathonScreen>
     with WidgetsBindingObserver {
-  // Pedometer variables
+
   late Stream<StepCount> _stepCountStream;
   late Stream<PedestrianStatus> _pedestrianStatusStream;
   String _status = 'Stopped';
   int _steps = 0;
-  int _initialSteps = 0; // To keep track of steps at session start
+  int _initialSteps = 0; 
   bool _isSessionActive = false;
 
-  // Add this variable to track the current system step count
   int _currentSystemSteps = 0;
 
-  // Activity calculation variables
-  double _distance = 0.0; // in kilometers
+  
+  double _distance = 0.0; 
   double _calories = 0.0;
-  double _averageSpeed = 0.0; // in km/h
-  double _stepsPerKm = 1300; // Average steps per km (can be adjusted)
-  double _caloriesPerStep = 0.04; // Average calories per step
+  double _averageSpeed = 0.0; 
+  double _stepsPerKm = 1300;
+  double _caloriesPerStep = 0.04;
 
-  // Theme colors (override for dark/futuristic look)
-  final Color primaryColor = const Color(0xFF23242B); // Futuristic dark
+  final Color primaryColor = const Color(0xFF23242B);
   final Color accentColor = Colors.blueAccent;
   final Color lightColor = const Color(0xFF23242B);
   final Color backgroundColor = const Color(0xFF181A20);
   final Color textColor = Colors.white;
 
-  // Timer for periodic updates
   Timer? _timer;
   DateTime? _startTime;
   Duration _elapsedTime = Duration.zero;
-
-  int _systemStepCountAtStart = 0;
-  int _sessionSteps = 0;
-  DateTime? _lastStepUpdate;
-
-  // Session results
   bool _showResults = false;
 
   @override
@@ -57,12 +48,9 @@ class _MarathonScreenState extends State<MarathonScreen>
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _requestPermissions();
-
-    // Use a less frequent timer to reduce UI updates
     _timer = Timer.periodic(const Duration(milliseconds: 500), (timer) {
       if (_startTime != null && _isSessionActive) {
         final newElapsedTime = DateTime.now().difference(_startTime!);
-        // Only update if elapsed time changed by at least one second
         if (newElapsedTime.inSeconds != _elapsedTime.inSeconds) {
           setState(() {
             _elapsedTime = newElapsedTime;
@@ -125,27 +113,19 @@ class _MarathonScreenState extends State<MarathonScreen>
   }
 
   void _onStepCount(StepCount event) {
-    // When initially receiving step count, just store the current system count
-    // but don't display it until session starts
     if (!_isSessionActive) {
       _currentSystemSteps = event.steps;
       return;
     }
-
-    // Only calculate steps if session is active
     int newSteps = event.steps - _initialSteps;
-
-    // Only trigger a rebuild if the steps have changed significantly
     if (newSteps != _steps) {
       setState(() {
         _currentSystemSteps = event.steps;
         _steps = newSteps;
 
-        // Only recalculate metrics if session is active
         _updateCalculations();
       });
     } else {
-      // Update values without rebuilding the UI
       _currentSystemSteps = event.steps;
     }
   }
@@ -155,10 +135,7 @@ class _MarathonScreenState extends State<MarathonScreen>
       _steps = 0;
     });
   }
-
-  // Optimize calculations to avoid redundant work
   void _updateCalculations() {
-    // Only update calculations if we have actual steps
     if (_steps > 0) {
       _distance = _steps / _stepsPerKm;
       _calories = _steps * _caloriesPerStep;
@@ -180,13 +157,12 @@ class _MarathonScreenState extends State<MarathonScreen>
   }
 
   void _startSession() {
-    // Only do something if not already active
     if (!_isSessionActive) {
       setState(() {
         _isSessionActive = true;
         _initialSteps =
-            _currentSystemSteps; // Use current system count as baseline
-        _steps = 0; // Reset session step count
+            _currentSystemSteps;
+        _steps = 0;
         _distance = 0.0;
         _calories = 0.0;
         _startTime = DateTime.now();
@@ -197,12 +173,10 @@ class _MarathonScreenState extends State<MarathonScreen>
   }
 
   void _stopSession() {
-    // Only do something if active
     if (_isSessionActive) {
       setState(() {
         _isSessionActive = false;
         _showResults = true;
-        // Final calculations for averages
         _updateCalculations();
       });
     }

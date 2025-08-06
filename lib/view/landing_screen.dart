@@ -8,6 +8,7 @@ import 'package:amazon_clone/controller/authController.dart';
 import 'package:amazon_clone/utils/bottom_nav_bar.dart';
 import 'package:upgrader/upgrader.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:amazon_clone/services/notification_service.dart';
 import 'package:flutter/services.dart';
 
 class LandingScreen extends StatefulWidget {
@@ -19,6 +20,15 @@ class LandingScreen extends StatefulWidget {
 
 class _LandingScreenState extends State<LandingScreen> {
   int _selectedIndex = 0;
+
+    @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      print("LandingScreen: Triggering notification setup.");
+      NotificationService().initializeAndHandleNotifications();
+    });
+  }
 
   void _onItemTapped(int index) {
     if (index == 2) {
@@ -156,7 +166,7 @@ class _LandingScreenState extends State<LandingScreen> {
                           imagePath: 'assets/ca_icon.png',
                           color: const Color(0xFF23242B),
                           onTap: () => Navigator.pushNamed(
-                              context, '/navbar'),
+                              context, '/auth-screen'),
                         ),
                         _gridItem(
                           context: context,

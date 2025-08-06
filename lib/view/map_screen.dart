@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:geolocator/geolocator.dart';
-import 'dart:math' as math;
 import 'dart:convert';
 import 'package:intl/intl.dart';
 import 'package:amazon_clone/model/event_model.dart';
@@ -47,10 +46,20 @@ class _MapScreenState extends State<MapScreen> {
     }
   }
 
-  Future<void> _loadEvents() async {
+Future<void> _loadEvents() async {
     try {
       final String response =
           await rootBundle.loadString('assets/data/events.json');
+      if (response.isEmpty) {
+        if (mounted) {
+          setState(() {
+            _events = [];
+          });
+        }
+        return;
+      }
+
+      // If we have data, proceed with decoding
       final data = json.decode(response) as List;
       if (mounted) {
         setState(() {
@@ -59,6 +68,11 @@ class _MapScreenState extends State<MapScreen> {
       }
     } catch (e) {
       print("Error loading events: $e");
+       if (mounted) {
+        setState(() {
+          _events = [];
+        });
+      }
     }
   }
 
@@ -85,14 +99,68 @@ class _MapScreenState extends State<MapScreen> {
     }
   }
 
+  Future<void> _showLocationServiceDisabledDialog() async {
+    await showDialog<void>(
+      context: context,
+      barrierDismissible: false, // User must tap a button
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Enable Location Services'),
+          content: const SingleChildScrollView(
+            child: Text('To see your location on the map, please enable location services.'),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: const Text('Open Settings'),
+              onPressed: () async {
+                Navigator.of(context).pop(); // Close the dialog
+                await Geolocator.openLocationSettings();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   Future<bool> _handleLocationPermission() async {
-    // This function remains the same
-    // NOTE: For a real app, you would implement the full permission logic here.
+    bool serviceEnabled;
+    LocationPermission permission;
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      if (mounted) {
+        await _showLocationServiceDisabledDialog();
+      }
+      return false;
+    }
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Location permissions are denied.')));
+        }
+        return false;
+      }
+    }
+    if (permission == LocationPermission.deniedForever) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('Location permissions are permanently denied. Please enable them in your app settings.')));
+      }
+      return false;
+    }
     return true;
   }
 
   void _setDefaultLocation() {
-    // This function remains the same
   }
 
   void _toggleMapTheme() {
@@ -100,10 +168,7 @@ class _MapScreenState extends State<MapScreen> {
       _isDarkMode = !_isDarkMode;
     });
   }
-
-  // Function to fetch and draw the route
   Future<void> _fetchAndDrawRoute(Event event) async {
-    // First, close the details sheet
     Navigator.pop(context);
 
     if (_currentPosition == null) {
@@ -112,8 +177,6 @@ class _MapScreenState extends State<MapScreen> {
       );
       return;
     }
-
-    // This now correctly calls the walking profile in your service
     final route = await _directionsService.getDirections(
       _currentPosition!.latitude,
       _currentPosition!.longitude,
@@ -124,14 +187,12 @@ class _MapScreenState extends State<MapScreen> {
     setState(() {
       _routePoints = route;
     });
-
-    // Adjust map to fit the new route
     if (_routePoints.isNotEmpty) {
       final bounds = LatLngBounds.fromPoints(_routePoints);
       _mapController.fitCamera(
         CameraFit.bounds(
           bounds: bounds,
-          padding: const EdgeInsets.all(50.0), // Add padding around the route
+          padding: const EdgeInsets.all(50.0),
         ),
       );
     }
@@ -161,7 +222,6 @@ class _MapScreenState extends State<MapScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
-            // Conditionally show the "Clear Route" button
             if (_routePoints.isNotEmpty)
               FloatingActionButton(
                 heroTag: 'clear_route',
@@ -221,7 +281,6 @@ class _MapScreenState extends State<MapScreen> {
               children: [
                 // Map Theme Layer
                 if (_isDarkMode)
-                  // FIX: Using a more advanced ColorFiltered widget for a clearer dark map.
                   TileLayer(
                     urlTemplate:
                         'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
@@ -229,11 +288,10 @@ class _MapScreenState extends State<MapScreen> {
                     tileBuilder: (context, tileWidget, tile) {
                       return ColorFiltered(
                         colorFilter: const ColorFilter.matrix([
-                          // A better matrix for dark mode visibility
-                          -1, 0, 0, 0, 255, // Invert R
-                          0, -1, 0, 0, 255, // Invert G
-                          0, 0, -1, 0, 255, // Invert B
-                          0, 0, 0, 1, 0,   // Alpha
+                          -1, 0, 0, 0, 255,
+                          0, -1, 0, 0, 255,
+                          0, 0, -1, 0, 255,
+                          0, 0, 0, 1, 0,
                         ]),
                         child: tileWidget,
                       );
@@ -245,19 +303,16 @@ class _MapScreenState extends State<MapScreen> {
                         'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                     userAgentPackageName: 'com.techniche.techniche_app',
                   ),
-                // Polyline Layer to draw the route
                 PolylineLayer(
                   polylines: [
                     Polyline(
                       points: _routePoints,
                       strokeWidth: 5.0,
                       color: Colors.blueAccent,
-                      // Make the line dashed for walking directions
                      
                     ),
                   ],
                 ),
-                // Event Markers Layer
                 MarkerLayer(
                   markers: _events.map((event) {
                     return Marker(
@@ -271,7 +326,6 @@ class _MapScreenState extends State<MapScreen> {
                     );
                   }).toList(),
                 ),
-                // User Location Marker Layer
                 if (_currentPosition != null)
                   MarkerLayer(
                     markers: [
@@ -307,7 +361,6 @@ class _MapScreenState extends State<MapScreen> {
     );
   }
 
-  // Helper widget to build event markers (no animation)
   Widget _buildEventMarker(Event event) {
     return Container(
       decoration: BoxDecoration(
@@ -333,9 +386,7 @@ class _MapScreenState extends State<MapScreen> {
     );
   }
 
-  // Function to show the event list bottom sheet
   void _showEventList() {
-    // This function remains the same
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -406,7 +457,6 @@ class _MapScreenState extends State<MapScreen> {
     );
   }
 
-  // Function to show event details with "Get Directions" button
   void _showEventDetails(Event event) {
     final timeFormat = DateFormat.jm();
     showModalBottomSheet(
@@ -471,11 +521,10 @@ class _MapScreenState extends State<MapScreen> {
                 style: TextStyle(color: Colors.grey[200], fontSize: 15),
               ),
               const SizedBox(height: 20),
-              // "Get Directions" button
               Center(
                 child: ElevatedButton.icon(
                   onPressed: () => _fetchAndDrawRoute(event),
-                  icon: const Icon(Icons.directions_walk), // Changed icon
+                  icon: const Icon(Icons.directions_walk),
                   label: const Text('Get Directions'),
                   style: ElevatedButton.styleFrom(
                     foregroundColor: Colors.white,
