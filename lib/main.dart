@@ -1,48 +1,24 @@
 import 'package:amazon_clone/constant/global.dart';
 import 'package:amazon_clone/controller/provider_controller/user_provider.dart';
 import 'package:amazon_clone/router.dart';
-import 'package:amazon_clone/services/notification_service.dart';
 import 'view/splash_screen_wrapper.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  try {
-    await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
-    );
-
-    final notificationService = NotificationService();
-    await notificationService.resetFcmToken();
-    await notificationService.initNotifications(subscribeToTopics: false);
-
-    String? token;
-    int attempts = 0;
-    while (token == null && attempts < 3) {
-      token = await notificationService.getDeviceToken();
-      if (token == null) {
-        attempts++;
-        await Future.delayed(const Duration(seconds: 2));
-      }
-    }
-
-    if (token != null) {
-      await notificationService.subscribeToTopic('all_users');
-    }
-  } catch (e) {
-    print("Firebase/Notification Initialization error: $e");
-  }
+  await Firebase.initializeApp(
+  );
 
   runApp(MultiProvider(
     providers: [ChangeNotifierProvider(create: (context) => UserProvider())],
     child: const MyApp(),
   ));
 }
+
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});

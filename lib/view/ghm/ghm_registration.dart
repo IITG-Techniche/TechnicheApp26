@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'dart:io';
 
 class GHMRegistrationScreen extends StatefulWidget {
   static const String routeName = '/ghm-registration';
@@ -15,7 +13,6 @@ class GHMRegistrationScreen extends StatefulWidget {
 }
 
 class _GHMRegistrationScreenState extends State<GHMRegistrationScreen> {
-  // Toggle this variable to open/close registration
   static const bool registrationsOpen = false;
   final _formKey = GlobalKey<FormState>();
   String? gender;
@@ -300,7 +297,7 @@ class _GHMRegistrationScreenState extends State<GHMRegistrationScreen> {
         decoration: InputDecoration(
           labelText: label,
           labelStyle: const TextStyle(
-            color: Color.fromRGBO(14, 31, 72, 1), // Updated label color
+            color: Color.fromRGBO(14, 31, 72, 1), 
             fontSize: 16,
           ),
           prefixIcon: prefixIcon != null
@@ -489,34 +486,6 @@ class _GHMRegistrationScreenState extends State<GHMRegistrationScreen> {
     }
   }
 
-  Widget _buildSummaryItem(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 90,
-            child: Text(
-              '$label:',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: Colors.grey[700],
-              ),
-            ),
-          ),
-          Expanded(
-            child: Text(
-              value,
-              style: TextStyle(color: Colors.grey[800]),
-              overflow: TextOverflow.ellipsis,
-              maxLines: 2,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
   void _showSuccessMessage() {
     ScaffoldMessenger.of(context).showSnackBar(
