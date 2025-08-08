@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 class GlowingBottomNavBarItem {
   final IconData icon;
   final String label;
@@ -56,18 +57,19 @@ class GlowingBottomNavBar extends StatelessWidget {
                   Icon(
                     item.icon,
                     size: 24,
-                    color: isSelected ? Colors.amber[600] : Colors.grey[400],
+                    color:
+                        isSelected ? const Color(0xFF00FFF7) : Colors.grey[400],
                   ),
                   if (isSelected) const SizedBox(width: 8),
                   if (isSelected)
                     Text(
                       item.label,
-                      style: TextStyle(
-                        color: Colors.amber[600],
+                      style: const TextStyle(
+                        color: Color(0xFF00FFF7),
                         fontWeight: FontWeight.bold,
                         fontSize: 14,
                       ),
-                    ),
+                    )
                 ],
               ),
             ),

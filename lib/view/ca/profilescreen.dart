@@ -97,7 +97,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.orange.withOpacity(0.1),
+        color: Color(0xFFFF00F7).withOpacity(0.1),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
@@ -107,7 +107,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             children: [
               CircleAvatar(
                 radius: 30,
-                backgroundColor: Colors.orange,
+                backgroundColor: Color(0xFFFF00F7),
                 child: Text(
                   name.isNotEmpty ? name[0].toUpperCase() : "",
                   style: TextStyle(
@@ -138,7 +138,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           vertical: 6,
                         ),
                         decoration: BoxDecoration(
-                          color: Colors.orange,
+                          color: Color(0xFFFF00F7),
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Row(
@@ -243,10 +243,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
         preferredSize: Size.fromHeight(screenHeight * 0.085),
         child: AppBar(
           systemOverlayStyle: const SystemUiOverlayStyle(
-            statusBarColor: Colors.orange,
+            statusBarColor: Color(0xFFFF00F7),
             statusBarIconBrightness: Brightness.dark,
           ),
-          backgroundColor: Colors.orange,
+          backgroundColor: Color(0xFFFF00F7),
           flexibleSpace: SafeArea(
             child: LayoutBuilder(
               builder: (context, constraints) {

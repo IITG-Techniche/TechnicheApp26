@@ -211,7 +211,7 @@ class _TasksScreenState extends State<TasksScreen> {
       case 'rejected':
         return Colors.red;
       case 'pending':
-        return Colors.orange;
+        return Color(0xFFFF00F7); // neon pink
       default:
         return Colors.blue;
     }
@@ -329,7 +329,7 @@ class _TasksScreenState extends State<TasksScreen> {
                 status: 'pending',
                 message: 'Submission under review',
                 statusText: 'Pending Review',
-                statusColor: Colors.orange,
+                statusColor: Color(0xFFFF00F7),
               )
             else if (status == 'accepted')
               TaskStatusView(

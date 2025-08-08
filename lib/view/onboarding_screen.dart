@@ -13,6 +13,8 @@ class OnboardingScreen extends StatefulWidget {
 
 class _OnboardingScreenState extends State<OnboardingScreen>
     with TickerProviderStateMixin {
+  double _opacity = 1.0;
+  bool _isTransitioning = false;
   final PageController _pageCtrl = PageController();
   int _current = 0;
 
@@ -21,8 +23,8 @@ class _OnboardingScreenState extends State<OnboardingScreen>
 
   final List<Map<String, String>> _pages = [
     {
-      "title": "Welcome to Techniche App",
-      "subtitle": "Your Gateway to the Ultimate Techno-Management Fest",
+      "title": "Let the Chaos Begin",
+      "subtitle": "IIT Guwahati’s Premier Techno-Management Fest",
       "lottie": "assets/welcome.json",
     },
     {
@@ -85,6 +87,12 @@ class _OnboardingScreenState extends State<OnboardingScreen>
   }
 
   Future<void> _finishOnboarding() async {
+    if (_isTransitioning) return;
+    setState(() {
+      _opacity = 0.0;
+      _isTransitioning = true;
+    });
+    await Future.delayed(const Duration(milliseconds: 350));
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('seenOnboarding', true);
 
@@ -107,118 +115,141 @@ class _OnboardingScreenState extends State<OnboardingScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Stack(children: [
-        const AnimatedGradientBackground(),
-
-        // the PageView “carousel”
-        PageView.builder(
-          controller: _pageCtrl,
-          itemCount: _pages.length,
-          itemBuilder: (ctx, i) {
-            final p = _pages[i];
-            final ctrl = _animCtrls[i];
-            return Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                // Lottie with its dedicated controller:
-                Lottie.asset(
-                  p['lottie']!,
-                  controller: ctrl,
-                  height: 250,
-                  repeat: false,
-                  onLoaded: (comp) {
-                    ctrl.duration = comp.duration;
-                    if (i == _current) _playCurrent();
-                  },
-                ),
-                const SizedBox(height: 30),
-                Text(
-                  p['title']!,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  p['subtitle']!,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(color: Colors.white70, fontSize: 16),
-                ),
-              ],
-            );
-          },
-        ),
-
-        // Arrows near the Next/Get Started button
-        Positioned(
-          bottom: 40,
-          left: 0,
-          right: 0,
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              // Left Arrow
-              if (_current > 0)
-                Positioned(
-                  left: 16,
-                  child: IconButton(
-                    icon: const Icon(Icons.chevron_left,
-                        size: 40, color: Colors.white70),
-                    onPressed: () => _pageCtrl.previousPage(
-                      duration: const Duration(milliseconds: 300),
-                      curve: Curves.easeInOut,
-                    ),
+      body: AnimatedOpacity(
+        opacity: _opacity,
+        duration: const Duration(milliseconds: 350),
+        curve: Curves.easeInOut,
+        child: Stack(children: [
+          // Background Lottie animation (wrapped in RepaintBoundary for perf)
+          Positioned.fill(
+            child: IgnorePointer(
+              child: Opacity(
+                opacity: 0.75,
+                child: RepaintBoundary(
+                  child: Lottie.asset(
+                    'assets/stroke.json',
+                    fit: BoxFit.cover,
+                    repeat: true,
+                    options: LottieOptions(enableMergePaths: true),
                   ),
-                ),
-
-              // Center Button
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 36, vertical: 12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                  backgroundColor: const Color(0xFF222831),
-                  foregroundColor: Colors.white,
-                  elevation: 4,
-                  shadowColor: Colors.black54,
-                ),
-                onPressed: () {
-                  if (_current == _pages.length - 1) {
-                    _finishOnboarding();
-                  } else {
-                    _pageCtrl.nextPage(
-                      duration: const Duration(milliseconds: 400),
-                      curve: Curves.easeInOut,
-                    );
-                  }
-                },
-                child: Text(
-                  _current == _pages.length - 1 ? "Get Started" : "Next",
-                  style: const TextStyle(fontSize: 18),
                 ),
               ),
+            ),
+          ),
 
-              // Right Arrow
-              if (_current < _pages.length - 1)
-                Positioned(
-                  right: 16,
-                  child: IconButton(
-                    icon: const Icon(Icons.chevron_right,
-                        size: 40, color: Colors.white70),
-                    onPressed: () => _pageCtrl.nextPage(
-                      duration: const Duration(milliseconds: 300),
-                      curve: Curves.easeInOut,
+          // the PageView “carousel”
+          PageView.builder(
+            controller: _pageCtrl,
+            itemCount: _pages.length,
+            itemBuilder: (ctx, i) {
+              final p = _pages[i];
+              final ctrl = _animCtrls[i];
+              return Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // Lottie with its dedicated controller (RepaintBoundary for perf):
+                  RepaintBoundary(
+                    child: Lottie.asset(
+                      p['lottie']!,
+                      controller: ctrl,
+                      height: 250,
+                      repeat: false,
+                      options: LottieOptions(enableMergePaths: true),
+                      onLoaded: (comp) {
+                        ctrl.duration = comp.duration;
+                        if (i == _current) _playCurrent();
+                      },
                     ),
                   ),
-                ),
-            ],
+                  const SizedBox(height: 30),
+                  Text(
+                    p['title']!,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    p['subtitle']!,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(color: Colors.white70, fontSize: 16),
+                  ),
+                ],
+              );
+            },
           ),
-        )
-      ]),
+
+          // Arrows near the Next/Get Started button
+          Positioned(
+            bottom: 40,
+            left: 0,
+            right: 0,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                // Left Arrow
+                if (_current > 0)
+                  Positioned(
+                    left: 16,
+                    child: IconButton(
+                      icon: const Icon(Icons.chevron_left,
+                          size: 40, color: Colors.white70),
+                      onPressed: () => _pageCtrl.previousPage(
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeInOut,
+                      ),
+                    ),
+                  ),
+
+                // Center Button
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 36, vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(30)),
+                    ),
+                    backgroundColor: const Color(0xFF222831),
+                    foregroundColor: Colors.white,
+                    elevation: 4,
+                    shadowColor: Colors.black54,
+                  ),
+                  onPressed: () {
+                    if (_current == _pages.length - 1) {
+                      _finishOnboarding();
+                    } else {
+                      _pageCtrl.nextPage(
+                        duration: const Duration(milliseconds: 400),
+                        curve: Curves.easeInOut,
+                      );
+                    }
+                  },
+                  child: Text(
+                    _current == _pages.length - 1 ? "Get Started" : "Next",
+                    style: const TextStyle(fontSize: 18),
+                  ),
+                ),
+
+                // Right Arrow
+                if (_current < _pages.length - 1)
+                  Positioned(
+                    right: 16,
+                    child: IconButton(
+                      icon: const Icon(Icons.chevron_right,
+                          size: 40, color: Colors.white70),
+                      onPressed: () => _pageCtrl.nextPage(
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeInOut,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          )
+        ]),
+      ),
     );
   }
 }

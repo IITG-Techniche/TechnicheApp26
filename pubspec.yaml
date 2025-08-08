@@ -95,6 +95,8 @@ flutter:
     - assets/ghm.json
     - assets/portal.json
     - assets/events.json
+    - assets/scifibg.json
+    - assets/stroke.json
   # To add assets to your application, add an assets section, like this:
   # assets:
   #   - images/a_dot_burr.jpeg
@@ -111,7 +113,12 @@ flutter:
   # "family" key with the font family name, and a "fonts" key with a
   # list giving the asset and other descriptors for the font. For
   # example:
-  # fonts:
+  fonts:
+    - family: Orbitron
+      fonts:
+        - asset: fonts/Orbitron-Regular.ttf
+        - asset: fonts/Orbitron-Bold.ttf
+          weight: 700
   #   - family: Schyler
   #     fonts:
   #       - asset: fonts/Schyler-Regular.ttf

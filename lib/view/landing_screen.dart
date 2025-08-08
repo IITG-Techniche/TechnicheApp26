@@ -3,10 +3,12 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:amazon_clone/utils/ca_bottom_nav_bar.dart';
 import 'package:amazon_clone/view/map_screen.dart';
+import 'package:amazon_clone/view/utilities_screen.dart';
 import 'package:amazon_clone/controller/authController.dart';
 // Ensure you are importing the correct, new navigation bar
 import 'package:amazon_clone/utils/bottom_nav_bar.dart';
 import 'package:upgrader/upgrader.dart';
+import 'package:lottie/lottie.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:amazon_clone/services/notification_service.dart';
 import 'package:flutter/services.dart';
@@ -19,9 +21,9 @@ class LandingScreen extends StatefulWidget {
 }
 
 class _LandingScreenState extends State<LandingScreen> {
-  int _selectedIndex = 0;
+  int _selectedIndex = 1;
 
-    @override
+  @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -31,13 +33,9 @@ class _LandingScreenState extends State<LandingScreen> {
   }
 
   void _onItemTapped(int index) {
-    if (index == 2) {
-      _handleAuthNavigation(context);
-    } else {
-      setState(() {
-        _selectedIndex = index;
-      });
-    }
+    setState(() {
+      _selectedIndex = index;
+    });
   }
 
   Future<void> _handleAuthNavigation(BuildContext context) async {
@@ -73,10 +71,9 @@ class _LandingScreenState extends State<LandingScreen> {
   @override
   Widget build(BuildContext context) {
     final List<Widget> screens = <Widget>[
-      _buildHomeContent(context),
       const MapScreen(),
-      // This is a placeholder. Navigation to CA is handled by pushNamed.
-      Container(),
+      _buildHomeContent(context),
+      const UtilitiesScreen(),
     ];
 
     return UpgradeAlert(
@@ -92,16 +89,16 @@ class _LandingScreenState extends State<LandingScreen> {
           onTap: _onItemTapped,
           items: [
             GlowingBottomNavBarItem(
-              icon: Icons.home_filled,
-              label: 'Home',
-            ),
-            GlowingBottomNavBarItem(
               icon: Icons.map_sharp,
               label: 'Map',
             ),
             GlowingBottomNavBarItem(
+              icon: Icons.home_filled,
+              label: 'Home',
+            ),
+            GlowingBottomNavBarItem(
               icon: Icons.workspace_premium_sharp,
-              label: 'CA Portal',
+              label: 'Utilities',
             ),
           ],
         ),
@@ -137,7 +134,6 @@ class _LandingScreenState extends State<LandingScreen> {
           SafeArea(
             top: true,
             bottom: false,
-            // FIX: Padding is reverted to normal as the body no longer extends.
             child: Padding(
               padding: EdgeInsets.all(screenWidth * 0.06),
               child: Column(
@@ -146,7 +142,34 @@ class _LandingScreenState extends State<LandingScreen> {
                     flex: 4,
                     child: AspectRatio(
                       aspectRatio: 1,
-                      child: _ImageCarousel(),
+                      child: LayoutBuilder(
+                        builder: (context, constraints) {
+                          final double borderSize = constraints.maxWidth;
+                          final double imageMaxSize =
+                              borderSize * 0.90; // 94% of border size
+                          return Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              // Lottie border, always square
+                              SizedBox(
+                                width: borderSize,
+                                height: borderSize,
+                                child: Lottie.asset(
+                                  'assets/scifibg.json',
+                                  fit: BoxFit.contain,
+                                  repeat: true,
+                                ),
+                              ),
+                              // Carousel, not forced to square, keeps image aspect
+                              SizedBox(
+                                width: imageMaxSize,
+                                height: imageMaxSize,
+                                child: _ImageCarousel(),
+                              ),
+                            ],
+                          );
+                        },
+                      ),
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -165,8 +188,8 @@ class _LandingScreenState extends State<LandingScreen> {
                           description: 'Manage tasks and track your progress',
                           imagePath: 'assets/ca_icon.png',
                           color: const Color(0xFF23242B),
-                          onTap: () => Navigator.pushNamed(
-                              context, '/auth-screen'),
+                          onTap: () =>
+                              Navigator.pushNamed(context, '/auth-screen'),
                         ),
                         _gridItem(
                           context: context,
@@ -301,8 +324,8 @@ class AnimatedGradientBackground extends StatefulWidget {
       _AnimatedGradientBackgroundState();
 }
 
-class _AnimatedGradientBackgroundState
-    extends State<AnimatedGradientBackground> with SingleTickerProviderStateMixin {
+class _AnimatedGradientBackgroundState extends State<AnimatedGradientBackground>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _animation;
   final List<List<Color>> gradients = [
@@ -316,17 +339,17 @@ class _AnimatedGradientBackgroundState
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
-        vsync: this, duration: const Duration(seconds: 1))
-      ..addListener(() {
-        setState(() {});
-      })
-      ..addStatusListener((status) {
-        if (status == AnimationStatus.completed) {
-          _currentGradient = (_currentGradient + 1) % gradients.length;
-          _controller.forward(from: 0);
-        }
-      });
+    _controller =
+        AnimationController(vsync: this, duration: const Duration(seconds: 1))
+          ..addListener(() {
+            setState(() {});
+          })
+          ..addStatusListener((status) {
+            if (status == AnimationStatus.completed) {
+              _currentGradient = (_currentGradient + 1) % gradients.length;
+              _controller.forward(from: 0);
+            }
+          });
     _animation = CurvedAnimation(parent: _controller, curve: Curves.easeInOut);
     _controller.forward();
   }
@@ -363,17 +386,18 @@ class _AnimatedGradientBackgroundState
 
 // ImageCarousel Widget (No changes)
 class _ImageCarousel extends StatefulWidget {
+  const _ImageCarousel();
   @override
   State<_ImageCarousel> createState() => _ImageCarouselState();
 }
 
 class _ImageCarouselState extends State<_ImageCarousel> {
   final List<String> imageUrls = [
-    'assets/robo.jpg',
+    'assets/robo.png',
     'assets/aqua.png',
-    'assets/micro.jpg',
-    'assets/track.jpg',
-    'assets/escalade.jpg',
+    'assets/micro.png',
+    'assets/tracktitans.png',
+    'assets/escalade.png',
   ];
   final List<String> links = [
     'https://unstop.com/competitions/robowars-iit-guwahati-1499332',
@@ -433,15 +457,13 @@ class _ImageCarouselState extends State<_ImageCarousel> {
             },
             child: ClipRRect(
               borderRadius: BorderRadius.circular(16),
-              child: Container(
-                color: const Color(0xFF23242B),
+              child: AspectRatio(
+                aspectRatio: 1,
                 child: Image.asset(
                   imageUrls[i],
-                  fit: BoxFit.cover,
+                  fit: BoxFit.cover, // crop to square
                   width: double.infinity,
                   height: double.infinity,
-                  color: Colors.white.withOpacity(0.92),
-                  colorBlendMode: BlendMode.modulate,
                 ),
               ),
             ),

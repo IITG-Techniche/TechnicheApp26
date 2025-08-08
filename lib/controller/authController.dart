@@ -32,7 +32,7 @@ class AuthController {
               mainAxisSize: MainAxisSize.min,
               children: [
                 const CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.orange),
+                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFF00F7)),
                 ),
                 const SizedBox(height: 20),
                 Text(
@@ -107,7 +107,8 @@ class AuthController {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           const CircularProgressIndicator(
-                            valueColor: AlwaysStoppedAnimation<Color>(Colors.orange),
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                                Color(0xFFFF00F7)),
                           ),
                           const SizedBox(height: 20),
                           Text(
@@ -141,7 +142,8 @@ class AuthController {
             return true;
           }
         } else {
-          showMessage(context, "Login failed - no token received", isError: true);
+          showMessage(context, "Login failed - no token received",
+              isError: true);
         }
       } else {
         final errorMessage =
@@ -249,7 +251,7 @@ class AuthController {
           builder: (BuildContext context) {
             return const Center(
               child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(Colors.orange),
+                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFF00F7)),
               ),
             );
           },
@@ -258,12 +260,12 @@ class AuthController {
 
       // If token is valid, fetch user data
       await fetchUserData(context);
-      
+
       // Hide loading dialog
       if (context.mounted) {
         Navigator.of(context).pop();
       }
-      
+
       return true;
     } catch (e) {
       // Hide loading dialog in case of error

@@ -15,20 +15,18 @@ class MarathonScreen extends StatefulWidget {
 
 class _MarathonScreenState extends State<MarathonScreen>
     with WidgetsBindingObserver {
-
   late Stream<StepCount> _stepCountStream;
   late Stream<PedestrianStatus> _pedestrianStatusStream;
   String _status = 'Stopped';
   int _steps = 0;
-  int _initialSteps = 0; 
+  int _initialSteps = 0;
   bool _isSessionActive = false;
 
   int _currentSystemSteps = 0;
 
-  
-  double _distance = 0.0; 
+  double _distance = 0.0;
   double _calories = 0.0;
-  double _averageSpeed = 0.0; 
+  double _averageSpeed = 0.0;
   double _stepsPerKm = 1300;
   double _caloriesPerStep = 0.04;
 
@@ -135,6 +133,7 @@ class _MarathonScreenState extends State<MarathonScreen>
       _steps = 0;
     });
   }
+
   void _updateCalculations() {
     if (_steps > 0) {
       _distance = _steps / _stepsPerKm;
@@ -160,8 +159,7 @@ class _MarathonScreenState extends State<MarathonScreen>
     if (!_isSessionActive) {
       setState(() {
         _isSessionActive = true;
-        _initialSteps =
-            _currentSystemSteps;
+        _initialSteps = _currentSystemSteps;
         _steps = 0;
         _distance = 0.0;
         _calories = 0.0;
@@ -607,60 +605,77 @@ class ActionButtons extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(12),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           // Start/Stop Button
-          ElevatedButton.icon(
-            onPressed: isSessionActive ? onStop : onStart,
-            icon: Icon(isSessionActive ? Icons.stop : Icons.play_arrow),
-            label: Text(isSessionActive ? 'STOP' : 'START'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: isSessionActive ? Colors.red : Colors.blueAccent,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(
-                horizontal: 24,
-                vertical: 12,
-              ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              child: ElevatedButton.icon(
+                onPressed: isSessionActive ? onStop : onStart,
+                icon: Icon(isSessionActive ? Icons.stop : Icons.play_arrow),
+                label:
+                    FittedBox(child: Text(isSessionActive ? 'STOP' : 'START')),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor:
+                      isSessionActive ? Colors.red : Colors.blueAccent,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 12,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
               ),
             ),
           ),
           // Reset Button
-          ElevatedButton.icon(
-            onPressed: onReset,
-            icon: const Icon(Icons.refresh),
-            label: const Text('Reset'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF23242B),
-              foregroundColor: Colors.blueAccent,
-              padding: const EdgeInsets.symmetric(
-                horizontal: 20,
-                vertical: 12,
-              ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-                side: const BorderSide(color: Colors.blueAccent),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              child: ElevatedButton.icon(
+                onPressed: onReset,
+                icon: const Icon(Icons.refresh),
+                label: const FittedBox(child: Text('Reset')),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF23242B),
+                  foregroundColor: Colors.blueAccent,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 12,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    side: const BorderSide(color: Colors.blueAccent),
+                  ),
+                ),
               ),
             ),
           ),
           // Home Button
-          ElevatedButton.icon(
-            onPressed: onBack,
-            icon: const Icon(Icons.home),
-            label: const Text('Home'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF23242B),
-              foregroundColor: Colors.blueAccent,
-              padding: const EdgeInsets.symmetric(
-                horizontal: 20,
-                vertical: 12,
-              ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-                side: const BorderSide(color: Colors.blueAccent),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              child: ElevatedButton.icon(
+                onPressed: onBack,
+                icon: const Icon(Icons.home),
+                label: const FittedBox(child: Text('Home')),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF23242B),
+                  foregroundColor: Colors.blueAccent,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 12,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    side: const BorderSide(color: Colors.blueAccent),
+                  ),
+                ),
               ),
             ),
           ),

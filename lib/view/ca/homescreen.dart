@@ -137,7 +137,7 @@ class Homescreen extends StatelessWidget {
                       children: [
                         Icon(
                           Icons.phone,
-                          color: Colors.orange,
+                          color: Color(0xFFFF00F7),
                         ),
                         SizedBox(width: 12),
                         Column(
@@ -170,7 +170,7 @@ class Homescreen extends StatelessWidget {
                       children: [
                         Icon(
                           Icons.phone,
-                          color: Colors.orange,
+                          color: Color(0xFFFF00F7),
                         ),
                         SizedBox(width: 12),
                         Column(
@@ -321,7 +321,7 @@ class Homescreen extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           const CircularProgressIndicator(
-            color: Colors.orange,
+            color: Color(0xFFFF00F7),
             strokeWidth: 2,
           ),
           const SizedBox(height: 20),
@@ -331,7 +331,7 @@ class Homescreen extends StatelessWidget {
             child: const Text(
               'Retry Loading Data',
               style: TextStyle(
-                color: Colors.orange,
+                color: Color(0xFFFF00F7),
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -389,7 +389,7 @@ class Homescreen extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
               decoration: BoxDecoration(
-                color: Colors.orange.withOpacity(0.1),
+                color: Color(0xFFFF00F7).withOpacity(0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: const Text(
@@ -411,7 +411,7 @@ class Homescreen extends StatelessWidget {
                     const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
                 decoration: BoxDecoration(
                   border: Border.all(
-                      color: Colors.orange.withOpacity(0.5), width: 1),
+                      color: Color(0xFFFF00F7).withOpacity(0.5), width: 1),
                   borderRadius: BorderRadius.circular(30),
                 ),
                 child: const Text(
@@ -420,7 +420,7 @@ class Homescreen extends StatelessWidget {
                     fontSize: 13,
                     letterSpacing: 1.2,
                     fontWeight: FontWeight.w500,
-                    color: Colors.orange,
+                    color: Color(0xFFFF00F7),
                   ),
                 ),
               ),
@@ -441,7 +441,7 @@ class Homescreen extends StatelessWidget {
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.orange.withOpacity(0.3),
+                    color: Color(0xFFFF00F7).withOpacity(0.3),
                     blurRadius: 15,
                     offset: const Offset(0, 5),
                   ),
@@ -525,7 +525,7 @@ class Homescreen extends StatelessWidget {
                         child: Text(
                           user.t_id,
                           style: const TextStyle(
-                            color: Colors.deepOrange,
+                            color: Color(0xFF00FFF7), // neon cyan
                             fontWeight: FontWeight.bold,
                             fontSize: 14,
                           ),

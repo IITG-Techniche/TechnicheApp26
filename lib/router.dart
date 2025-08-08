@@ -5,7 +5,11 @@ import 'package:amazon_clone/view/ghm/marathon_screen.dart';
 import 'package:amazon_clone/view/ghm/ghm_selection.dart';
 import 'package:amazon_clone/view/ghm/ghm_registration.dart';
 import 'package:amazon_clone/view/techniche_screen.dart';
+
 import 'package:amazon_clone/view/techno/papers_display.dart';
+import 'package:amazon_clone/view/utilities_screen.dart';
+// import 'package:amazon_clone/view/utilities_screen.dart'
+//     show FAQScreen, TeamScreen;
 
 import 'package:flutter/material.dart';
 
@@ -56,6 +60,12 @@ Route<dynamic> generateRoute(RouteSettings routeSettings) {
       return MaterialPageRoute(
         settings: routeSettings,
         builder: (_) => const TechnothlonScreen(),
+      );
+
+    case UtilitiesScreen.routeName:
+      return MaterialPageRoute(
+        settings: routeSettings,
+        builder: (_) => const UtilitiesScreen(),
       );
 
     default:
