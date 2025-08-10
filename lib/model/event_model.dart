@@ -1,4 +1,3 @@
-// lib/models/event_model.dart
 import 'package:flutter/material.dart';
 
 class Event {
@@ -9,8 +8,7 @@ class Event {
   final double longitude;
   final String category;
   final String location;
-  final DateTime startTime;
-  final DateTime endTime;
+  final DateTime date; // Only one date now
   final bool isLive;
 
   Event({
@@ -21,8 +19,7 @@ class Event {
     required this.longitude,
     required this.category,
     required this.location,
-    required this.startTime,
-    required this.endTime,
+    required this.date,
     required this.isLive,
   });
 
@@ -31,17 +28,15 @@ class Event {
       id: json['id'],
       name: json['name'],
       description: json['description'],
-      latitude: json['latitude'],
-      longitude: json['longitude'],
+      latitude: (json['latitude'] as num).toDouble(),
+      longitude: (json['longitude'] as num).toDouble(),
       category: json['category'],
       location: json['location'],
-      startTime: DateTime.parse(json['startTime']),
-      endTime: DateTime.parse(json['endTime']),
-      isLive: json['isLive'],
+      date: DateTime.parse(json['date']), // match JSON
+      isLive: json['isLive'] ?? false,
     );
   }
 
-  // Helper to get an icon based on category
   IconData getCategoryIcon() {
     switch (category.toLowerCase()) {
       case 'robotics':

@@ -6,6 +6,7 @@ import 'package:geolocator/geolocator.dart';
 import 'dart:convert';
 import 'package:intl/intl.dart';
 import 'package:amazon_clone/model/event_model.dart';
+import 'package:http/http.dart' as http;
 import 'package:amazon_clone/services/directions_service.dart';
 
 class MapScreen extends StatefulWidget {
@@ -47,34 +48,34 @@ class _MapScreenState extends State<MapScreen> {
   }
 
 Future<void> _loadEvents() async {
-    try {
-      final String response =
-          await rootBundle.loadString('assets/data/events.json');
-      if (response.isEmpty) {
-        if (mounted) {
-          setState(() {
-            _events = [];
-          });
-        }
-        return;
-      }
+  const String apiUrl = 'http://192.168.1.5:4000/api/events'; 
 
-      // If we have data, proceed with decoding
-      final data = json.decode(response) as List;
+  try {
+    final response = await http.get(Uri.parse(apiUrl));
+
+    if (response.statusCode == 200) {
+      // If the server returns a 200 OK response, parse the JSON.
+      final data = json.decode(response.body) as List;
       if (mounted) {
         setState(() {
           _events = data.map((e) => Event.fromJson(e)).toList();
         });
       }
-    } catch (e) {
-      print("Error loading events: $e");
-       if (mounted) {
-        setState(() {
-          _events = [];
-        });
-      }
+    } else {
+      // If the server did not return a 200 OK response,
+      // throw an exception.
+      throw Exception('Failed to load events');
+    }
+  } catch (e) {
+    print("Error loading events from API: $e");
+    if (mounted) {
+      // Handle error, maybe show a message to the user
+      setState(() {
+        _events = [];
+      });
     }
   }
+}
 
   Future<void> _getCurrentLocation() async {
     final hasPermission = await _handleLocationPermission();
@@ -107,7 +108,8 @@ Future<void> _loadEvents() async {
         return AlertDialog(
           title: const Text('Enable Location Services'),
           content: const SingleChildScrollView(
-            child: Text('To see your location on the map, please enable location services.'),
+            child: Text(
+                'To see your location on the map, please enable location services.'),
           ),
           actions: <Widget>[
             TextButton(
@@ -144,8 +146,8 @@ Future<void> _loadEvents() async {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Location permissions are denied.')));
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+              content: Text('Location permissions are denied.')));
         }
         return false;
       }
@@ -153,21 +155,22 @@ Future<void> _loadEvents() async {
     if (permission == LocationPermission.deniedForever) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('Location permissions are permanently denied. Please enable them in your app settings.')));
+            content: Text(
+                'Location permissions are permanently denied. Please enable them in your app settings.')));
       }
       return false;
     }
     return true;
   }
 
-  void _setDefaultLocation() {
-  }
+  void _setDefaultLocation() {}
 
   void _toggleMapTheme() {
     setState(() {
       _isDarkMode = !_isDarkMode;
     });
   }
+
   Future<void> _fetchAndDrawRoute(Event event) async {
     Navigator.pop(context);
 
@@ -255,7 +258,8 @@ Future<void> _loadEvents() async {
               backgroundColor: const Color(0xFF23242B),
               child: Transform.rotate(
                 angle: _rotation,
-                child: const Icon(Icons.navigation_rounded, color: Colors.white),
+                child:
+                    const Icon(Icons.navigation_rounded, color: Colors.white),
               ),
             ),
             const SizedBox(height: 16),
@@ -288,10 +292,26 @@ Future<void> _loadEvents() async {
                     tileBuilder: (context, tileWidget, tile) {
                       return ColorFiltered(
                         colorFilter: const ColorFilter.matrix([
-                          -1, 0, 0, 0, 255,
-                          0, -1, 0, 0, 255,
-                          0, 0, -1, 0, 255,
-                          0, 0, 0, 1, 0,
+                          -1,
+                          0,
+                          0,
+                          0,
+                          255,
+                          0,
+                          -1,
+                          0,
+                          0,
+                          255,
+                          0,
+                          0,
+                          -1,
+                          0,
+                          255,
+                          0,
+                          0,
+                          0,
+                          1,
+                          0,
                         ]),
                         child: tileWidget,
                       );
@@ -309,7 +329,6 @@ Future<void> _loadEvents() async {
                       points: _routePoints,
                       strokeWidth: 5.0,
                       color: Colors.blueAccent,
-                     
                     ),
                   ],
                 ),
@@ -341,8 +360,7 @@ Future<void> _loadEvents() async {
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               color: Colors.blue.shade400,
-                              border:
-                                  Border.all(color: Colors.white, width: 3),
+                              border: Border.all(color: Colors.white, width: 3),
                               boxShadow: [
                                 BoxShadow(
                                   color: Colors.blueAccent.withOpacity(0.7),
@@ -492,12 +510,12 @@ Future<void> _loadEvents() async {
               const SizedBox(height: 5),
               Row(
                 children: [
-                  Icon(Icons.timer_outlined,
-                      color: Colors.grey[400], size: 18),
+                  Icon(Icons.timer_outlined, color: Colors.grey[400], size: 18),
                   const SizedBox(width: 8),
                   Text(
-                      '${timeFormat.format(event.startTime)} - ${timeFormat.format(event.endTime)}',
-                      style: TextStyle(color: Colors.grey[300], fontSize: 16)),
+                    DateFormat('MMM d, yyyy').format(event.date),
+                    style: TextStyle(color: Colors.grey[300], fontSize: 16),
+                  ),
                   const Spacer(),
                   if (event.isLive)
                     Container(
@@ -507,11 +525,13 @@ Future<void> _loadEvents() async {
                         color: Colors.redAccent,
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      child: const Text('LIVE',
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 12)),
+                      child: const Text(
+                        'LIVE',
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12),
+                      ),
                     )
                 ],
               ),

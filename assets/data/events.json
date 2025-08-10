@@ -1,0 +1,68 @@
+[
+  {
+    "id": "evt001",
+    "name": "Robowars",
+    "description": "Witness the ultimate clash of steel and circuits! Teams from across the campus pit their custom-built robots against each other in a thrilling combat tournament. Sparks will fly!",
+    "latitude": 26.190721523463147,
+    "longitude": 91.69699578042197,
+    "category": "Robotics",
+    "location": "Cricket Ground",
+    "date": "2025-08-15",
+    "isLive": false
+  },
+  {
+    "id": "evt002",
+    "name": "Aquawars",
+    "description": "A unique challenge where autonomous aquatic robots navigate a series of complex underwater obstacles in the IITG lake. A test of engineering, programming, and buoyancy!",
+    "latitude": 26.190392912315545,
+    "longitude": 91.69504358298664,
+    "category": "Robotics",
+    "location": "IITG Lake",
+    "date": "2025-08-16",
+    "isLive": false
+  },
+  {
+    "id": "evt003",
+    "name": "Escalade",
+    "description": "A premier startup pitch competition. Watch as budding entrepreneurs present their groundbreaking ideas to a panel of venture capitalists and industry leaders. Who will secure the next big investment?",
+    "latitude": 26.193004837782624,
+    "longitude": 91.69586602296083,
+    "category": "Talks",
+    "location": "Old SAC",
+    "date": "2025-08-17",
+    "isLive": false
+  },
+  {
+    "id": "evt004",
+    "name": "UVDC (UAV Design Challenge)",
+    "description": "The Unmanned Vehicle Design Challenge finals! Teams showcase their autonomous drones, judged on flight performance, design innovation, and mission execution. See the future of aerial robotics.",
+    "latitude": 26.19263820188934,
+    "longitude": 91.69898618578264,
+    "category": "Robotics",
+    "location": "Conference Room, New SAC",
+    "date": "2025-08-18",
+    "isLive": false
+  },
+  {
+    "id": "evt005",
+    "name": "Track Titans",
+    "description": "An intense 24-hour hackathon where teams race against the clock to develop innovative software solutions for real-world problems. The ultimate test of coding speed and creativity.",
+    "latitude": 26.193004837782624,
+    "longitude": 91.69586602296083,
+    "category": "Programming",
+    "location": "Old SAC",
+    "date": "2025-08-16",
+    "isLive": false
+  },
+  {
+    "id": "evt006",
+    "name": "Micromouse",
+    "description": "A classic robotics competition where small autonomous robots navigate a complex maze to find the center. It's a high-speed challenge of algorithm design and sensor precision.",
+    "latitude": 26.193004837782624,
+    "longitude": 91.69586602296083,
+    "category": "Robotics",
+    "location": "Old SAC",
+    "date": "2025-08-17",
+    "isLive": false
+  }
+]
