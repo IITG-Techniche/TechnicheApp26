@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:amazon_clone/utils/ca_bottom_nav_bar.dart';
 import 'package:amazon_clone/view/map_screen.dart';
 import 'package:amazon_clone/view/utilities_screen.dart';
+import 'package:amazon_clone/view/legacy_screen.dart';
 import 'package:amazon_clone/controller/authController.dart';
 // Ensure you are importing the correct, new navigation bar
 import 'package:amazon_clone/utils/bottom_nav_bar.dart';
@@ -20,19 +21,137 @@ class LandingScreen extends StatefulWidget {
   State<LandingScreen> createState() => _LandingScreenState();
 }
 
+/// Retro transition: scale + slight slide + fade + glow + scanlines
+class RetroTransition extends StatelessWidget {
+  final Animation<double> animation;
+  final Widget child;
+  const RetroTransition({
+    Key? key,
+    required this.animation,
+    required this.child,
+  }) : super(key: key);
+
+  double _clamp(double v, {double min = 0.0, double max = 1.0}) =>
+      v < min ? min : (v > max ? max : v);
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: animation,
+      builder: (context, _) {
+        // Smoothed value
+        final double t = Curves.easeInOut.transform(animation.value);
+        final double scale = 0.94 + 0.12 * t; // subtle pop-in
+        final double opacity = _clamp(t);
+        // slight vertical slide (from below)
+        final Offset offset = Offset(0, (1 - t) * 18);
+
+        // glow peaks around the midpoint of transition
+        final double glowPeak =
+            (1.0 - ((t - 0.5).abs() * 2.0)).clamp(0.0, 1.0); // 0..1
+        final double glowOpacity = 0.06 * glowPeak;
+
+        // scanline intensity (subtle)
+        final double scanlineOpacity = 0.06 * glowPeak;
+
+        return Transform.translate(
+          offset: offset,
+          child: Transform.scale(
+            scale: scale,
+            child: Opacity(
+              opacity: opacity,
+              child: Stack(
+                fit: StackFit.passthrough,
+                children: [
+                  // The main child (the new screen)
+                  child,
+                  // Glow overlay (subtle cyan tint)
+                  IgnorePointer(
+                    ignoring: true,
+                    child: Opacity(
+                      opacity: glowOpacity,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              Colors.cyan.withOpacity(0.12),
+                              Colors.transparent,
+                            ],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            stops: const [0.0, 0.9],
+                          ),
+                          // Using blend via color with low opacity is sufficient
+                        ),
+                      ),
+                    ),
+                  ),
+                  // Scanline overlay for retro effect
+                  IgnorePointer(
+                    ignoring: true,
+                    child: Opacity(
+                      opacity: scanlineOpacity,
+                      child: const CustomPaint(
+                        painter: ScanlinePainter(),
+                        size: Size.infinite,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+      child: child,
+    );
+  }
+}
+
+/// Draws thin horizontal scanlines across the screen (very subtle)
+class ScanlinePainter extends CustomPainter {
+  const ScanlinePainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.white.withOpacity(0.03)
+      ..strokeWidth = 0.6
+      ..isAntiAlias = false;
+
+    // spacing between lines (controls density)
+    const double spacing = 6.0;
+
+    for (double y = 0; y < size.height; y += spacing) {
+      canvas.drawLine(Offset(0, y), Offset(size.width, y), paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
 class _LandingScreenState extends State<LandingScreen> {
-  int _selectedIndex = 1;
+  int _selectedIndex = 2;
 
   @override
   void initState() {
     super.initState();
+
+    // If your notification service needs context or is async, running after frame
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      print("LandingScreen: Triggering notification setup.");
+      // Keep your log for debugging
+      if (kDebugMode) {
+        // ignore: avoid_print
+        print("LandingScreen: Triggering notification setup.");
+      }
+      // Expected method in your NotificationService — change if different
       NotificationService().initializeAndHandleNotifications();
     });
   }
 
   void _onItemTapped(int index) {
+    if (_selectedIndex == index) return;
     setState(() {
       _selectedIndex = index;
     });
@@ -71,8 +190,13 @@ class _LandingScreenState extends State<LandingScreen> {
   @override
   Widget build(BuildContext context) {
     final List<Widget> screens = <Widget>[
+      // 0: Map
       const MapScreen(),
+      // 1: Home
       _buildHomeContent(context),
+      // 2: Legacy
+      LegacyPage(),
+      // 3: Utilities
       const UtilitiesScreen(),
     ];
 
@@ -83,7 +207,28 @@ class _LandingScreenState extends State<LandingScreen> {
         durationUntilAlertAgain: const Duration(days: 1),
       ),
       child: Scaffold(
-        body: screens.elementAt(_selectedIndex),
+        body: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 420),
+          switchInCurve: Curves.easeOutCubic,
+          switchOutCurve: Curves.easeInCubic,
+          layoutBuilder: (currentChild, previousChildren) {
+            // place previous children behind the incoming one for depth
+            return Stack(
+              alignment: Alignment.center,
+              children: <Widget>[
+                ...previousChildren,
+                if (currentChild != null) currentChild,
+              ],
+            );
+          },
+          transitionBuilder: (Widget child, Animation<double> animation) {
+            return RetroTransition(animation: animation, child: child);
+          },
+          child: KeyedSubtree(
+            key: ValueKey<int>(_selectedIndex),
+            child: screens.elementAt(_selectedIndex),
+          ),
+        ),
         bottomNavigationBar: GlowingBottomNavBar(
           currentIndex: _selectedIndex,
           onTap: _onItemTapped,
@@ -95,6 +240,10 @@ class _LandingScreenState extends State<LandingScreen> {
             GlowingBottomNavBarItem(
               icon: Icons.home_filled,
               label: 'Home',
+            ),
+            GlowingBottomNavBarItem(
+              icon: Icons.history_edu,
+              label: 'Legacy',
             ),
             GlowingBottomNavBarItem(
               icon: Icons.workspace_premium_sharp,
@@ -146,7 +295,7 @@ class _LandingScreenState extends State<LandingScreen> {
                         builder: (context, constraints) {
                           final double borderSize = constraints.maxWidth;
                           final double imageMaxSize =
-                              borderSize * 0.90; // 94% of border size
+                              borderSize * 0.90; // 90% of border size
                           return Stack(
                             alignment: Alignment.center,
                             children: [
@@ -160,11 +309,11 @@ class _LandingScreenState extends State<LandingScreen> {
                                   repeat: true,
                                 ),
                               ),
-                              // Carousel, not forced to square, keeps image aspect
+                              // Carousel, keeps image aspect
                               SizedBox(
                                 width: imageMaxSize,
                                 height: imageMaxSize,
-                                child: _ImageCarousel(),
+                                child: const _ImageCarousel(),
                               ),
                             ],
                           );
@@ -188,8 +337,7 @@ class _LandingScreenState extends State<LandingScreen> {
                           description: 'Manage tasks and track your progress',
                           imagePath: 'assets/ca_icon.png',
                           color: const Color(0xFF23242B),
-                          onTap: () =>
-                              Navigator.pushNamed(context, '/auth-screen'),
+                          onTap: () => _handleAuthNavigation(context),
                         ),
                         _gridItem(
                           context: context,
@@ -425,7 +573,7 @@ class _ImageCarouselState extends State<_ImageCarousel> {
       duration: const Duration(milliseconds: 400),
       curve: Curves.easeInOut,
     );
-    _cycleImages();
+    if (mounted) _cycleImages();
   }
 
   @override
@@ -446,7 +594,12 @@ class _ImageCarouselState extends State<_ImageCarousel> {
           itemBuilder: (context, i) => GestureDetector(
             onTap: () async {
               try {
-                await launchUrl(Uri.parse(links[i]));
+                final uri = Uri.parse(links[i]);
+                if (await canLaunchUrl(uri)) {
+                  await launchUrl(uri);
+                } else {
+                  throw 'Could not launch $uri';
+                }
               } catch (e) {
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
