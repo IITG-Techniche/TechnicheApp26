@@ -132,7 +132,7 @@ class ScanlinePainter extends CustomPainter {
 }
 
 class _LandingScreenState extends State<LandingScreen> {
-  int _selectedIndex = 2;
+  int _selectedIndex = 1;
 
   @override
   void initState() {
