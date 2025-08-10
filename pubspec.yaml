@@ -54,6 +54,9 @@ dependencies:
   geolocator: ^13.0.1
   location: ^8.0.1
   flutter_map_location_marker: ^9.1.1
+  google_fonts: ^6.3.0
+  animated_text_kit: ^4.2.3
+  timeline_tile: ^2.0.0
   
 
 dev_dependencies:
@@ -97,6 +100,11 @@ flutter:
     - assets/events.json
     - assets/scifibg.json
     - assets/stroke.json
+    - assets/dhruv-app.jpg
+    - assets/arya-app.jpg
+    - assets/ayush-app.jpg
+    - assets/divyansh-app.jpg
+    - assets/kashish-app.jpg
   # To add assets to your application, add an assets section, like this:
   # assets:
   #   - images/a_dot_burr.jpeg
