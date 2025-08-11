@@ -6,13 +6,13 @@ import 'package:amazon_clone/view/map_screen.dart';
 import 'package:amazon_clone/view/utilities_screen.dart';
 import 'package:amazon_clone/view/legacy_screen.dart';
 import 'package:amazon_clone/controller/authController.dart';
-// Ensure you are importing the correct, new navigation bar
 import 'package:amazon_clone/utils/bottom_nav_bar.dart';
 import 'package:upgrader/upgrader.dart';
 import 'package:lottie/lottie.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:amazon_clone/services/notification_service.dart';
 import 'package:flutter/services.dart';
+import 'package:amazon_clone/view/schedule_screen.dart';
 
 class LandingScreen extends StatefulWidget {
   static const String routeName = '/landing-screen';
@@ -21,7 +21,7 @@ class LandingScreen extends StatefulWidget {
   State<LandingScreen> createState() => _LandingScreenState();
 }
 
-/// Retro transition: scale + slight slide + fade + glow + scanlines
+// RetroTransition and ScanlinePainter classes remain unchanged...
 class RetroTransition extends StatelessWidget {
   final Animation<double> animation;
   final Widget child;
@@ -39,19 +39,13 @@ class RetroTransition extends StatelessWidget {
     return AnimatedBuilder(
       animation: animation,
       builder: (context, _) {
-        // Smoothed value
         final double t = Curves.easeInOut.transform(animation.value);
-        final double scale = 0.94 + 0.12 * t; // subtle pop-in
+        final double scale = 0.94 + 0.12 * t;
         final double opacity = _clamp(t);
-        // slight vertical slide (from below)
         final Offset offset = Offset(0, (1 - t) * 18);
-
-        // glow peaks around the midpoint of transition
         final double glowPeak =
-            (1.0 - ((t - 0.5).abs() * 2.0)).clamp(0.0, 1.0); // 0..1
+            (1.0 - ((t - 0.5).abs() * 2.0)).clamp(0.0, 1.0);
         final double glowOpacity = 0.06 * glowPeak;
-
-        // scanline intensity (subtle)
         final double scanlineOpacity = 0.06 * glowPeak;
 
         return Transform.translate(
@@ -63,9 +57,7 @@ class RetroTransition extends StatelessWidget {
               child: Stack(
                 fit: StackFit.passthrough,
                 children: [
-                  // The main child (the new screen)
                   child,
-                  // Glow overlay (subtle cyan tint)
                   IgnorePointer(
                     ignoring: true,
                     child: Opacity(
@@ -81,12 +73,10 @@ class RetroTransition extends StatelessWidget {
                             end: Alignment.bottomRight,
                             stops: const [0.0, 0.9],
                           ),
-                          // Using blend via color with low opacity is sufficient
                         ),
                       ),
                     ),
                   ),
-                  // Scanline overlay for retro effect
                   IgnorePointer(
                     ignoring: true,
                     child: Opacity(
@@ -108,20 +98,15 @@ class RetroTransition extends StatelessWidget {
   }
 }
 
-/// Draws thin horizontal scanlines across the screen (very subtle)
 class ScanlinePainter extends CustomPainter {
   const ScanlinePainter();
-
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
       ..color = Colors.white.withOpacity(0.03)
       ..strokeWidth = 0.6
       ..isAntiAlias = false;
-
-    // spacing between lines (controls density)
     const double spacing = 6.0;
-
     for (double y = 0; y < size.height; y += spacing) {
       canvas.drawLine(Offset(0, y), Offset(size.width, y), paint);
     }
@@ -134,18 +119,15 @@ class ScanlinePainter extends CustomPainter {
 class _LandingScreenState extends State<LandingScreen> {
   int _selectedIndex = 1;
 
+  final GlobalKey<MapScreenState> _mapKey = GlobalKey<MapScreenState>();
+
   @override
   void initState() {
     super.initState();
-
-    // If your notification service needs context or is async, running after frame
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      // Keep your log for debugging
       if (kDebugMode) {
-        // ignore: avoid_print
         print("LandingScreen: Triggering notification setup.");
       }
-      // Expected method in your NotificationService — change if different
       NotificationService().initializeAndHandleNotifications();
     });
   }
@@ -158,6 +140,7 @@ class _LandingScreenState extends State<LandingScreen> {
   }
 
   Future<void> _handleAuthNavigation(BuildContext context) async {
+    // ... (Your existing auth navigation logic is unchanged)
     try {
       showDialog(
         context: context,
@@ -190,15 +173,55 @@ class _LandingScreenState extends State<LandingScreen> {
   @override
   Widget build(BuildContext context) {
     final List<Widget> screens = <Widget>[
-      // 0: Map
-      const MapScreen(),
-      // 1: Home
+      MapScreen(key: _mapKey),
       _buildHomeContent(context),
-      // 2: Legacy
       LegacyPage(),
-      // 3: Utilities
+      const SchedulePage(),
       const UtilitiesScreen(),
+     
     ];
+
+    final mapAppBar = AppBar(
+      title: const Text('Campus Map'),
+      centerTitle: true,
+      backgroundColor: const Color(0xFF181A20),
+      elevation: 0,
+      foregroundColor: Colors.white,
+    );
+
+    final mapFab = Column(
+      mainAxisAlignment: MainAxisAlignment.end,
+      children: [
+        FloatingActionButton(
+          heroTag: 'theme',
+          onPressed: () => _mapKey.currentState?.toggleMapTheme(),
+          backgroundColor: const Color(0xFF23242B),
+          child: Icon(
+            (_mapKey.currentState?.isDarkMode ?? true)
+                ? Icons.light_mode
+                : Icons.dark_mode,
+            color: Colors.white,
+          ),
+        ),
+        const SizedBox(height: 16),
+        FloatingActionButton(
+          heroTag: 'compass',
+          onPressed: () => _mapKey.currentState?.resetRotation(),
+          backgroundColor: const Color(0xFF23242B),
+          child: Transform.rotate(
+            angle: _mapKey.currentState?.rotation ?? 0.0,
+            child: const Icon(Icons.navigation_rounded, color: Colors.white),
+          ),
+        ),
+        const SizedBox(height: 16),
+        FloatingActionButton(
+           heroTag: 'location',
+          onPressed: () => _mapKey.currentState?.getCurrentLocation(),
+          backgroundColor: const Color(0xFF23242B),
+          child: const Icon(Icons.my_location, color: Colors.white),
+        ),
+      ],
+    );
 
     return UpgradeAlert(
       upgrader: Upgrader(
@@ -207,12 +230,13 @@ class _LandingScreenState extends State<LandingScreen> {
         durationUntilAlertAgain: const Duration(days: 1),
       ),
       child: Scaffold(
+        backgroundColor: const Color(0xFF181A20),
+        appBar: _selectedIndex == 0 ? mapAppBar : null,
         body: AnimatedSwitcher(
           duration: const Duration(milliseconds: 420),
           switchInCurve: Curves.easeOutCubic,
           switchOutCurve: Curves.easeInCubic,
           layoutBuilder: (currentChild, previousChildren) {
-            // place previous children behind the incoming one for depth
             return Stack(
               alignment: Alignment.center,
               children: <Widget>[
@@ -229,26 +253,18 @@ class _LandingScreenState extends State<LandingScreen> {
             child: screens.elementAt(_selectedIndex),
           ),
         ),
+        floatingActionButton: _selectedIndex == 0 ? mapFab : null,
         bottomNavigationBar: GlowingBottomNavBar(
           currentIndex: _selectedIndex,
           onTap: _onItemTapped,
           items: [
+            GlowingBottomNavBarItem(icon: Icons.map_sharp, label: 'Map'),
+            GlowingBottomNavBarItem(icon: Icons.home_filled, label: 'Home'),
+            GlowingBottomNavBarItem(icon: Icons.history_edu, label: 'Legacy'),
+            GlowingBottomNavBarItem(icon: Icons.schedule, label: 'Schedule'),
             GlowingBottomNavBarItem(
-              icon: Icons.map_sharp,
-              label: 'Map',
-            ),
-            GlowingBottomNavBarItem(
-              icon: Icons.home_filled,
-              label: 'Home',
-            ),
-            GlowingBottomNavBarItem(
-              icon: Icons.history_edu,
-              label: 'Legacy',
-            ),
-            GlowingBottomNavBarItem(
-              icon: Icons.workspace_premium_sharp,
-              label: 'Utilities',
-            ),
+                icon: Icons.workspace_premium_sharp, label: 'Utilities'),
+           
           ],
         ),
       ),
@@ -294,12 +310,10 @@ class _LandingScreenState extends State<LandingScreen> {
                       child: LayoutBuilder(
                         builder: (context, constraints) {
                           final double borderSize = constraints.maxWidth;
-                          final double imageMaxSize =
-                              borderSize * 0.90; // 90% of border size
+                          final double imageMaxSize = borderSize * 0.90;
                           return Stack(
                             alignment: Alignment.center,
                             children: [
-                              // Lottie border, always square
                               SizedBox(
                                 width: borderSize,
                                 height: borderSize,
@@ -309,7 +323,6 @@ class _LandingScreenState extends State<LandingScreen> {
                                   repeat: true,
                                 ),
                               ),
-                              // Carousel, keeps image aspect
                               SizedBox(
                                 width: imageMaxSize,
                                 height: imageMaxSize,
@@ -464,7 +477,6 @@ class _LandingScreenState extends State<LandingScreen> {
   }
 }
 
-// AnimatedGradientBackground Widget (No changes)
 class AnimatedGradientBackground extends StatefulWidget {
   const AnimatedGradientBackground({Key? key}) : super(key: key);
   @override
@@ -532,7 +544,6 @@ class _AnimatedGradientBackgroundState extends State<AnimatedGradientBackground>
   }
 }
 
-// ImageCarousel Widget (No changes)
 class _ImageCarousel extends StatefulWidget {
   const _ImageCarousel();
   @override
@@ -614,7 +625,7 @@ class _ImageCarouselState extends State<_ImageCarousel> {
                 aspectRatio: 1,
                 child: Image.asset(
                   imageUrls[i],
-                  fit: BoxFit.cover, // crop to square
+                  fit: BoxFit.cover,
                   width: double.infinity,
                   height: double.infinity,
                 ),

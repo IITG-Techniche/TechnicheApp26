@@ -88,15 +88,6 @@ class MyApp extends StatelessWidget {
             )),
           ),
         ),
-        // cardTheme: CardTheme(
-        //   color: Color(0xFF232946),
-        //   elevation: 10,
-        //   shadowColor: Color(0xFF00FFF7),
-        //   shape: RoundedRectangleBorder(
-        //     borderRadius: BorderRadius.circular(20),
-        //     side: BorderSide(color: Color(0xFF00FFF7), width: 2),
-        //   ),
-        // ),
         inputDecorationTheme: InputDecorationTheme(
           filled: true,
           fillColor: Color(0xFF232946),
