@@ -60,6 +60,7 @@ dependencies:
   cloud_firestore: ^6.0.0
   intl: ^0.18.1
   firebase_remote_config: ^6.0.0
+  flutter_map_marker_popup: ^7.0.0
   
 
 dev_dependencies:

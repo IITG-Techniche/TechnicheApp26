@@ -1,3 +1,4 @@
+import 'package:amazon_clone/utils/animate_gradient_background.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'dart:convert';
@@ -97,22 +98,30 @@ class _SchedulePageState extends State<SchedulePage> with TickerProviderStateMix
 
     if (!_isScheduleLive) {
       return Scaffold(
+        backgroundColor: Colors.transparent,
+        extendBodyBehindAppBar: true,
        appBar: AppBar(
         title: const Text('Events Timeline'),
         centerTitle: true,
         backgroundColor: Colors.transparent,
         elevation: 0,
        ),
-        body: const Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
+        body: Stack(
+          children: [
+            const AnimatedGradientBackground(),
+            Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const AnimatedGradientBackground(),
               Icon(Icons.timelapse_outlined, size: 80, color: Colors.grey),
               SizedBox(height: 20),
               Text("Coming Soon", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
               Text("The future is not yet written.", textAlign: TextAlign.center),
             ],
           ),
+        ),
+          ],
         ),
       );
     }
@@ -305,69 +314,69 @@ class EventTimelineTile extends StatelessWidget {
   }
 }
 
-// AnimatedGradientBackground Widget
-class AnimatedGradientBackground extends StatefulWidget {
-  const AnimatedGradientBackground({Key? key}) : super(key: key);
-  @override
-  State<AnimatedGradientBackground> createState() =>
-      _AnimatedGradientBackgroundState();
-}
+// // AnimatedGradientBackground Widget
+// class AnimatedGradientBackground extends StatefulWidget {
+//   const AnimatedGradientBackground({Key? key}) : super(key: key);
+//   @override
+//   State<AnimatedGradientBackground> createState() =>
+//       _AnimatedGradientBackgroundState();
+// }
 
-class _AnimatedGradientBackgroundState extends State<AnimatedGradientBackground>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _animation;
-  final List<List<Color>> gradients = [
-    [const Color(0xFF181A20), const Color(0xFF23242B), const Color(0xFF35363C)],
-    [const Color(0xFF23242B), const Color(0xFF35363C), const Color(0xFF181A20)],
-    [const Color(0xFF35363C), const Color(0xFF23242B), const Color(0xFF181A20)],
-    [const Color(0xFF181A20), const Color(0xFF35363C), const Color(0xFF23242B)],
-  ];
-  int _currentGradient = 0;
+// class _AnimatedGradientBackgroundState extends State<AnimatedGradientBackground>
+//     with SingleTickerProviderStateMixin {
+//   late AnimationController _controller;
+//   late Animation<double> _animation;
+//   final List<List<Color>> gradients = [
+//     [const Color(0xFF181A20), const Color(0xFF23242B), const Color(0xFF35363C)],
+//     [const Color(0xFF23242B), const Color(0xFF35363C), const Color(0xFF181A20)],
+//     [const Color(0xFF35363C), const Color(0xFF23242B), const Color(0xFF181A20)],
+//     [const Color(0xFF181A20), const Color(0xFF35363C), const Color(0xFF23242B)],
+//   ];
+//   int _currentGradient = 0;
 
-  @override
-  void initState() {
-    super.initState();
-    _controller =
-        AnimationController(vsync: this, duration: const Duration(seconds: 4))
-          ..addStatusListener((status) {
-            if (status == AnimationStatus.completed) {
-              setState(() {
-                _currentGradient = (_currentGradient + 1) % gradients.length;
-              });
-              _controller.forward(from: 0);
-            }
-          });
-    _animation = CurvedAnimation(parent: _controller, curve: Curves.easeInOut);
-    _controller.forward();
-  }
+//   @override
+//   void initState() {
+//     super.initState();
+//     _controller =
+//         AnimationController(vsync: this, duration: const Duration(seconds: 4))
+//           ..addStatusListener((status) {
+//             if (status == AnimationStatus.completed) {
+//               setState(() {
+//                 _currentGradient = (_currentGradient + 1) % gradients.length;
+//               });
+//               _controller.forward(from: 0);
+//             }
+//           });
+//     _animation = CurvedAnimation(parent: _controller, curve: Curves.easeInOut);
+//     _controller.forward();
+//   }
 
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
+//   @override
+//   void dispose() {
+//     _controller.dispose();
+//     super.dispose();
+//   }
 
-  @override
-  Widget build(BuildContext context) {
-    final nextGradient = gradients[(_currentGradient + 1) % gradients.length];
-    final currentGradient = gradients[_currentGradient];
-    return AnimatedBuilder(
-      animation: _animation,
-      builder: (context, child) {
-        return Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: List.generate(currentGradient.length, (i) {
-                return Color.lerp(
-                    currentGradient[i], nextGradient[i], _animation.value)!;
-              }),
-            ),
-          ),
-        );
-      },
-    );
-  }
-}
+//   @override
+//   Widget build(BuildContext context) {
+//     final nextGradient = gradients[(_currentGradient + 1) % gradients.length];
+//     final currentGradient = gradients[_currentGradient];
+//     return AnimatedBuilder(
+//       animation: _animation,
+//       builder: (context, child) {
+//         return Container(
+//           decoration: BoxDecoration(
+//             gradient: LinearGradient(
+//               begin: Alignment.topLeft,
+//               end: Alignment.bottomRight,
+//               colors: List.generate(currentGradient.length, (i) {
+//                 return Color.lerp(
+//                     currentGradient[i], nextGradient[i], _animation.value)!;
+//               }),
+//             ),
+//           ),
+//         );
+//       },
+//     );
+//   }
+// }

@@ -109,6 +109,7 @@ class _SubCategoryScreenState extends State<SubCategoryScreen>
 
     return Scaffold(
       backgroundColor: Colors.transparent,
+        extendBodyBehindAppBar: true,
       appBar: AppBar(
         title: Text(widget.categoryTitle),
         backgroundColor: Colors.transparent,
@@ -118,28 +119,32 @@ class _SubCategoryScreenState extends State<SubCategoryScreen>
         children: [
           const AnimatedGradientBackground(),
           if (_stars.isNotEmpty)
-            CustomPaint(
+          CustomPaint(
               size: Size.infinite,
               painter: _StarryBackgroundPainter(
                 stars: _stars,
                 animation: _starController,
               ),
             ),
-          SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: sidePadding),
-              child: SizedBox(
-                height: totalHeight,
-                width: usableWidth,
-                child: Stack(
-                  children: [
-                    CustomPaint(
-                      size: Size(usableWidth, totalHeight),
-                      painter: _TrackPainter(
-                        centers: centers,
-                        trackColor: Colors.white.withOpacity(0.3),
-                      ),
+              Padding(
+        padding: EdgeInsets.only(
+          top: MediaQuery.of(context).padding.top + kToolbarHeight,
+        ),
+      child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: sidePadding),
+            child: SizedBox(
+              height: totalHeight,
+              width: usableWidth,
+              child: Stack(
+                children: [
+                  CustomPaint(
+                    size: Size(usableWidth, totalHeight),
+                    painter: _TrackPainter(
+                      centers: centers,
+                      trackColor: Colors.white.withOpacity(0.3),
                     ),
+                  ),
                     for (int i = 0; i < widget.subCategories.length; i++)
                       _buildStop(i, leftX, rightX, theme),
                   ],
@@ -147,9 +152,10 @@ class _SubCategoryScreenState extends State<SubCategoryScreen>
               ),
             ),
           ),
+              ),
         ],
       ),
-    );
+      );
   }
 
   Widget _buildStop(int i, double leftX, double rightX, ThemeData theme) {

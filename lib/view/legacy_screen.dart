@@ -187,15 +187,17 @@ class LegacyPage extends StatelessWidget {
               startChild: Padding(
                 padding: startPad,
                 child: SizedBox(
-                  width: 60, // Increased width to fit full year
+                  width: 70,
                   child: Text(
                     data["year"]!,
                     style: GoogleFonts.orbitron(
                       color: neonPink,
-                      fontSize: 14,
+                      fontSize: 13,
                       fontWeight: FontWeight.bold,
                     ),
                     textAlign: TextAlign.center,
+                    softWrap: false,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
               ),

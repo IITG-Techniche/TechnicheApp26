@@ -181,48 +181,14 @@ class _LandingScreenState extends State<LandingScreen> {
      
     ];
 
-    final mapAppBar = AppBar(
-      title: const Text('Campus Map'),
-      centerTitle: true,
-      backgroundColor: const Color(0xFF181A20),
-      elevation: 0,
-      foregroundColor: Colors.white,
-    );
+    // final mapAppBar = AppBar(
+    //   title: const Text('Campus Map'),
+    //    centerTitle: true,
+    //     backgroundColor: Colors.transparent,
+    //     elevation: 0,
+    // );
 
-    final mapFab = Column(
-      mainAxisAlignment: MainAxisAlignment.end,
-      children: [
-        FloatingActionButton(
-          heroTag: 'theme',
-          onPressed: () => _mapKey.currentState?.toggleMapTheme(),
-          backgroundColor: const Color(0xFF23242B),
-          child: Icon(
-            (_mapKey.currentState?.isDarkMode ?? true)
-                ? Icons.light_mode
-                : Icons.dark_mode,
-            color: Colors.white,
-          ),
-        ),
-        const SizedBox(height: 16),
-        FloatingActionButton(
-          heroTag: 'compass',
-          onPressed: () => _mapKey.currentState?.resetRotation(),
-          backgroundColor: const Color(0xFF23242B),
-          child: Transform.rotate(
-            angle: _mapKey.currentState?.rotation ?? 0.0,
-            child: const Icon(Icons.navigation_rounded, color: Colors.white),
-          ),
-        ),
-        const SizedBox(height: 16),
-        FloatingActionButton(
-           heroTag: 'location',
-          onPressed: () => _mapKey.currentState?.getCurrentLocation(),
-          backgroundColor: const Color(0xFF23242B),
-          child: const Icon(Icons.my_location, color: Colors.white),
-        ),
-      ],
-    );
-
+    
     return UpgradeAlert(
       upgrader: Upgrader(
         debugLogging: kDebugMode,
@@ -230,8 +196,7 @@ class _LandingScreenState extends State<LandingScreen> {
         durationUntilAlertAgain: const Duration(days: 1),
       ),
       child: Scaffold(
-        backgroundColor: const Color(0xFF181A20),
-        appBar: _selectedIndex == 0 ? mapAppBar : null,
+        backgroundColor: Colors.transparent,
         body: AnimatedSwitcher(
           duration: const Duration(milliseconds: 420),
           switchInCurve: Curves.easeOutCubic,
@@ -253,7 +218,7 @@ class _LandingScreenState extends State<LandingScreen> {
             child: screens.elementAt(_selectedIndex),
           ),
         ),
-        floatingActionButton: _selectedIndex == 0 ? mapFab : null,
+        // floatingActionButton: _selectedIndex == 0 ? mapFab : null,
         bottomNavigationBar: GlowingBottomNavBar(
           currentIndex: _selectedIndex,
           onTap: _onItemTapped,
