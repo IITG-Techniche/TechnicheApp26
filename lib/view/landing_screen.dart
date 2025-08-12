@@ -370,7 +370,7 @@ class _LandingScreenState extends State<LandingScreen> {
                           imagePath: 'assets/techniche_events.png',
                           color: const Color(0xFF23242B),
                           onTap: () =>
-                              Navigator.pushNamed(context, '/techniche-screen'),
+                              Navigator.pushNamed(context, '/events-screen'),
                         ),
                         _gridItem(
                           context: context,

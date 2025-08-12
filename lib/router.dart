@@ -49,10 +49,10 @@ Route<dynamic> generateRoute(RouteSettings routeSettings) {
         builder: (_) => const MarathonScreen(),
       );
 
-    case TechnicheScreen.routeName:
+    case EventsScreen.routeName:
       return MaterialPageRoute(
         settings: routeSettings,
-        builder: (_) => const TechnicheScreen(),
+        builder: (_) => const EventsScreen(),
       );
 
     case TechnothlonScreen.routeName:

@@ -6,21 +6,23 @@ import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'dart:convert';
 
 
+// --- Hardcoded coordinates for known venues ---
+// This map is used to find the location of a venue by its name.
 final Map<String, LatLng> venueCoordinates = {
-    // 'Old Gymkhana': const LatLng(26.1879, 91.6938),
-    // 'Lake': const LatLng(26.1862, 91.6974),
-    // 'Cricket Ground': const LatLng(26.1905, 91.6998),
-    // 'Lecture Hall 1': const LatLng(26.1920, 91.6950),
-    // 'Conference Hall 3': const LatLng(26.1925, 91.6955),
-    // 'Main Auditorium': const LatLng(26.1915, 91.6945),
-    // 'Mini Audi': const LatLng(26.1918, 91.6948),
-    // 'Near Library Ground': const LatLng(26.1900, 91.6960),
-    // 'Conference Room (New Sac)': const LatLng(26.1895, 91.6980),
-    // 'Swimming Pool Area': const LatLng(26.1910, 91.7005),
-    // 'Starts from Subansiri': const LatLng(26.1855, 91.6940),
-    // 'Conference Hall (Foyer)': const LatLng(26.1923, 91.6958),
-    // 'New Sac Conference Hall': const LatLng(26.1897, 91.6982),
-    // 'Conference Hall 2': const LatLng(26.1927, 91.6957),
+  // 'Old Gymkhana': const LatLng(26.1879, 91.6938),
+  // 'Lake': const LatLng(26.1862, 91.6974),
+  // 'Cricket Ground': const LatLng(26.1905, 91.6998),
+  // 'Lecture Hall 1': const LatLng(26.1920, 91.6950),
+  // 'Conference Hall 3': const LatLng(26.1925, 91.6955),
+  // 'Main Auditorium': const LatLng(26.1915, 91.6945),
+  // 'Mini Audi': const LatLng(26.1918, 91.6948),
+  // 'Near Library Ground': const LatLng(26.1900, 91.6960),
+  // 'Conference Room (New Sac)': const LatLng(26.1895, 91.6980),
+  // 'Swimming Pool Area': const LatLng(26.1910, 91.7005),
+  // 'Starts from Subansiri': const LatLng(26.1855, 91.6940),
+  // 'Conference Hall (Foyer)': const LatLng(26.1923, 91.6958),
+  // 'New Sac Conference Hall': const LatLng(26.1897, 91.6982),
+  // 'Conference Hall 2': const LatLng(26.1927, 91.6957),
 };
 
 class MapScreen extends StatefulWidget {
@@ -45,32 +47,38 @@ class MapScreenState extends State<MapScreen> {
     _fetchVenues();
   }
 
+  // Fetches the list of venues from Firebase Remote Config
   Future<void> _fetchVenues() async {
-    final remoteConfig = FirebaseRemoteConfig.instance;
-    await remoteConfig.fetchAndActivate();
-    final scheduleJsonString = remoteConfig.getString('fest_schedule_json');
-    if (scheduleJsonString.isNotEmpty) {
-      final scheduleData = json.decode(scheduleJsonString);
-      final Set<String> allVenues = {};
-      final List<dynamic> days = scheduleData['days'] ?? [];
+    try {
+      final remoteConfig = FirebaseRemoteConfig.instance;
+      await remoteConfig.fetchAndActivate();
+      final scheduleJsonString = remoteConfig.getString('fest_schedule_json');
+      if (scheduleJsonString.isNotEmpty) {
+        final scheduleData = json.decode(scheduleJsonString);
+        final Set<String> allVenues = {};
+        final List<dynamic> days = scheduleData['days'] ?? [];
 
-      for (var day in days) {
-        final List<dynamic> events = day['events'] ?? [];
-        for (var event in events) {
-          if (event['venue'] != null) {
-            allVenues.add(event['venue']);
+        for (var day in days) {
+          final List<dynamic> events = day['events'] ?? [];
+          for (var event in events) {
+            if (event['venue'] != null) {
+              allVenues.add(event['venue']);
+            }
           }
         }
+        
+        if (mounted) {
+          setState(() {
+            _venues = allVenues;
+          });
+        }
       }
-      
-      if (mounted) {
-        setState(() {
-          _venues = allVenues;
-        });
-      }
+    } catch (e) {
+      print("Error fetching venues: $e");
     }
   }
 
+  // Gets the user's current GPS location
   Future<void> getCurrentLocation() async {
     final hasPermission = await _handleLocationPermission();
     if (!hasPermission) {
@@ -91,6 +99,7 @@ class MapScreenState extends State<MapScreen> {
     }
   }
 
+  // Toggles the map's visual theme between light and dark mode
   void toggleMapTheme() {
     if (mounted) {
       setState(() {
@@ -99,6 +108,7 @@ class MapScreenState extends State<MapScreen> {
     }
   }
 
+  // Resets the map's rotation to north-up
   void resetRotation() {
     if (mounted) {
       setState(() {
@@ -108,10 +118,13 @@ class MapScreenState extends State<MapScreen> {
     }
   }
 
+  // Handles location permission checks
   Future<bool> _handleLocationPermission() async {
+    // In a real app, you would implement a full permission request flow here.
     return true;
   }
 
+  // Sets a default location if the user's location can't be determined
   void _setDefaultLocation() {
     if (mounted) {
       _mapController.move(const LatLng(26.1923, 91.6951), 16.0);
@@ -120,6 +133,9 @@ class MapScreenState extends State<MapScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // --- MODIFICATION START ---
+    // The Scaffold and extra UI controls have been removed.
+    // The widget now directly returns the FlutterMap.
     return FlutterMap(
       mapController: _mapController,
       options: MapOptions(
@@ -185,7 +201,7 @@ class MapScreenState extends State<MapScreen> {
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
-                            fontSize: 12.0, // Smaller text
+                            fontSize: 12.0,
                             color: isDarkMode ? Colors.white : Colors.black,
                           ),
                         ),
@@ -235,5 +251,6 @@ class MapScreenState extends State<MapScreen> {
           ),
       ],
     );
+    // --- MODIFICATION END ---
   }
 }
