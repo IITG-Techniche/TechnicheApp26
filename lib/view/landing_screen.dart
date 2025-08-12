@@ -16,7 +16,15 @@ import 'package:amazon_clone/view/schedule_screen.dart';
 
 class LandingScreen extends StatefulWidget {
   static const String routeName = '/landing-screen';
-  const LandingScreen({Key? key}) : super(key: key);
+  final int initialTab;
+  final String? initialVenue;
+
+  const LandingScreen({
+    Key? key,
+    this.initialTab = 1,
+    this.initialVenue,
+  }) : super(key: key);
+
   @override
   State<LandingScreen> createState() => _LandingScreenState();
 }
@@ -117,13 +125,14 @@ class ScanlinePainter extends CustomPainter {
 }
 
 class _LandingScreenState extends State<LandingScreen> {
-  int _selectedIndex = 1;
+  late int _selectedIndex;
 
   final GlobalKey<MapScreenState> _mapKey = GlobalKey<MapScreenState>();
 
   @override
   void initState() {
     super.initState();
+    _selectedIndex = widget.initialTab;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (kDebugMode) {
         print("LandingScreen: Triggering notification setup.");
@@ -173,12 +182,11 @@ class _LandingScreenState extends State<LandingScreen> {
   @override
   Widget build(BuildContext context) {
     final List<Widget> screens = <Widget>[
-      MapScreen(key: _mapKey),
+      MapScreen(key: _mapKey, initialVenue: widget.initialVenue),
       _buildHomeContent(context),
       LegacyPage(),
       const SchedulePage(),
       const UtilitiesScreen(),
-     
     ];
 
     // final mapAppBar = AppBar(
@@ -188,7 +196,6 @@ class _LandingScreenState extends State<LandingScreen> {
     //     elevation: 0,
     // );
 
-    
     return UpgradeAlert(
       upgrader: Upgrader(
         debugLogging: kDebugMode,
@@ -229,7 +236,6 @@ class _LandingScreenState extends State<LandingScreen> {
             GlowingBottomNavBarItem(icon: Icons.schedule, label: 'Schedule'),
             GlowingBottomNavBarItem(
                 icon: Icons.workspace_premium_sharp, label: 'Utilities'),
-           
           ],
         ),
       ),

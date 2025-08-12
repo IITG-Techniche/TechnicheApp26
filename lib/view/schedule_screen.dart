@@ -2,7 +2,9 @@ import 'package:amazon_clone/utils/animate_gradient_background.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'dart:convert';
-import 'package:intl/intl.dart'; 
+import 'package:intl/intl.dart';
+import 'package:amazon_clone/view/map_screen.dart' hide AnimatedGradientBackground; // Importing MapScreen
+import 'package:amazon_clone/view/landing_screen.dart' hide AnimatedGradientBackground; // Import LandingScreen
 
 
 const Map<String, Map<String, dynamic>> categoryStyles = {
@@ -91,8 +93,10 @@ class _SchedulePageState extends State<SchedulePage> with TickerProviderStateMix
   Widget build(BuildContext context) {
     if (_isLoading) {
       return Scaffold(
+         backgroundColor: Colors.transparent,
+         extendBodyBehindAppBar: true,
         appBar: AppBar(title: const Text("Loading Schedule...")),
-        body: const Center(child: CircularProgressIndicator()),
+        body: Stack(children: [const AnimatedGradientBackground(),Center(child: CircularProgressIndicator(),)],),
       );
     }
 
@@ -113,14 +117,13 @@ class _SchedulePageState extends State<SchedulePage> with TickerProviderStateMix
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const AnimatedGradientBackground(),
-              Icon(Icons.timelapse_outlined, size: 80, color: Colors.grey),
-              SizedBox(height: 20),
-              Text("Coming Soon", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-              Text("The future is not yet written.", textAlign: TextAlign.center),
+              Icon(Icons.timelapse_outlined, size: 80, color: Colors.grey.shade400),
+              const SizedBox(height: 20),
+              const Text("Coming Soon", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white)),
+              const Text("The future is not yet written.", textAlign: TextAlign.center, style: TextStyle(color: Colors.white70)),
             ],
-          ),
-        ),
+              ),
+            ),
           ],
         ),
       );
@@ -135,10 +138,10 @@ class _SchedulePageState extends State<SchedulePage> with TickerProviderStateMix
           child: Scaffold(
             backgroundColor: Colors.transparent,
             appBar: AppBar(
-        title: const Text('Events Timeline'),
-        centerTitle: true,
-        backgroundColor: Colors.transparent,
-        elevation: 0,
+      title: const Text('Events Timeline'),
+      centerTitle: true,
+      backgroundColor: Colors.transparent,
+      elevation: 0,
               bottom: TabBar(
                 isScrollable: true,
                 indicatorColor: Theme.of(context).colorScheme.secondary,
@@ -154,8 +157,20 @@ class _SchedulePageState extends State<SchedulePage> with TickerProviderStateMix
                     value: _selectedCategory,
                     decoration: InputDecoration(
                       labelText: 'Filter by Category',
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      labelStyle: const TextStyle(color: Colors.white70),
+                      filled: true,
+                      fillColor: Colors.white.withOpacity(0.1),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.white.withOpacity(0.2)),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Theme.of(context).colorScheme.secondary),
+                      ),
                     ),
+                    dropdownColor: const Color(0xFF16213e),
+                    style: const TextStyle(color: Colors.white),
                     items: _categories.map((String category) {
                       return DropdownMenuItem<String>(value: category, child: Text(category));
                     }).toList(),
@@ -167,7 +182,7 @@ class _SchedulePageState extends State<SchedulePage> with TickerProviderStateMix
                     children: days.map((day) {
                       final List<dynamic> allEvents = List.from(day['events'] ?? [])..sort((a, b) => a['startTime'].compareTo(b['startTime']));
                       final List<dynamic> filteredEvents = _selectedCategory == 'All' ? allEvents : allEvents.where((event) => event['category'] == _selectedCategory).toList();
-                      if (filteredEvents.isEmpty) return Center(child: Text('No events for this category on ${day['title']}.'));
+                      if (filteredEvents.isEmpty) return Center(child: Text('No events for this category on ${day['title']}.', style: const TextStyle(color: Colors.white70)));
                       return ListView.builder(
                         padding: const EdgeInsets.symmetric(horizontal: 16.0),
                         itemCount: filteredEvents.length,
@@ -214,9 +229,9 @@ class EventTimelineTile extends StatelessWidget {
     final Color textColor = isDark ? Colors.white : Colors.black;
     final Color subTextColor = isDark ? Colors.grey.shade400 : Colors.grey.shade700;
     final Color timelineColor = isDark ? Colors.grey.shade800 : Colors.grey.shade300;
-    final Color cardColor = Theme.of(context).cardColor.withOpacity(isDark ? 0.5 : 1.0);
+    final Color cardColor = isDark ? Colors.white.withOpacity(0.05) : Colors.white;
     final Color iconBgColor = color.withOpacity(0.15);
-    final Color iconFgColor = isDark ? color : color;
+    final Color iconFgColor = color;
 
     return AnimatedBuilder(
       animation: animation,
@@ -236,147 +251,92 @@ class EventTimelineTile extends StatelessWidget {
           ),
         );
       },
-      child: IntrinsicHeight(
-        child: Row(
-          children: [
-            SizedBox(
-              width: 70,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(_formatTime(event['startTime']), style: TextStyle(fontWeight: FontWeight.bold, color: textColor)),
-                  Text(_formatTime(event['endTime']), style: TextStyle(color: subTextColor, fontSize: 12)),
-                ],
-              ),
+      child: InkWell(
+        onTap: () {
+          final String venueName = event['venue'];
+          // Replace direct MapScreen navigation with landing screen navigation
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => LandingScreen(initialTab: 0, initialVenue: venueName),
             ),
-            const SizedBox(width: 10),
-            SizedBox(
-              width: 30,
-              child: Column(
-                children: [
-                  Container(width: 2, height: 20, color: timelineColor),
-                  Container(
-                    width: 30,
-                    height: 30,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: color,
-                      boxShadow: [BoxShadow(color: color.withOpacity(0.5), blurRadius: 8, spreadRadius: 2)],
-                    ),
-                    child: Icon(icon, size: 16, color: isDark ? Colors.black : Colors.white),
-                  ),
-                  Expanded(child: Container(width: 2, color: timelineColor)),
-                ],
-              ),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Container(
-                margin: const EdgeInsets.only(bottom: 24.0, top: 10.0),
-                padding: const EdgeInsets.all(16.0),
-                decoration: BoxDecoration(
-                  color: cardColor,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: timelineColor),
-                  boxShadow: [BoxShadow(color: color.withOpacity(0.1), blurRadius: 10, offset: const Offset(0, 4))],
-                ),
+          );
+        },
+        child: IntrinsicHeight(
+          child: Row(
+            children: [
+              SizedBox(
+                width: 70,
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(event['name'], style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: textColor)),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        Icon(Icons.location_on_outlined, size: 16, color: subTextColor),
-                        const SizedBox(width: 4),
-                        Expanded(child: Text(event['venue'], style: TextStyle(fontSize: 14, color: subTextColor))),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: iconBgColor,
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: color.withOpacity(0.5)),
-                      ),
-                      child: Text(category, style: TextStyle(fontSize: 12, color: iconFgColor, fontWeight: FontWeight.bold)),
-                    ),
+                    Text(_formatTime(event['startTime']), style: TextStyle(fontWeight: FontWeight.bold, color: textColor)),
+                    Text(_formatTime(event['endTime']), style: TextStyle(color: subTextColor, fontSize: 12)),
                   ],
                 ),
               ),
-            ),
-          ],
+              const SizedBox(width: 10),
+              SizedBox(
+                width: 30,
+                child: Column(
+                  children: [
+                    Container(width: 2, height: 20, color: timelineColor),
+                    Container(
+                      width: 30,
+                      height: 30,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: color,
+                        boxShadow: [BoxShadow(color: color.withOpacity(0.5), blurRadius: 8, spreadRadius: 2)],
+                      ),
+                      child: Icon(icon, size: 16, color: Colors.black),
+                    ),
+                    Expanded(child: Container(width: 2, color: timelineColor)),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Container(
+                  margin: const EdgeInsets.only(bottom: 24.0, top: 10.0),
+                  padding: const EdgeInsets.all(16.0),
+                  decoration: BoxDecoration(
+                    color: cardColor,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: timelineColor),
+                    boxShadow: [BoxShadow(color: color.withOpacity(0.1), blurRadius: 10, offset: const Offset(0, 4))],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(event['name'], style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: textColor)),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          Icon(Icons.location_on_outlined, size: 16, color: subTextColor),
+                          const SizedBox(width: 4),
+                          Expanded(child: Text(event['venue'], style: TextStyle(fontSize: 14, color: subTextColor))),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: iconBgColor,
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: color.withOpacity(0.5)),
+                        ),
+                        child: Text(category, style: TextStyle(fontSize: 12, color: iconFgColor, fontWeight: FontWeight.bold)),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 }
-
-// // AnimatedGradientBackground Widget
-// class AnimatedGradientBackground extends StatefulWidget {
-//   const AnimatedGradientBackground({Key? key}) : super(key: key);
-//   @override
-//   State<AnimatedGradientBackground> createState() =>
-//       _AnimatedGradientBackgroundState();
-// }
-
-// class _AnimatedGradientBackgroundState extends State<AnimatedGradientBackground>
-//     with SingleTickerProviderStateMixin {
-//   late AnimationController _controller;
-//   late Animation<double> _animation;
-//   final List<List<Color>> gradients = [
-//     [const Color(0xFF181A20), const Color(0xFF23242B), const Color(0xFF35363C)],
-//     [const Color(0xFF23242B), const Color(0xFF35363C), const Color(0xFF181A20)],
-//     [const Color(0xFF35363C), const Color(0xFF23242B), const Color(0xFF181A20)],
-//     [const Color(0xFF181A20), const Color(0xFF35363C), const Color(0xFF23242B)],
-//   ];
-//   int _currentGradient = 0;
-
-//   @override
-//   void initState() {
-//     super.initState();
-//     _controller =
-//         AnimationController(vsync: this, duration: const Duration(seconds: 4))
-//           ..addStatusListener((status) {
-//             if (status == AnimationStatus.completed) {
-//               setState(() {
-//                 _currentGradient = (_currentGradient + 1) % gradients.length;
-//               });
-//               _controller.forward(from: 0);
-//             }
-//           });
-//     _animation = CurvedAnimation(parent: _controller, curve: Curves.easeInOut);
-//     _controller.forward();
-//   }
-
-//   @override
-//   void dispose() {
-//     _controller.dispose();
-//     super.dispose();
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     final nextGradient = gradients[(_currentGradient + 1) % gradients.length];
-//     final currentGradient = gradients[_currentGradient];
-//     return AnimatedBuilder(
-//       animation: _animation,
-//       builder: (context, child) {
-//         return Container(
-//           decoration: BoxDecoration(
-//             gradient: LinearGradient(
-//               begin: Alignment.topLeft,
-//               end: Alignment.bottomRight,
-//               colors: List.generate(currentGradient.length, (i) {
-//                 return Color.lerp(
-//                     currentGradient[i], nextGradient[i], _animation.value)!;
-//               }),
-//             ),
-//           ),
-//         );
-//       },
-//     );
-//   }
-// }
