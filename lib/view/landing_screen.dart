@@ -21,7 +21,7 @@ class LandingScreen extends StatefulWidget {
 
   const LandingScreen({
     Key? key,
-    this.initialTab = 1,
+    this.initialTab = 2, // Set Home as default (middle)
     this.initialVenue,
   }) : super(key: key);
 
@@ -51,8 +51,7 @@ class RetroTransition extends StatelessWidget {
         final double scale = 0.94 + 0.12 * t;
         final double opacity = _clamp(t);
         final Offset offset = Offset(0, (1 - t) * 18);
-        final double glowPeak =
-            (1.0 - ((t - 0.5).abs() * 2.0)).clamp(0.0, 1.0);
+        final double glowPeak = (1.0 - ((t - 0.5).abs() * 2.0)).clamp(0.0, 1.0);
         final double glowOpacity = 0.06 * glowPeak;
         final double scanlineOpacity = 0.06 * glowPeak;
 
@@ -183,8 +182,8 @@ class _LandingScreenState extends State<LandingScreen> {
   Widget build(BuildContext context) {
     final List<Widget> screens = <Widget>[
       MapScreen(key: _mapKey, initialVenue: widget.initialVenue),
-      _buildHomeContent(context),
       LegacyPage(),
+      _buildHomeContent(context), // Home in the middle
       const SchedulePage(),
       const UtilitiesScreen(),
     ];
@@ -231,8 +230,9 @@ class _LandingScreenState extends State<LandingScreen> {
           onTap: _onItemTapped,
           items: [
             GlowingBottomNavBarItem(icon: Icons.map_sharp, label: 'Map'),
-            GlowingBottomNavBarItem(icon: Icons.home_filled, label: 'Home'),
             GlowingBottomNavBarItem(icon: Icons.history_edu, label: 'Legacy'),
+            GlowingBottomNavBarItem(
+                icon: Icons.home_filled, label: 'Home'), // Home in the middle
             GlowingBottomNavBarItem(icon: Icons.schedule, label: 'Schedule'),
             GlowingBottomNavBarItem(
                 icon: Icons.workspace_premium_sharp, label: 'Utilities'),

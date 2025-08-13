@@ -1,6 +1,4 @@
-// full corrected utilities_screen.dart (only change: _particleKeys init fixed)
 import 'dart:async';
-import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -16,7 +14,6 @@ class UtilitiesScreen extends StatefulWidget {
 
 class _UtilitiesScreenState extends State<UtilitiesScreen> {
   bool showFAQ = false;
-  bool showTeam = false;
 
   void _showContactsModal(String title, List<_Contact> contacts) {
     showModalBottomSheet(
@@ -128,8 +125,18 @@ class _UtilitiesScreenState extends State<UtilitiesScreen> {
                   ),
                   const SizedBox(height: 24),
                   ListTile(
-                    leading: const Icon(Icons.group),
+                    leading: const Icon(Icons.people_alt),
                     title: const Text('Team'),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => const TeamImageCarouselScreen(),
+                      ),
+                    ),
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.group),
+                    title: const Text('Developers'),
                     trailing: const Icon(Icons.chevron_right),
                     onTap: _openTeamCarousel,
                   ),
@@ -144,12 +151,134 @@ class _UtilitiesScreenState extends State<UtilitiesScreen> {
                     const _FAQList(),
                     const Divider(),
                   ],
+
+                  // Quick Links Section
+                  const SizedBox(height: 18),
+                  const Padding(
+                    padding:
+                        EdgeInsets.symmetric(vertical: 4.0, horizontal: 2.0),
+                    child: Text('Quick Links',
+                        style: TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.bold,
+                        )),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      _QuickLinkIcon(
+                        icon: Icons.camera_alt,
+                        color: Colors.pinkAccent,
+                        url:
+                            'https://www.instagram.com/techniche_iitguwahati/?hl=en',
+                        label: 'Instagram',
+                      ),
+                      _QuickLinkIcon(
+                        icon: Icons.business,
+                        color: Colors.blue,
+                        url: 'https://in.linkedin.com/company/techniche-iitg',
+                        label: 'LinkedIn',
+                      ),
+                      _QuickLinkIcon(
+                        icon: Icons.alternate_email,
+                        color: Colors.lightBlue,
+                        url: 'https://twitter.com/Techniche_IITG',
+                        label: 'Twitter',
+                      ),
+                      _QuickLinkIcon(
+                        icon: Icons.ondemand_video,
+                        color: Colors.red,
+                        url: 'https://www.youtube.com/c/techniche',
+                        label: 'YouTube',
+                      ),
+                      _QuickLinkIcon(
+                        icon: Icons.book,
+                        color: Colors.deepPurple,
+                        url: 'https://media-techniche.medium.com/',
+                        label: 'Medium',
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 18),
                 ],
+              ),
+            ),
+          ),
+          Positioned(
+            bottom: 45,
+            left: 0,
+            right: 0,
+            child: Container(
+              height: 25,
+              color: const Color.fromARGB(255, 39, 39, 39), // dark grey
+              child: const MarqueeText(
+                text: 'Made with '
+                    '❤'
+                    ' by Techniche DevOps IITG',
+                style: TextStyle(
+                  color: Color.fromARGB(255, 84, 84, 84),
+                  fontSize: 16,
+                ),
               ),
             ),
           ),
         ],
       ),
+    );
+  }
+}
+
+/// ----------------- Helper widgets & models (top-level) -----------------
+
+class _QuickLinkIcon extends StatelessWidget {
+  final IconData icon;
+  final Color color;
+  final String url;
+  final String label;
+  const _QuickLinkIcon({
+    required this.icon,
+    required this.color,
+    required this.url,
+    required this.label,
+    Key? key,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        InkWell(
+          onTap: () async {
+            final uri = Uri.parse(url);
+            if (await canLaunchUrl(uri)) {
+              await launchUrl(uri, mode: LaunchMode.externalApplication);
+            } else {
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Cannot open $label')),
+                );
+              }
+            }
+          },
+          borderRadius: BorderRadius.circular(32),
+          child: Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: color.withOpacity(0.13),
+            ),
+            child: Icon(icon, size: 32, color: color),
+          ),
+        ),
+        const SizedBox(height: 6),
+        Text(label,
+            style: TextStyle(
+              fontSize: 12,
+              color: color,
+              fontWeight: FontWeight.w600,
+            )),
+      ],
     );
   }
 }
@@ -193,7 +322,7 @@ class _ModalUtilityIcon extends StatelessWidget {
 
 class _ContactListTile extends StatelessWidget {
   final _Contact contact;
-  const _ContactListTile({required this.contact});
+  const _ContactListTile({Key? key, required this.contact}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -269,7 +398,8 @@ class _FAQList extends StatelessWidget {
   final List<_FAQ> faqs = const [
     _FAQ(
       question: 'How do I register for events?',
-      answer: 'Visit the Events section on the app and tap on Register.',
+      answer:
+          'Visit the official website or instagram profile of Techniche for all events registrations.',
     ),
     _FAQ(
       question: 'Where can I find the event schedule?',
@@ -310,7 +440,7 @@ class _FAQList extends StatelessWidget {
   }
 }
 
-/// ---------- Team Carousel Screen (retro-futuristic, halo aligned, particle burst) ----------
+/// ---------- Team Carousel Screen (retro-futuristic, halo aligned) ----------
 class TeamCarouselScreen extends StatefulWidget {
   const TeamCarouselScreen({Key? key}) : super(key: key);
 
@@ -324,16 +454,12 @@ class _TeamCarouselScreenState extends State<TeamCarouselScreen>
       PageController(viewportFraction: 0.78, initialPage: 0);
   late AnimationController _ringController;
   Timer? _autoPlayTimer;
-  double _page = 0.0;
   int _currentIndex = 0;
-
-  // <-- FIX: initialize as an empty list (no 'late' keyword)
-  List<GlobalKey<_ParticleBurstState>> _particleKeys = [];
 
   final List<_TeamMember> members = const [
     _TeamMember(
         name: 'Dhruv',
-        role: 'Head Of DevOps',
+        role: 'DevOps Head',
         imageUrl: 'assets/dhruv-app.jpg',
         facts: [
           'Sees bugs as “feature opportunities”',
@@ -341,7 +467,7 @@ class _TeamCarouselScreenState extends State<TeamCarouselScreen>
         ]),
     _TeamMember(
         name: 'Arya',
-        role: 'Head Of DevOps',
+        role: 'DevOps Head',
         imageUrl: 'assets/arya-app.jpg',
         facts: ['Builds backend magic', 'Coffee-fueled late nights']),
     _TeamMember(
@@ -365,17 +491,15 @@ class _TeamCarouselScreenState extends State<TeamCarouselScreen>
   void initState() {
     super.initState();
 
-    // populate particle keys now that members is available
-    _particleKeys =
-        List.generate(members.length, (_) => GlobalKey<_ParticleBurstState>());
-
-    _pageController.addListener(_onScroll);
     _ringController =
         AnimationController(vsync: this, duration: const Duration(seconds: 4))
           ..repeat();
 
-    // autoplay
-    _autoPlayTimer = Timer.periodic(const Duration(seconds: 4), (t) {
+    _resumeAutoPlay();
+  }
+
+  void _resumeAutoPlay() {
+    _autoPlayTimer = Timer.periodic(const Duration(seconds: 5), (t) {
       final next = (_currentIndex + 1) % members.length;
       if (_pageController.hasClients) {
         _pageController.animateToPage(next,
@@ -386,24 +510,20 @@ class _TeamCarouselScreenState extends State<TeamCarouselScreen>
     });
   }
 
-  void _onScroll() {
-    if (!_pageController.hasClients) return;
-    setState(() {
-      _page = _pageController.page ?? _pageController.initialPage.toDouble();
-    });
+  void _pauseAutoPlay() {
+    _autoPlayTimer?.cancel();
   }
 
   @override
   void dispose() {
     _autoPlayTimer?.cancel();
-    _pageController.removeListener(_onScroll);
     _pageController.dispose();
     _ringController.dispose();
     super.dispose();
   }
 
-  void _openMemberDialog(_TeamMember m) {
-    showDialog(
+  Future<void> _openMemberDialog(_TeamMember m) {
+    return showDialog<void>(
       context: context,
       builder: (_) => Dialog(
         backgroundColor: Colors.black87,
@@ -414,10 +534,20 @@ class _TeamCarouselScreenState extends State<TeamCarouselScreen>
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(80),
-                  child: Image.asset(m.imageUrl,
-                      width: 140, height: 140, fit: BoxFit.cover),
+                ClipOval(
+                  child: Image.asset(
+                    m.imageUrl,
+                    width: 140,
+                    height: 140,
+                    fit: BoxFit.cover,
+                    errorBuilder: (c, e, s) => Container(
+                      width: 140,
+                      height: 140,
+                      color: Colors.grey[800],
+                      child: const Icon(Icons.person,
+                          size: 64, color: Colors.white24),
+                    ),
+                  ),
                 ),
                 const SizedBox(height: 12),
                 Text(m.name,
@@ -497,25 +627,8 @@ class _TeamCarouselScreenState extends State<TeamCarouselScreen>
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Row(children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: _neonColor().withOpacity(0.12),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                            color: _neonColor().withOpacity(0.35), width: 1.2),
-                      ),
-                      child: Row(children: const [
-                        Icon(Icons.rocket_launch,
-                            size: 16, color: Colors.cyanAccent),
-                        SizedBox(width: 8),
-                        Text('Team',
-                            style: TextStyle(color: Colors.cyanAccent)),
-                      ]),
-                    ),
                     const SizedBox(width: 12),
-                    Text('Meet the Crew',
+                    Text('Meet the Developers',
                         style: TextStyle(
                             color: Colors.white.withOpacity(0.9),
                             fontSize: 18,
@@ -529,53 +642,53 @@ class _TeamCarouselScreenState extends State<TeamCarouselScreen>
               ),
             ),
 
-            // Carousel center
+            // Carousel center - AnimatedBuilder listens to PageController to avoid global setState on scroll
             Center(
               child: SizedBox(
                 height: size.height * 0.68,
-                child: PageView.builder(
-                  controller: _pageController,
-                  itemCount: members.length,
-                  onPageChanged: (i) => setState(() => _currentIndex = i),
-                  itemBuilder: (context, i) {
-                    final delta = (i - _page).abs().clamp(0.0, 1.0);
-                    final double scale = 1.0 - (delta * 0.15);
-                    final double rotate = (i - _page) * 0.08;
-                    final double opacity = 1.0 - (delta * 0.45);
+                child: AnimatedBuilder(
+                  animation: _pageController,
+                  builder: (context, _) {
+                    final page = _pageController.hasClients &&
+                            _pageController.page != null
+                        ? _pageController.page!
+                        : _pageController.initialPage.toDouble();
 
-                    final m = members[i];
+                    return PageView.builder(
+                      controller: _pageController,
+                      itemCount: members.length,
+                      onPageChanged: (i) => setState(() => _currentIndex = i),
+                      itemBuilder: (context, i) {
+                        final delta = (i - page).abs().clamp(0.0, 1.0);
+                        final double scale = 1.0 - (delta * 0.12);
+                        final double rotate = (i - page) * 0.06;
+                        final double opacity = 1.0 - (delta * 0.45);
 
-                    return Transform.translate(
-                      offset: Offset(0, delta * 18),
-                      child: Transform.rotate(
-                        angle: rotate,
-                        child: Opacity(
-                          opacity: opacity,
-                          child: Transform.scale(
-                            scale: scale,
-                            child: GestureDetector(
-                              onTap: () {
-                                // guard: ensure particle key exists
-                                if (i < _particleKeys.length) {
-                                  _particleKeys[i].currentState?.burst();
-                                }
-                                Future.delayed(
-                                    const Duration(milliseconds: 220),
-                                    () => _openMemberDialog(m));
-                              },
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 8, vertical: 12),
-                                child: Stack(
-                                  alignment: Alignment.center,
-                                  children: [
-                                    // Card background
-                                    Container(
+                        final m = members[i];
+
+                        return Transform.translate(
+                          offset: Offset(0, delta * 12),
+                          child: Transform.rotate(
+                            angle: rotate,
+                            child: Opacity(
+                              opacity: opacity,
+                              child: Transform.scale(
+                                scale: scale,
+                                child: GestureDetector(
+                                  onTap: () {
+                                    _pauseAutoPlay();
+                                    _openMemberDialog(m)
+                                        .then((_) => _resumeAutoPlay());
+                                  },
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8, vertical: 12),
+                                    child: Container(
                                       decoration: BoxDecoration(
                                         borderRadius: BorderRadius.circular(20),
                                         gradient: LinearGradient(
                                           colors: [
-                                            Colors.white.withOpacity(0.03),
+                                            Colors.white.withOpacity(0.02),
                                             Colors.white.withOpacity(0.01)
                                           ],
                                           begin: Alignment.topLeft,
@@ -583,172 +696,159 @@ class _TeamCarouselScreenState extends State<TeamCarouselScreen>
                                         ),
                                         border: Border.all(
                                           color: _neonColor().withOpacity(
-                                              i == _currentIndex ? 0.55 : 0.14),
-                                          width: i == _currentIndex ? 2.0 : 1.0,
+                                              i == _currentIndex ? 0.45 : 0.12),
+                                          width: i == _currentIndex ? 1.8 : 1.0,
                                         ),
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: _neonColor().withOpacity(
-                                                i == _currentIndex
-                                                    ? 0.12
-                                                    : 0.04),
-                                            blurRadius:
-                                                i == _currentIndex ? 30 : 12,
-                                            spreadRadius: 1,
-                                          ),
-                                        ],
                                       ),
-                                    ),
+                                      child: Center(
+                                        child: SizedBox(
+                                          width: 220,
+                                          child: Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              // halo + avatar - small AnimatedBuilder for ring only
+                                              Stack(
+                                                alignment: Alignment.center,
+                                                children: [
+                                                  AnimatedBuilder(
+                                                    animation: _ringController,
+                                                    builder: (_, __) {
+                                                      // subtle pulsing - small subtree only
+                                                      final phase = Curves
+                                                          .easeInOut
+                                                          .transform(
+                                                              _ringController
+                                                                  .value);
+                                                      final haloScale = 0.96 +
+                                                          0.08 *
+                                                              (0.5 +
+                                                                  0.5 * phase);
+                                                      final haloOpacity = 0.08 +
+                                                          0.06 *
+                                                              (1 -
+                                                                  (phase - 0.5)
+                                                                          .abs() *
+                                                                      2);
 
-                                    // Avatar + Halo (and particle burst)
-                                    Center(
-                                      child: SizedBox(
-                                        width: 220,
-                                        child: Column(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            Stack(
-                                              alignment: Alignment.center,
-                                              children: [
-                                                AnimatedBuilder(
-                                                  animation: _ringController,
-                                                  builder: (_, __) {
-                                                    final double phase = Curves
-                                                        .easeInOut
-                                                        .transform(
-                                                            _ringController
-                                                                .value);
-                                                    final double haloScale =
-                                                        0.92 +
-                                                            0.18 *
-                                                                (0.5 +
-                                                                    0.5 *
-                                                                        phase);
-                                                    final double haloOpacity = 0.12 +
-                                                        0.08 *
-                                                            (1 -
-                                                                (phase - 0.5)
-                                                                        .abs() *
-                                                                    2);
-                                                    final double thickness =
-                                                        i == _currentIndex
-                                                            ? 3.0
-                                                            : 1.0;
-
-                                                    return Transform.scale(
-                                                      scale: haloScale,
-                                                      child: Opacity(
-                                                        opacity: haloOpacity *
-                                                            (i == _currentIndex
-                                                                ? 1.0
-                                                                : 0.55),
-                                                        child: Container(
-                                                          width: 180,
-                                                          height: 180,
-                                                          decoration:
-                                                              BoxDecoration(
-                                                            shape:
-                                                                BoxShape.circle,
-                                                            gradient:
-                                                                RadialGradient(
-                                                              colors: [
-                                                                Colors
+                                                      return Transform.scale(
+                                                        scale: haloScale,
+                                                        child: Opacity(
+                                                          opacity: haloOpacity *
+                                                              (i == _currentIndex
+                                                                  ? 1.0
+                                                                  : 0.5),
+                                                          child: Container(
+                                                            width: 160,
+                                                            height: 160,
+                                                            decoration:
+                                                                BoxDecoration(
+                                                              shape: BoxShape
+                                                                  .circle,
+                                                              gradient:
+                                                                  RadialGradient(
+                                                                colors: [
+                                                                  Colors.cyanAccent
+                                                                      .withOpacity(0.14 *
+                                                                          (i == _currentIndex
+                                                                              ? 1
+                                                                              : 0.6)),
+                                                                  Colors.cyanAccent
+                                                                      .withOpacity(0.04 *
+                                                                          (i == _currentIndex
+                                                                              ? 1
+                                                                              : 0.4)),
+                                                                  Colors
+                                                                      .transparent,
+                                                                ],
+                                                                stops: const [
+                                                                  0.0,
+                                                                  0.6,
+                                                                  1.0
+                                                                ],
+                                                              ),
+                                                              border:
+                                                                  Border.all(
+                                                                color: Colors
                                                                     .cyanAccent
-                                                                    .withOpacity(0.18 *
-                                                                        (i == _currentIndex
-                                                                            ? 1
-                                                                            : 0.6)),
-                                                                Colors
-                                                                    .cyanAccent
-                                                                    .withOpacity(0.06 *
-                                                                        (i == _currentIndex
-                                                                            ? 1
-                                                                            : 0.4)),
-                                                                Colors
-                                                                    .transparent,
-                                                              ],
-                                                              stops: const [
-                                                                0.0,
-                                                                0.6,
-                                                                1.0
-                                                              ],
-                                                            ),
-                                                            border: Border.all(
-                                                              color: Colors
-                                                                  .cyanAccent
-                                                                  .withOpacity(
-                                                                      i == _currentIndex
-                                                                          ? 0.95
-                                                                          : 0.22),
-                                                              width: thickness,
+                                                                    .withOpacity(i ==
+                                                                            _currentIndex
+                                                                        ? 0.9
+                                                                        : 0.2),
+                                                                width: i ==
+                                                                        _currentIndex
+                                                                    ? 2.2
+                                                                    : 0.9,
+                                                              ),
                                                             ),
                                                           ),
                                                         ),
-                                                      ),
-                                                    );
-                                                  },
-                                                ),
-
-                                                // Avatar
-                                                ClipRRect(
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          100),
-                                                  child: Container(
-                                                    width: 160,
-                                                    height: 160,
-                                                    color: Colors.grey[900],
-                                                    child: Image.asset(
-                                                        m.imageUrl,
-                                                        fit: BoxFit.cover),
+                                                      );
+                                                    },
                                                   ),
-                                                ),
-                                                // Particle burst (key exists) - show above avatar
-                                                if (i < _particleKeys.length)
-                                                  ParticleBurst(
-                                                      key: _particleKeys[i]),
-                                              ],
-                                            ),
-                                            const SizedBox(height: 14),
-                                            Text(m.name,
-                                                style: const TextStyle(
-                                                    color: Colors.white,
-                                                    fontSize: 20,
-                                                    fontWeight:
-                                                        FontWeight.bold)),
-                                            const SizedBox(height: 6),
-                                            Text(m.role,
-                                                style: const TextStyle(
-                                                    color: Colors.white70)),
-                                            const SizedBox(height: 10),
-                                            Opacity(
-                                              opacity: i == _currentIndex
-                                                  ? 1.0
-                                                  : 0.0,
-                                              child: Padding(
-                                                padding:
-                                                    const EdgeInsets.symmetric(
-                                                        horizontal: 20.0),
-                                                child: Text(
-                                                  'Tap avatar for fun facts',
-                                                  style: TextStyle(
-                                                      color: Colors.cyanAccent
-                                                          .withOpacity(0.9),
-                                                      fontSize: 12),
+                                                  ClipOval(
+                                                    child: Image.asset(
+                                                      m.imageUrl,
+                                                      width: 140,
+                                                      height: 140,
+                                                      fit: BoxFit.cover,
+                                                      errorBuilder: (c, e, s) =>
+                                                          Container(
+                                                        width: 140,
+                                                        height: 140,
+                                                        color: Colors.grey[800],
+                                                        child: const Icon(
+                                                            Icons.person,
+                                                            size: 56,
+                                                            color:
+                                                                Colors.white24),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+
+                                              const SizedBox(height: 12),
+                                              Text(m.name,
+                                                  style: const TextStyle(
+                                                      color: Colors.white,
+                                                      fontSize: 18,
+                                                      fontWeight:
+                                                          FontWeight.bold)),
+                                              const SizedBox(height: 6),
+                                              Text(m.role,
+                                                  style: const TextStyle(
+                                                      color: Colors.white70)),
+                                              const SizedBox(height: 8),
+                                              Opacity(
+                                                opacity: i == _currentIndex
+                                                    ? 1.0
+                                                    : 0.0,
+                                                child: Padding(
+                                                  padding: const EdgeInsets
+                                                      .symmetric(
+                                                      horizontal: 20.0),
+                                                  child: Text(
+                                                      'Tap avatar for fun facts',
+                                                      style: TextStyle(
+                                                          color: Colors
+                                                              .cyanAccent
+                                                              .withOpacity(0.9),
+                                                          fontSize: 12)),
                                                 ),
                                               ),
-                                            )
-                                          ],
+                                              const SizedBox(height: 12),
+                                            ],
+                                          ),
                                         ),
                                       ),
                                     ),
-                                  ],
+                                  ),
                                 ),
                               ),
                             ),
                           ),
-                        ),
-                      ),
+                        );
+                      },
                     );
                   },
                 ),
@@ -798,114 +898,6 @@ class _TeamCarouselScreenState extends State<TeamCarouselScreen>
   }
 }
 
-/// Particle burst widget (small, lightweight emitter)
-class ParticleBurst extends StatefulWidget {
-  const ParticleBurst({Key? key}) : super(key: key);
-
-  @override
-  _ParticleBurstState createState() => _ParticleBurstState();
-}
-
-class _ParticleBurstState extends State<ParticleBurst>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late List<_Particle> _particles;
-  final int _count = 200;
-  final Random _rnd = Random();
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 700))
-      ..addListener(() {
-        setState(() {});
-      })
-      ..addStatusListener((s) {
-        if (s == AnimationStatus.completed) {
-          _particles = [];
-          _controller.reset();
-          setState(() {});
-        }
-      });
-    _particles = [];
-  }
-
-  void burst() {
-    _particles = List.generate(_count, (_) {
-      final angle = _rnd.nextDouble() * 2 * pi;
-      final speed = 120 + _rnd.nextDouble() * 120; // much larger spread
-      final size = 8 + _rnd.nextDouble() * 10; // larger particles
-      final color = _rnd.nextBool() ? Colors.cyanAccent : Colors.white;
-      return _Particle(angle: angle, speed: speed, size: size, color: color);
-    });
-    _controller.forward(from: 0.0);
-    setState(() {});
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (_particles.isEmpty) return const SizedBox.shrink();
-    return IgnorePointer(
-      ignoring: true,
-      child: SizedBox(
-        width: 260,
-        height: 260,
-        child: CustomPaint(
-          painter: _ParticlePainter(
-              particles: _particles, progress: _controller.value),
-        ),
-      ),
-    );
-  }
-}
-
-class _Particle {
-  final double angle;
-  final double speed;
-  final double size;
-  final Color color;
-  _Particle(
-      {required this.angle,
-      required this.speed,
-      required this.size,
-      required this.color});
-}
-
-class _ParticlePainter extends CustomPainter {
-  final List<_Particle> particles;
-  final double progress;
-  _ParticlePainter({required this.particles, required this.progress});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final center = Offset(size.width / 2, size.height / 2);
-    final paint = Paint()..style = PaintingStyle.fill;
-
-    // Increase the spread and keep particles visible longer
-    for (final p in particles) {
-      final distance = p.speed *
-          pow(progress, 0.7) *
-          0.9; // more spread, less early clustering
-      final dx = center.dx + cos(p.angle) * distance;
-      final dy = center.dy + sin(p.angle) * distance;
-      final alpha = (1.0 - progress).clamp(0.0, 1.0);
-      paint.color = p.color.withOpacity(alpha);
-      canvas.drawCircle(Offset(dx, dy), p.size * (1.0 - progress * 0.3), paint);
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant _ParticlePainter oldDelegate) =>
-      oldDelegate.progress != progress;
-}
-
 /// Simple scanline painter reused for the retro look
 class ScanlinePainter extends CustomPainter {
   const ScanlinePainter();
@@ -945,10 +937,360 @@ class _TeamMember {
   final String role;
   final String imageUrl;
   final List<String> facts;
-  const _TeamMember({
+  const _TeamMember(
+      {required this.name,
+      required this.role,
+      required this.imageUrl,
+      required this.facts});
+}
+
+/// Simple lightweight image carousel screen (13 members)
+class TeamImageCarouselScreen extends StatelessWidget {
+  const TeamImageCarouselScreen({Key? key}) : super(key: key);
+
+  static final List<_TeamMemberSimple> teamMembers = [
+    _TeamMemberSimple(
+        name: 'Rachit Shah',
+        designation: 'Convenor',
+        imageUrl: 'assets/rachit-app.jpg',
+        linkedinUrl: 'https://www.linkedin.com/in/rachit-shah-b5a597255/'),
+    _TeamMemberSimple(
+        name: 'Divyanshu Tiwari',
+        designation: 'Finance Head',
+        imageUrl: 'assets/tiwari-app.jpeg',
+        linkedinUrl: 'https://www.linkedin.com/in/divyanshu-tiwari-925556256/'),
+    _TeamMemberSimple(
+        name: 'Aditya Damani',
+        designation: 'Marketing Head',
+        imageUrl: 'assets/damani-app.jpeg',
+        linkedinUrl: 'https://www.linkedin.com/in/aditya-damani-418302262/'),
+    _TeamMemberSimple(
+        name: 'Yashvardhan Jaiswal',
+        designation: 'Marketing Head',
+        imageUrl: 'assets/vardhan-app.jpeg',
+        linkedinUrl: 'https://www.linkedin.com/in/yashvardhanjaiswal/'),
+    _TeamMemberSimple(
+        name: 'Aarav Chanani',
+        designation: 'Events Head',
+        imageUrl: 'assets/aarav-app.jpeg',
+        linkedinUrl: 'https://www.linkedin.com/in/aarav-chanani218/'),
+    _TeamMemberSimple(
+        name: 'Puja Kumari',
+        designation: 'Events Head',
+        imageUrl: 'assets/puja-app.jpg',
+        linkedinUrl: 'https://www.linkedin.com/in/puja-kumari-544667260/'),
+    _TeamMemberSimple(
+        name: 'Veenas Jaiswal',
+        designation: 'Events Head',
+        imageUrl: 'assets/veenas-app.jpg',
+        linkedinUrl: 'https://www.linkedin.com/in/veenas-jaiswal-93ab70259/'),
+    _TeamMemberSimple(
+        name: 'Rushikesh Pinge',
+        designation: 'Public Relations Head',
+        imageUrl: 'assets/rushi-app.jpg',
+        linkedinUrl: 'https://www.linkedin.com/in/rushikesh-pinge-aa1b33268/'),
+    _TeamMemberSimple(
+        name: 'Aileen Jess',
+        designation: 'Media & Branding Head',
+        imageUrl: 'assets/aileen-app.png',
+        linkedinUrl: 'https://www.linkedin.com/in/aileen-jess-1a018b369/'),
+    _TeamMemberSimple(
+        name: 'Sanskriti Verma',
+        designation: 'Media & Branding Head',
+        imageUrl: 'assets/sanskriti-app.jpeg',
+        linkedinUrl: 'https://www.linkedin.com/in/sanskriti-verma-15781525b/'),
+    _TeamMemberSimple(
+        name: 'Arya Pandey',
+        designation: 'Development Operations Head',
+        imageUrl: 'assets/arya-app.jpg',
+        linkedinUrl: 'https://www.linkedin.com/in/arya-pandey-265204257/'),
+    _TeamMemberSimple(
+        name: 'Dhruv Gupta',
+        designation: 'Development Operations Head',
+        imageUrl: 'assets/dhruv-app.jpg',
+        linkedinUrl: 'https://www.linkedin.com/in/dhruvgupta21iitg/'),
+    _TeamMemberSimple(
+        name: 'Amol Satheesh',
+        designation: 'Creatives Head',
+        imageUrl: 'assets/amol-app.jpg',
+        linkedinUrl: 'https://www.linkedin.com/in/amol-reach/'),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    return Scaffold(
+      backgroundColor:
+          Colors.black.withOpacity(0.88), // match developers background
+      body: SafeArea(
+        child: Stack(
+          children: [
+            // same faint gradient background as developers
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Colors.black, Colors.blueGrey.shade900],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+              ),
+            ),
+
+            // scanlines overlay
+            const IgnorePointer(
+              ignoring: true,
+              child: Opacity(
+                opacity: 0.06,
+                child: CustomPaint(
+                  painter: ScanlinePainter(),
+                  size: Size.infinite,
+                ),
+              ),
+            ),
+
+            // 'Meet the Team' text at top left, close button at top right
+            Positioned(
+              top: 18,
+              left: 18,
+              right: 18,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Meet the Team',
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.9),
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close,
+                        color: Colors.white70, size: 28),
+                    onPressed: () => Navigator.of(context).pop(),
+                    tooltip: 'Close',
+                  ),
+                ],
+              ),
+            ),
+
+            Center(
+              child: SizedBox(
+                height: size.height * 0.55,
+                child: PageView.builder(
+                  itemCount: teamMembers.length,
+                  controller: PageController(viewportFraction: 0.82),
+                  itemBuilder: (context, i) {
+                    final m = teamMembers[i];
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 18),
+                      child: Card(
+                        color: Colors.blueGrey.shade800,
+                        elevation: 6,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(22)),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            GestureDetector(
+                              onTap: () async {
+                                final url = Uri.parse(m.linkedinUrl);
+                                if (await canLaunchUrl(url)) {
+                                  await launchUrl(url,
+                                      mode: LaunchMode.externalApplication);
+                                } else {
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                          content: Text(
+                                              'Cannot open LinkedIn profile')),
+                                    );
+                                  }
+                                }
+                              },
+                              child: ClipOval(
+                                child: Container(
+                                  width: 175,
+                                  height: 175,
+                                  color: Colors.grey[800],
+                                  child: Center(
+                                    child: Image.asset(
+                                      m.imageUrl,
+                                      width: 175,
+                                      height: 175,
+                                      fit: BoxFit.cover,
+                                      alignment: Alignment.center,
+                                      errorBuilder: (c, e, s) => const Icon(
+                                        Icons.person,
+                                        size: 80,
+                                        color: Colors.white24,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 18),
+                            Text(m.name,
+                                style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold)),
+                            const SizedBox(height: 8),
+                            Text(m.designation,
+                                style: const TextStyle(
+                                    color: Colors.cyanAccent,
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w500)),
+                            const SizedBox(height: 10),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                IconButton(
+                                  icon: const Icon(Icons.link,
+                                      color: Colors.cyanAccent, size: 28),
+                                  tooltip: 'Open LinkedIn',
+                                  onPressed: () async {
+                                    final url = Uri.parse(m.linkedinUrl);
+                                    if (await canLaunchUrl(url)) {
+                                      await launchUrl(url,
+                                          mode: LaunchMode.externalApplication);
+                                    } else {
+                                      if (context.mounted) {
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          const SnackBar(
+                                              content: Text(
+                                                  'Cannot open LinkedIn profile')),
+                                        );
+                                      }
+                                    }
+                                  },
+                                ),
+                                const SizedBox(width: 6),
+                                Text(
+                                  'LinkedIn',
+                                  style: TextStyle(
+                                    color: Colors.cyanAccent,
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _TeamMemberSimple {
+  final String name;
+  final String designation;
+  final String imageUrl;
+  final String linkedinUrl;
+  const _TeamMemberSimple({
     required this.name,
-    required this.role,
+    required this.designation,
     required this.imageUrl,
-    required this.facts,
+    required this.linkedinUrl,
   });
+}
+
+class MarqueeText extends StatefulWidget {
+  final String text;
+  final TextStyle style;
+
+  const MarqueeText({
+    Key? key,
+    required this.text,
+    required this.style,
+  }) : super(key: key);
+
+  @override
+  State<MarqueeText> createState() => _MarqueeTextState();
+}
+
+class _MarqueeTextState extends State<MarqueeText>
+    with TickerProviderStateMixin {
+  late AnimationController _controller;
+  double textWidth = 0.0;
+  double? spacerWidth;
+  final GlobalKey _textKey = GlobalKey();
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(seconds: 15),
+      vsync: this,
+    )..repeat();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final renderBox =
+          _textKey.currentContext?.findRenderObject() as RenderBox?;
+      if (renderBox != null) {
+        setState(() {
+          textWidth = renderBox.size.width;
+          spacerWidth = MediaQuery.of(context).size.width;
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (spacerWidth == null) {
+      return Text(
+        widget.text,
+        key: _textKey,
+        style: widget.style,
+      );
+    }
+
+    final totalWidth = textWidth + spacerWidth!;
+    return ClipRect(
+      child: AnimatedBuilder(
+        animation: _controller,
+        builder: (context, child) {
+          final animationValue = _controller.value;
+          final offsetX = -((animationValue * totalWidth) % totalWidth);
+          return Stack(
+            children: [
+              Positioned(
+                left: offsetX,
+                top: 0,
+                child: IntrinsicWidth(
+                  child: Text(widget.text, style: widget.style),
+                ),
+              ),
+              Positioned(
+                left: offsetX + totalWidth,
+                top: 0,
+                child: IntrinsicWidth(
+                  child: Text(widget.text, style: widget.style),
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
 }

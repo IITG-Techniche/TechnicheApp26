@@ -145,77 +145,82 @@ class LegacyPage extends StatelessWidget {
   }
 
   Widget _buildTimeline() {
-    return Column(
-      children: [
-        Text(
-          "Legacy Timeline",
-          style: GoogleFonts.orbitron(
-            color: neonPink,
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: 20),
-        Column(
-          children: List.generate(timelineData.length, (index) {
-            final data = timelineData[index];
-            // Use a consistent lineXY and padding for all tiles to keep the bar straight
-            double lineXY = 0.2;
-            EdgeInsets startPad = const EdgeInsets.all(8.0);
-            EdgeInsets endPad = const EdgeInsets.all(12.0);
-            return TimelineTile(
-              alignment: TimelineAlign.manual,
-              lineXY: lineXY,
-              isFirst: index == 0,
-              isLast: index == timelineData.length - 1,
-              beforeLineStyle: LineStyle(
-                color: neonCyan,
-                thickness: 2,
-              ),
-              afterLineStyle: LineStyle(
-                color: neonCyan,
-                thickness: 2,
-              ),
-              indicatorStyle: IndicatorStyle(
-                width: 20,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // Responsive font size for year based on screen width
+        double yearFontSize = (constraints.maxWidth / 27).clamp(10.0, 16.0);
+        double yearBoxWidth = (constraints.maxWidth / 6).clamp(48.0, 70.0);
+        return Column(
+          children: [
+            Text(
+              "Legacy Timeline",
+              style: GoogleFonts.orbitron(
                 color: neonPink,
-                iconStyle: IconStyle(
-                  iconData: Icons.circle,
-                  color: bgColor,
-                ),
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
               ),
-              startChild: Padding(
-                padding: startPad,
-                child: SizedBox(
-                  width: 70,
-                  child: Text(
-                    data["year"]!,
-                    style: GoogleFonts.orbitron(
-                      color: neonPink,
-                      fontSize: 13,
-                      fontWeight: FontWeight.bold,
+            ),
+            const SizedBox(height: 20),
+            Column(
+              children: List.generate(timelineData.length, (index) {
+                final data = timelineData[index];
+                // Use a consistent lineXY and padding for all tiles to keep the bar straight
+                double lineXY = 0.2;
+                EdgeInsets startPad = const EdgeInsets.all(8.0);
+                EdgeInsets endPad = const EdgeInsets.all(12.0);
+                return TimelineTile(
+                  alignment: TimelineAlign.manual,
+                  lineXY: lineXY,
+                  isFirst: index == 0,
+                  isLast: index == timelineData.length - 1,
+                  beforeLineStyle: LineStyle(
+                    color: neonCyan,
+                    thickness: 2,
+                  ),
+                  afterLineStyle: LineStyle(
+                    color: neonCyan,
+                    thickness: 2,
+                  ),
+                  indicatorStyle: IndicatorStyle(
+                    width: 20,
+                    color: neonPink,
+                    iconStyle: IconStyle(
+                      iconData: Icons.circle,
+                      color: bgColor,
                     ),
-                    textAlign: TextAlign.center,
-                    softWrap: false,
-                    overflow: TextOverflow.ellipsis,
                   ),
-                ),
-              ),
-              endChild: Padding(
-                padding: endPad,
-                child: Text(
-                  data["event"]!,
-                  style: GoogleFonts.orbitron(
-                    color: Colors.white70,
-                    fontSize: 14,
+                  startChild: Padding(
+                    padding: startPad,
+                    child: SizedBox(
+                      width: yearBoxWidth,
+                      child: Text(
+                        data["year"]!,
+                        style: GoogleFonts.orbitron(
+                          color: neonPink,
+                          fontSize: yearFontSize,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
                   ),
-                  textAlign: TextAlign.left,
-                ),
-              ),
-            );
-          }),
-        ),
-      ],
+                  endChild: Padding(
+                    padding: endPad,
+                    child: Text(
+                      data["event"]!,
+                      style: GoogleFonts.orbitron(
+                        color: Colors.white70,
+                        fontSize: 14,
+                      ),
+                      textAlign: TextAlign.left,
+                    ),
+                  ),
+                );
+              }),
+            ),
+          ],
+        );
+      },
     );
   }
 }

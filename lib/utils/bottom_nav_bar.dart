@@ -23,7 +23,7 @@ class GlowingBottomNavBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       height: kBottomNavigationBarHeight + 15,
-      margin: const EdgeInsets.only(bottom: 16), // Push navbar up from bottom
+      //margin: const EdgeInsets.only(bottom: 16), // Push navbar up from bottom
       padding: const EdgeInsets.symmetric(horizontal: 10),
       decoration: BoxDecoration(
         color: const Color(0xFF181A20),
