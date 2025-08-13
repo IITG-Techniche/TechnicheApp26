@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'dart:convert';
 import 'package:intl/intl.dart';
-import 'package:amazon_clone/view/map_screen.dart' hide AnimatedGradientBackground; // Importing MapScreen
-import 'package:amazon_clone/view/landing_screen.dart' hide AnimatedGradientBackground; // Import LandingScreen
-
+//import 'package:amazon_clone/view/map_screen.dart' hide AnimatedGradientBackground; // Importing MapScreen
+import 'package:amazon_clone/view/landing_screen.dart'
+    hide AnimatedGradientBackground; // Import LandingScreen
 
 const Map<String, Map<String, dynamic>> categoryStyles = {
   'Robotics': {'icon': Icons.smart_toy_outlined, 'color': Color(0xff00ffdd)},
@@ -13,11 +13,17 @@ const Map<String, Map<String, dynamic>> categoryStyles = {
   'Workshops': {'icon': Icons.build_outlined, 'color': Color(0xfff9ff00)},
   'Techno': {'icon': Icons.lightbulb_outline, 'color': Color(0xff00e5ff)},
   'Tech-Expo': {'icon': Icons.camera_alt_outlined, 'color': Color(0xff00ff87)},
-  'Lecture Series': {'icon': Icons.mic_external_on_outlined, 'color': Color(0xffff4081)},
-  'Entertainment': {'icon': Icons.music_note_outlined, 'color': Color(0xffff9100)},
+  'Lecture Series': {
+    'icon': Icons.mic_external_on_outlined,
+    'color': Color(0xffff4081)
+  },
+  'Entertainment': {
+    'icon': Icons.music_note_outlined,
+    'color': Color(0xffff9100)
+  },
   'Nexus': {'icon': Icons.people_outline, 'color': Color(0xff00b0ff)},
   'Funniche': {'icon': Icons.gamepad_outlined, 'color': Color(0xffd500f9)},
-  'Corporate': {'icon': Icons.business, 'color': Color(0xfff50057)},
+  // 'Corporate': {'icon': Icons.business, 'color': Color(0xfff50057)},
   'Default': {'icon': Icons.event, 'color': Colors.grey},
 };
 
@@ -28,7 +34,8 @@ class SchedulePage extends StatefulWidget {
   _SchedulePageState createState() => _SchedulePageState();
 }
 
-class _SchedulePageState extends State<SchedulePage> with TickerProviderStateMixin {
+class _SchedulePageState extends State<SchedulePage>
+    with TickerProviderStateMixin {
   final FirebaseRemoteConfig _remoteConfig = FirebaseRemoteConfig.instance;
   bool _isLoading = true;
   bool _isScheduleLive = false;
@@ -59,7 +66,8 @@ class _SchedulePageState extends State<SchedulePage> with TickerProviderStateMix
       await _remoteConfig.fetchAndActivate();
       _isScheduleLive = _remoteConfig.getBool('is_schedule_live');
       if (_isScheduleLive) {
-        final scheduleJsonString = _remoteConfig.getString('fest_schedule_json');
+        final scheduleJsonString =
+            _remoteConfig.getString('fest_schedule_json');
         _scheduleData = json.decode(scheduleJsonString);
         _populateCategories();
       }
@@ -93,10 +101,17 @@ class _SchedulePageState extends State<SchedulePage> with TickerProviderStateMix
   Widget build(BuildContext context) {
     if (_isLoading) {
       return Scaffold(
-         backgroundColor: Colors.transparent,
-         extendBodyBehindAppBar: true,
+        backgroundColor: Colors.transparent,
+        extendBodyBehindAppBar: true,
         appBar: AppBar(title: const Text("Loading Schedule...")),
-        body: Stack(children: [const AnimatedGradientBackground(),Center(child: CircularProgressIndicator(),)],),
+        body: Stack(
+          children: [
+            const AnimatedGradientBackground(),
+            Center(
+              child: CircularProgressIndicator(),
+            )
+          ],
+        ),
       );
     }
 
@@ -104,12 +119,12 @@ class _SchedulePageState extends State<SchedulePage> with TickerProviderStateMix
       return Scaffold(
         backgroundColor: Colors.transparent,
         extendBodyBehindAppBar: true,
-       appBar: AppBar(
-        title: const Text('Events Timeline'),
-        centerTitle: true,
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-       ),
+        appBar: AppBar(
+          title: const Text('Events Timeline'),
+          centerTitle: true,
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+        ),
         body: Stack(
           children: [
             const AnimatedGradientBackground(),
@@ -117,11 +132,18 @@ class _SchedulePageState extends State<SchedulePage> with TickerProviderStateMix
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-              Icon(Icons.timelapse_outlined, size: 80, color: Colors.grey.shade400),
-              const SizedBox(height: 20),
-              const Text("Coming Soon", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white)),
-              const Text("The future is not yet written.", textAlign: TextAlign.center, style: TextStyle(color: Colors.white70)),
-            ],
+                  Icon(Icons.timelapse_outlined,
+                      size: 80, color: Colors.grey.shade400),
+                  const SizedBox(height: 20),
+                  const Text("Coming Soon",
+                      style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white)),
+                  const Text("The future is not yet written.",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: Colors.white70)),
+                ],
               ),
             ),
           ],
@@ -138,15 +160,17 @@ class _SchedulePageState extends State<SchedulePage> with TickerProviderStateMix
           child: Scaffold(
             backgroundColor: Colors.transparent,
             appBar: AppBar(
-      title: const Text('Events Timeline'),
-      centerTitle: true,
-      backgroundColor: Colors.transparent,
-      elevation: 0,
+              title: const Text('Events Timeline'),
+              centerTitle: true,
+              backgroundColor: Colors.transparent,
+              elevation: 0,
               bottom: TabBar(
                 isScrollable: true,
                 indicatorColor: Theme.of(context).colorScheme.secondary,
                 indicatorWeight: 3,
-                tabs: days.map((day) => Tab(text: day['title'].toUpperCase())).toList(),
+                tabs: days
+                    .map((day) => Tab(text: day['title'].toUpperCase()))
+                    .toList(),
               ),
             ),
             body: Column(
@@ -162,27 +186,44 @@ class _SchedulePageState extends State<SchedulePage> with TickerProviderStateMix
                       fillColor: Colors.white.withOpacity(0.1),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: Colors.white.withOpacity(0.2)),
+                        borderSide:
+                            BorderSide(color: Colors.white.withOpacity(0.2)),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: Theme.of(context).colorScheme.secondary),
+                        borderSide: BorderSide(
+                            color: Theme.of(context).colorScheme.secondary),
                       ),
                     ),
                     dropdownColor: const Color(0xFF16213e),
                     style: const TextStyle(color: Colors.white),
                     items: _categories.map((String category) {
-                      return DropdownMenuItem<String>(value: category, child: Text(category));
+                      return DropdownMenuItem<String>(
+                          value: category, child: Text(category));
                     }).toList(),
-                    onChanged: (newValue) => setState(() => _selectedCategory = newValue!),
+                    onChanged: (newValue) =>
+                        setState(() => _selectedCategory = newValue!),
                   ),
                 ),
                 Expanded(
                   child: TabBarView(
                     children: days.map((day) {
-                      final List<dynamic> allEvents = List.from(day['events'] ?? [])..sort((a, b) => a['startTime'].compareTo(b['startTime']));
-                      final List<dynamic> filteredEvents = _selectedCategory == 'All' ? allEvents : allEvents.where((event) => event['category'] == _selectedCategory).toList();
-                      if (filteredEvents.isEmpty) return Center(child: Text('No events for this category on ${day['title']}.', style: const TextStyle(color: Colors.white70)));
+                      final List<dynamic> allEvents = List.from(
+                          day['events'] ?? [])
+                        ..sort(
+                            (a, b) => a['startTime'].compareTo(b['startTime']));
+                      final List<dynamic> filteredEvents =
+                          _selectedCategory == 'All'
+                              ? allEvents
+                              : allEvents
+                                  .where((event) =>
+                                      event['category'] == _selectedCategory)
+                                  .toList();
+                      if (filteredEvents.isEmpty)
+                        return Center(
+                            child: Text(
+                                'No events for this category on ${day['title']}.',
+                                style: const TextStyle(color: Colors.white70)));
                       return ListView.builder(
                         padding: const EdgeInsets.symmetric(horizontal: 16.0),
                         itemCount: filteredEvents.length,
@@ -206,11 +247,12 @@ class _SchedulePageState extends State<SchedulePage> with TickerProviderStateMix
   }
 }
 
-
 class EventTimelineTile extends StatelessWidget {
   final Map<String, dynamic> event;
   final Animation<double> animation;
-  const EventTimelineTile({Key? key, required this.event, required this.animation}) : super(key: key);
+  const EventTimelineTile(
+      {Key? key, required this.event, required this.animation})
+      : super(key: key);
 
   String _formatTime(String time) {
     try {
@@ -227,9 +269,12 @@ class EventTimelineTile extends StatelessWidget {
     final Color color = categoryStyles[category]?['color'] ?? Colors.grey;
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
     final Color textColor = isDark ? Colors.white : Colors.black;
-    final Color subTextColor = isDark ? Colors.grey.shade400 : Colors.grey.shade700;
-    final Color timelineColor = isDark ? Colors.grey.shade800 : Colors.grey.shade300;
-    final Color cardColor = isDark ? Colors.white.withOpacity(0.05) : Colors.white;
+    final Color subTextColor =
+        isDark ? Colors.grey.shade400 : Colors.grey.shade700;
+    final Color timelineColor =
+        isDark ? Colors.grey.shade800 : Colors.grey.shade300;
+    final Color cardColor =
+        isDark ? Colors.white.withOpacity(0.05) : Colors.white;
     final Color iconBgColor = color.withOpacity(0.15);
     final Color iconFgColor = color;
 
@@ -258,7 +303,8 @@ class EventTimelineTile extends StatelessWidget {
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
-              builder: (context) => LandingScreen(initialTab: 0, initialVenue: venueName),
+              builder: (context) =>
+                  LandingScreen(initialTab: 0, initialVenue: venueName),
             ),
           );
         },
@@ -271,8 +317,11 @@ class EventTimelineTile extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(_formatTime(event['startTime']), style: TextStyle(fontWeight: FontWeight.bold, color: textColor)),
-                    Text(_formatTime(event['endTime']), style: TextStyle(color: subTextColor, fontSize: 12)),
+                    Text(_formatTime(event['startTime']),
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, color: textColor)),
+                    Text(_formatTime(event['endTime']),
+                        style: TextStyle(color: subTextColor, fontSize: 12)),
                   ],
                 ),
               ),
@@ -288,7 +337,12 @@ class EventTimelineTile extends StatelessWidget {
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: color,
-                        boxShadow: [BoxShadow(color: color.withOpacity(0.5), blurRadius: 8, spreadRadius: 2)],
+                        boxShadow: [
+                          BoxShadow(
+                              color: color.withOpacity(0.5),
+                              blurRadius: 8,
+                              spreadRadius: 2)
+                        ],
                       ),
                       child: Icon(icon, size: 16, color: Colors.black),
                     ),
@@ -305,29 +359,47 @@ class EventTimelineTile extends StatelessWidget {
                     color: cardColor,
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(color: timelineColor),
-                    boxShadow: [BoxShadow(color: color.withOpacity(0.1), blurRadius: 10, offset: const Offset(0, 4))],
+                    boxShadow: [
+                      BoxShadow(
+                          color: color.withOpacity(0.1),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4))
+                    ],
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(event['name'], style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: textColor)),
+                      Text(event['name'],
+                          style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: textColor)),
                       const SizedBox(height: 8),
                       Row(
                         children: [
-                          Icon(Icons.location_on_outlined, size: 16, color: subTextColor),
+                          Icon(Icons.location_on_outlined,
+                              size: 16, color: subTextColor),
                           const SizedBox(width: 4),
-                          Expanded(child: Text(event['venue'], style: TextStyle(fontSize: 14, color: subTextColor))),
+                          Expanded(
+                              child: Text(event['venue'],
+                                  style: TextStyle(
+                                      fontSize: 14, color: subTextColor))),
                         ],
                       ),
                       const SizedBox(height: 8),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
                           color: iconBgColor,
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(color: color.withOpacity(0.5)),
                         ),
-                        child: Text(category, style: TextStyle(fontSize: 12, color: iconFgColor, fontWeight: FontWeight.bold)),
+                        child: Text(category,
+                            style: TextStyle(
+                                fontSize: 12,
+                                color: iconFgColor,
+                                fontWeight: FontWeight.bold)),
                       ),
                     ],
                   ),

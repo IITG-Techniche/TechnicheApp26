@@ -1,4 +1,3 @@
-// full corrected utilities_screen.dart (only change: _particleKeys init fixed)
 import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
@@ -129,7 +128,7 @@ class _UtilitiesScreenState extends State<UtilitiesScreen> {
                   const SizedBox(height: 24),
                   ListTile(
                     leading: const Icon(Icons.group),
-                    title: const Text('Team'),
+                    title: const Text('Developers'),
                     trailing: const Icon(Icons.chevron_right),
                     onTap: _openTeamCarousel,
                   ),
@@ -269,7 +268,8 @@ class _FAQList extends StatelessWidget {
   final List<_FAQ> faqs = const [
     _FAQ(
       question: 'How do I register for events?',
-      answer: 'Visit the Events section on the app and tap on Register.',
+      answer:
+          'Visit the official website or instagram profile of Techniche for all events registrations.',
     ),
     _FAQ(
       question: 'Where can I find the event schedule?',
@@ -374,7 +374,10 @@ class _TeamCarouselScreenState extends State<TeamCarouselScreen>
         AnimationController(vsync: this, duration: const Duration(seconds: 4))
           ..repeat();
 
-    // autoplay
+    _resumeAutoPlay();
+  }
+
+  void _resumeAutoPlay() {
     _autoPlayTimer = Timer.periodic(const Duration(seconds: 4), (t) {
       final next = (_currentIndex + 1) % members.length;
       if (_pageController.hasClients) {
@@ -384,6 +387,10 @@ class _TeamCarouselScreenState extends State<TeamCarouselScreen>
         setState(() => _currentIndex = next);
       }
     });
+  }
+
+  void _pauseAutoPlay() {
+    _autoPlayTimer?.cancel();
   }
 
   void _onScroll() {
@@ -402,8 +409,8 @@ class _TeamCarouselScreenState extends State<TeamCarouselScreen>
     super.dispose();
   }
 
-  void _openMemberDialog(_TeamMember m) {
-    showDialog(
+  Future<void> _openMemberDialog(_TeamMember m) {
+    return showDialog<void>(
       context: context,
       builder: (_) => Dialog(
         backgroundColor: Colors.black87,
@@ -515,7 +522,7 @@ class _TeamCarouselScreenState extends State<TeamCarouselScreen>
                       ]),
                     ),
                     const SizedBox(width: 12),
-                    Text('Meet the Crew',
+                    Text('Meet the Developers',
                         style: TextStyle(
                             color: Colors.white.withOpacity(0.9),
                             fontSize: 18,
@@ -558,10 +565,14 @@ class _TeamCarouselScreenState extends State<TeamCarouselScreen>
                                 // guard: ensure particle key exists
                                 if (i < _particleKeys.length) {
                                   _particleKeys[i].currentState?.burst();
+                                  _pauseAutoPlay();
+                                  Future.delayed(
+                                      const Duration(milliseconds: 220), () {
+                                    _openMemberDialog(m).then((_) {
+                                      _resumeAutoPlay();
+                                    });
+                                  });
                                 }
-                                Future.delayed(
-                                    const Duration(milliseconds: 220),
-                                    () => _openMemberDialog(m));
                               },
                               child: Padding(
                                 padding: const EdgeInsets.symmetric(

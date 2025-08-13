@@ -31,113 +31,137 @@ final List<MainCategory> eventData = [
     subCategories: [
       SubCategory(
         title: 'Robotics',
-        imageAsset: 'assets/aqua.png',
+        imageAsset: 'assets/robotics.jpeg',
         events: const [
           EventDetail(title: 'Robowars'),
           EventDetail(title: 'Aquawars'),
-          EventDetail(title: 'UDCV'),
+          EventDetail(title: 'UVDC'),
           EventDetail(title: 'Track Titans'),
+          EventDetail(title: 'Micro Mouse'),
+          EventDetail(title: 'Escalade'),
         ],
       ),
       SubCategory(
         title: 'Funniche',
-        imageAsset: 'assets/aqua.png',
+        imageAsset: 'assets/funniche.png',
         events: const [
           EventDetail(title: 'BGMI'),
           EventDetail(title: 'Valorant'),
           EventDetail(title: 'Chess'),
+          EventDetail(title: 'Smash Karts'),
         ],
       ),
       SubCategory(
-        title: 'Corporate',
-        imageAsset: 'assets/aqua.png',
+        title: 'Avinya',
+        imageAsset: 'assets/avinya.webp',
+        events: const [],
+      ),
+      SubCategory(
+        title: 'STPI',
+        imageAsset: 'assets/stpi.jpg',
         events: const [
-          EventDetail(title: 'Case Study'),
-          EventDetail(title: 'Business Plan'),
+          EventDetail(title: 'IoT in Agriculture'),
+          EventDetail(title: 'Gaming & Entertainment'),
+          EventDetail(title: 'AR/VR & Emerging Tech'),
+          EventDetail(title: 'Data Analytics & AI'),
+          EventDetail(title: 'Graphic Design & Animation'),
+          EventDetail(title: 'GIS Applications'),
         ],
       ),
       SubCategory(
-        title: 'TechOlympics',
-        imageAsset: 'assets/aqua.png',
-        events: const [
-          EventDetail(title: 'Coding Challenge'),
-          EventDetail(title: 'Math Olympiad'),
-        ],
+        title: 'CatalysisT',
+        imageAsset: 'assets/cata.jpg',
+        events: const [],
       ),
       SubCategory(
-        title: 'TechExpo',
-        imageAsset: 'assets/aqua.png',
+        title: 'Tech-Expo',
+        imageAsset: 'assets/techexpo.jpg',
         events: const [
-          EventDetail(title: 'Innovation Showcase'),
-          EventDetail(title: 'Startup Pitch'),
+          EventDetail(title: 'Juniors'),
+          EventDetail(title: 'Seniors'),
         ],
       ),
       SubCategory(
         title: 'Technothlon',
-        imageAsset: 'assets/aqua.png',
+        imageAsset: 'assets/techno.png',
         events: const [
           EventDetail(title: 'Junior Squad'),
-          EventDetail(title: 'Senior Squad'),
+          EventDetail(title: 'Hauts Squad'),
         ],
       ),
     ],
   ),
-  MainCategory(
-    title: 'Workshops',
-    subCategories: [
-      SubCategory(
-        title: 'Software Development',
-        imageAsset: 'assets/aqua.png',
-        events: const [
-          EventDetail(title: 'Full Stack with MERN'),
-          EventDetail(title: 'Prompt Engineering'),
-        ],
-      ),
-      SubCategory(
-        title: 'Cyber Security',
-        imageAsset: 'assets/aqua.png',
-        events: const [
-          EventDetail(title: 'Ethical Hacking 101'),
-          EventDetail(title: 'Network Security'),
-        ],
-      ),
-    ],
-  ),
-  MainCategory(
-    title: 'Exhibitions',
-    subCategories: [
-      SubCategory(
-        title: 'Art & Culture',
-        imageAsset: 'assets/aqua.png',
-        events: const [
-          EventDetail(title: 'Art Showcase'),
-          EventDetail(title: 'Cultural Exhibition'),
-        ],
-      ),
-    ],
-  ),
-  MainCategory(
-    title: 'Lecture Series',
-    subCategories: [
-      SubCategory(
-        title: 'Tech Talks',
-        imageAsset: 'assets/aqua.png',
-        events: const [
-          EventDetail(title: 'AI in 2025'),
-          EventDetail(title: 'The Future of Space Travel'),
-        ],
-      ),
-    ],
-  ),
+  // MainCategory(
+  //   title: 'Workshops',
+  //   subCategories: [
+  //     SubCategory(
+  //       title: 'Software Development',
+  //       imageAsset: 'assets/aqua.png',
+  //       events: const [
+  //         EventDetail(title: 'Full Stack'),
+  //         EventDetail(title: 'Prompt Engineering'),
+  //       ],
+  //     ),
+  //     SubCategory(
+  //       title: 'Cyber Security',
+  //       imageAsset: 'assets/aqua.png',
+  //       events: const [
+  //         EventDetail(title: 'Ethical Hacking 101'),
+  //         EventDetail(title: 'Network Security'),
+  //       ],
+  //     ),
+  //     SubCategory(
+  //       title: 'AWS Workshop',
+  //       imageAsset: 'assets/aqua.png',
+  //       events: const [
+  //         EventDetail(title: 'Server Handling Basics'),
+  //         EventDetail(title: 'Cloud Infrastructure'),
+  //       ],
+  //     ),
+  //   ],
+  // ),
+  // MainCategory(
+  //   title: 'Exhibitions',
+  //   subCategories: [
+  //     SubCategory(
+  //       title: 'Army Expo',
+  //       imageAsset: 'assets/aqua.png',
+  //       events: const [
+  //         EventDetail(title: 'Indian Army Weapons Showcase'),
+  //       ],
+  //     ),
+  //     SubCategory(
+  //       title: 'Road Show',
+  //       imageAsset: 'assets/aqua.png',
+  //       events: const [
+  //         EventDetail(title: 'Fleet of Roadsters Roaring in campus'),
+  //       ],
+  //     ),
+  //   ],
+  // ),
+  // MainCategory(
+  //   title: 'Lecture Series',
+  //   subCategories: [
+  //     SubCategory(
+  //       title: 'Leadership',
+  //       imageAsset: 'assets/aqua.png',
+  //       events: const [
+  //         EventDetail(title: 'Keynote'),
+  //         EventDetail(title: 'Panel Discussion'),
+  //       ],
+  //     ),
+  //   ],
+  // ),
   MainCategory(
     title: 'Nexus',
     subCategories: [
       SubCategory(
         title: 'Networking Events',
-        imageAsset: 'assets/aqua.png',
+        imageAsset: 'assets/nexus.png',
         events: const [
-          EventDetail(title: 'Startup Meet'),
-          EventDetail(title: 'Investor Pitch'),
+          EventDetail(title: 'Icebreaking & Keynote'),
+          EventDetail(title: 'Live Project'),
+          EventDetail(title: 'Mentorship'),
         ],
       ),
     ],
@@ -146,11 +170,11 @@ final List<MainCategory> eventData = [
     title: 'Initiatives',
     subCategories: [
       SubCategory(
-        title: 'Social Impact',
-        imageAsset: 'assets/aqua.png',
+        title: 'Guwahati Half Marathon',
+        imageAsset: 'assets/ghm.jpg',
         events: const [
-          EventDetail(title: 'Clean Energy Drive'),
-          EventDetail(title: 'Community Upliftment'),
+          EventDetail(title: 'Blood Donation'),
+          EventDetail(title: 'Food Distribution'),
         ],
       ),
     ],

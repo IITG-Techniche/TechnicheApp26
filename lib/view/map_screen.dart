@@ -3,10 +3,11 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'dart:math' as math;
-import 'package:firebase_remote_config/firebase_remote_config.dart';
-import 'dart:convert';
-import 'package:intl/intl.dart';
+import 'package:flutter/services.dart';
+//import 'dart:math' as math;
+//import 'package:firebase_remote_config/firebase_remote_config.dart';
+//import 'dart:convert';
+//import 'package:intl/intl.dart';
 
 // This is a placeholder for your actual gradient background widget.
 // You can replace this with your 'animate_gradient_background.dart' import.
@@ -29,26 +30,27 @@ class AnimatedGradientBackground extends StatelessWidget {
 
 // --- SHARED DATA: Moved venueCoordinates here to be accessible by both screens ---
 final Map<String, LatLng> venueCoordinates = {
-    "Old Gymkhana": const LatLng(26.192450, 91.695894),
-    "Lake": const LatLng(26.190546, 91.694773),
-    "Cricket Ground": const LatLng(26.190743, 91.697019),
-    "Lecture Hall 1": const LatLng(26.188869, 91.691550),
-    "Lecture Hall": const LatLng(26.189042, 91.691442),
-    "IITG Circle": const LatLng(26.190865, 91.692867),
-    "ED Lab": const LatLng(26.187656, 91.691551),
-    "Conference Hall (Foyer)": const LatLng(26.191169, 91.692556),
-    "Conference Hall 2": const LatLng(26.191169, 91.692556),
-    "Conference Hall 3": const LatLng(26.191169, 91.692556),
-    "Mini Audi": const LatLng(26.190689, 91.693047),
-    "Audi": const LatLng(26.190943, 91.693001),
-    "CCC": const LatLng(26.189215, 91.693057),
-    "Swimming pool": const LatLng(26.191441, 91.698647),
-    "5G1": const LatLng(26.186020, 91.689600),
-    "Cricket ground": const LatLng(26.189954, 91.697348),
-    "Near library ground": const LatLng(26.189991, 91.693029),
-    "Conference room(new sac)": const LatLng(26.192760, 91.698913)
+  "Old Gymkhana": const LatLng(26.192450, 91.695894),
+  "Lake": const LatLng(26.190546, 91.694773),
+  "Cricket Ground": const LatLng(26.190743, 91.697019),
+  "Lecture Hall 1": const LatLng(26.188869, 91.691550),
+  "Lecture Hall Complex": const LatLng(26.1888398, 91.6906883),
+  "Lecture Hall 2": const LatLng(26.189042, 91.691442),
+  "IITG Circle": const LatLng(26.190865, 91.692867),
+  "ED Lab": const LatLng(26.187656, 91.691551),
+  "Conference Hall Foyer": const LatLng(26.191169, 91.692556),
+  "Conference Hall 1": const LatLng(26.191169, 91.692556),
+  "Conference Hall 2": const LatLng(26.191169, 91.692556),
+  "Conference Hall 3": const LatLng(26.191169, 91.692556),
+  "Mini Audi": const LatLng(26.190689, 91.693047),
+  "Main Auditorium": const LatLng(26.190943, 91.693001),
+  "CCC": const LatLng(26.189215, 91.693057),
+  "Swimming pool": const LatLng(26.191441, 91.698647),
+  "5G1": const LatLng(26.186020, 91.689600),
+  //"Cricket ground": const LatLng(26.189954, 91.697348),
+  "Near Library Ground": const LatLng(26.189991, 91.693029),
+  "Conference room (New Sac)": const LatLng(26.192760, 91.698913)
 };
-
 
 // --- MAP SCREEN CODE ---
 
@@ -73,7 +75,7 @@ class _SubtlePulsingDotState extends State<SubtlePulsingDot>
       vsync: this,
       duration: const Duration(milliseconds: 1500),
     )..repeat();
-    
+
     _pulseAnimation = Tween<double>(
       begin: 0.0,
       end: 1.0,
@@ -93,9 +95,11 @@ class _SubtlePulsingDotState extends State<SubtlePulsingDot>
           height: widget.size * (1 + _pulseAnimation.value * 0.5),
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: const Color(0xFF2196F3).withOpacity(0.4 * (1 - _pulseAnimation.value)),
+            color: const Color(0xFF2196F3)
+                .withOpacity(0.4 * (1 - _pulseAnimation.value)),
             border: Border.all(
-              color: const Color(0xFF03DAC6).withOpacity(0.7 * (1 - _pulseAnimation.value)),
+              color: const Color(0xFF03DAC6)
+                  .withOpacity(0.7 * (1 - _pulseAnimation.value)),
               width: 2,
             ),
           ),
@@ -143,7 +147,7 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
       curve: Curves.easeInOut,
     );
     _fabAnimationController.forward();
-    
+
     _selectInitialVenue();
   }
 
@@ -152,10 +156,12 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
     _fabAnimationController.dispose();
     super.dispose();
   }
-  
+
   void _selectInitialVenue() {
     Future.delayed(const Duration(milliseconds: 200), () {
-      if (mounted && widget.initialVenue != null && venueCoordinates.containsKey(widget.initialVenue)) {
+      if (mounted &&
+          widget.initialVenue != null &&
+          venueCoordinates.containsKey(widget.initialVenue)) {
         final venueCoord = venueCoordinates[widget.initialVenue]!;
         setState(() {
           _selectedVenue = widget.initialVenue;
@@ -168,8 +174,9 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
   Future<void> _launchGoogleMaps(LatLng destination) async {
     final lat = destination.latitude;
     final lng = destination.longitude;
-    final url = Uri.parse('https://www.google.com/maps/dir/?api=1&destination=$lat,$lng');
-    
+    final url = Uri.parse(
+        'https://www.google.com/maps/dir/?api=1&destination=$lat,$lng');
+
     if (await canLaunchUrl(url)) {
       await launchUrl(url);
     } else {
@@ -205,7 +212,8 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
           currentPosition = position;
           _isLoadingLocation = false;
         });
-        _mapController.move(LatLng(position.latitude, position.longitude), 17.0);
+        _mapController.move(
+            LatLng(position.latitude, position.longitude), 17.0);
       }
     } catch (e) {
       _setDefaultLocation();
@@ -234,7 +242,8 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
       builder: (BuildContext context) {
         return AlertDialog(
           backgroundColor: const Color(0xFF1a1a2e),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           title: const Row(
             children: [
               Icon(Icons.gps_fixed, color: Colors.blue),
@@ -245,13 +254,15 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
           content: const SingleChildScrollView(
             child: ListBody(
               children: <Widget>[
-                Text('Please turn on your device location (GPS) to continue.', style: TextStyle(color: Colors.white70)),
+                Text('Please turn on your device location (GPS) to continue.',
+                    style: TextStyle(color: Colors.white70)),
               ],
             ),
           ),
           actions: <Widget>[
             TextButton(
-              child: const Text('Cancel', style: TextStyle(color: Colors.white70)),
+              child:
+                  const Text('Cancel', style: TextStyle(color: Colors.white70)),
               onPressed: () {
                 Navigator.of(context).pop();
               },
@@ -281,7 +292,8 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
             children: [
               Icon(Icons.location_off, color: Colors.orange),
               SizedBox(width: 10),
-              Text('Location Permission', style: TextStyle(color: Colors.white)),
+              Text('Location Permission',
+                  style: TextStyle(color: Colors.white)),
             ],
           ),
           content: const Text(
@@ -291,14 +303,16 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancel', style: TextStyle(color: Colors.white70)),
+              child:
+                  const Text('Cancel', style: TextStyle(color: Colors.white70)),
             ),
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
                 Geolocator.openAppSettings();
               },
-              child: const Text('Settings', style: TextStyle(color: Colors.blue)),
+              child:
+                  const Text('Settings', style: TextStyle(color: Colors.blue)),
             ),
           ],
         );
@@ -321,22 +335,22 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
         debugPrint("Location permissions are denied.");
-        if(mounted) {
-           ScaffoldMessenger.of(context).showSnackBar(
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Location permissions are required.')),
           );
         }
         return false;
       }
     }
-    
+
     if (permission == LocationPermission.deniedForever) {
       debugPrint("Location permissions are permanently denied.");
       if (mounted) {
         _showPermanentlyDeniedDialog();
       }
       return false;
-    } 
+    }
 
     return true;
   }
@@ -444,6 +458,27 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
+      appBar: AppBar(
+        title: const Text(
+          'Campus Map',
+          style: TextStyle(
+            fontFamily: 'Orbitron', // Use app font
+            fontWeight: FontWeight.w800,
+            fontSize: 22,
+            color: Colors.white,
+            letterSpacing: 0.5,
+          ),
+        ),
+        centerTitle: true,
+        backgroundColor: const Color(0xFF23242B), // Match app color scheme
+        elevation: 8,
+        shadowColor: Colors.blueAccent.withOpacity(0.12),
+        systemOverlayStyle: const SystemUiOverlayStyle(
+          statusBarColor: Colors.transparent,
+          statusBarIconBrightness: Brightness.light,
+        ),
+      ),
+      extendBodyBehindAppBar: false,
       body: Stack(
         children: [
           Padding(
@@ -493,10 +528,9 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
                         final venueName = entry.key;
                         final venueCoord = entry.value;
                         final isSelected = _selectedVenue == venueName;
-
                         return Marker(
                           point: venueCoord,
-                          width: 200, 
+                          width: 200,
                           height: 120,
                           child: GestureDetector(
                             onTap: () {
@@ -530,8 +564,9 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
                                           Expanded(
                                             child: Text(
                                               venueName,
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
+                                              maxLines: 2,
+                                              overflow: TextOverflow.visible,
+                                              softWrap: true,
                                               textAlign: TextAlign.center,
                                               style: const TextStyle(
                                                 fontWeight: FontWeight.w600,
@@ -542,7 +577,8 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
                                           ),
                                           const SizedBox(width: 8),
                                           InkWell(
-                                            onTap: () => _launchGoogleMaps(venueCoord),
+                                            onTap: () =>
+                                                _launchGoogleMaps(venueCoord),
                                             child: const Icon(
                                               Icons.directions,
                                               color: Colors.white,
@@ -556,7 +592,8 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
                                 const SizedBox(height: 4),
                                 Icon(
                                   Icons.location_on,
-                                  color: const Color.fromARGB(203, 33, 149, 243),
+                                  color:
+                                      const Color.fromARGB(203, 33, 149, 243),
                                   size: isSelected ? 40 : 36,
                                   shadows: [
                                     BoxShadow(
