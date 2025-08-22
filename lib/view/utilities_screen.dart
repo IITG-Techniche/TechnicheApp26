@@ -69,20 +69,39 @@ class _UtilitiesScreenState extends State<UtilitiesScreen> {
     const List<_Contact> hospitalityContacts = [
       _Contact(name: 'Hospitality Head (Uday)', number: '+91-90754-38210'),
       _Contact(name: 'Hospitality Head (Raghav)', number: '+91-98173-37227'),
-      _Contact(name: 'Hospitality Head (Savi)', number: '+91-90090-49368'),
+      _Contact(name: 'Hospitality Head (Vibha)', number: '+91-92161-95181'),
     ];
 
     return Scaffold(
       backgroundColor: Colors.transparent,
-      extendBodyBehindAppBar: true,
+      // IMPORTANT: don't draw the scaffold body behind the app bar — prevents clipping on devices with tall status bars / notches
+      extendBodyBehindAppBar: false,
       appBar: AppBar(
-        title: const Text('Utilities & Contacts'),
+        title: const Padding(
+          padding: EdgeInsets.only(top: 20),
+          child: Text('Utilities & Contacts'),
+        ),
         centerTitle: true,
         systemOverlayStyle: const SystemUiOverlayStyle(
           statusBarIconBrightness: Brightness.light,
+          statusBarColor:
+              Colors.transparent, // keep status bar visually transparent
         ),
-        backgroundColor: Colors.transparent,
+        backgroundColor: const Color.fromARGB(255, 37, 37, 37),
         elevation: 0,
+        // small flexibleSpace so the top area blends with the animated background
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Colors.transparent,
+                Color.fromRGBO(0, 0, 0, 0.06),
+              ],
+            ),
+          ),
+        ),
       ),
       body: Stack(
         children: [
@@ -168,32 +187,32 @@ class _UtilitiesScreenState extends State<UtilitiesScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
                       _QuickLinkIcon(
-                        icon: Icons.camera_alt,
+                        assetIconPath: 'assets/instagram.png',
                         color: Colors.pinkAccent,
                         url:
                             'https://www.instagram.com/techniche_iitguwahati/?hl=en',
                         label: 'Instagram',
                       ),
                       _QuickLinkIcon(
-                        icon: Icons.business,
+                        assetIconPath: 'assets/linkedin.png',
                         color: Colors.blue,
                         url: 'https://in.linkedin.com/company/techniche-iitg',
                         label: 'LinkedIn',
                       ),
                       _QuickLinkIcon(
-                        icon: Icons.alternate_email,
+                        assetIconPath: 'assets/social-media.png',
                         color: Colors.lightBlue,
                         url: 'https://twitter.com/Techniche_IITG',
-                        label: 'Twitter',
+                        label: 'X.com',
                       ),
                       _QuickLinkIcon(
-                        icon: Icons.ondemand_video,
+                        assetIconPath: 'assets/youtube.png',
                         color: Colors.red,
                         url: 'https://www.youtube.com/c/techniche',
                         label: 'YouTube',
                       ),
                       _QuickLinkIcon(
-                        icon: Icons.book,
+                        assetIconPath: 'assets/medium.png',
                         color: Colors.deepPurple,
                         url: 'https://media-techniche.medium.com/',
                         label: 'Medium',
@@ -232,12 +251,12 @@ class _UtilitiesScreenState extends State<UtilitiesScreen> {
 /// ----------------- Helper widgets & models (top-level) -----------------
 
 class _QuickLinkIcon extends StatelessWidget {
-  final IconData icon;
+  final String assetIconPath;
   final Color color;
   final String url;
   final String label;
   const _QuickLinkIcon({
-    required this.icon,
+    required this.assetIconPath,
     required this.color,
     required this.url,
     required this.label,
@@ -268,7 +287,8 @@ class _QuickLinkIcon extends StatelessWidget {
               shape: BoxShape.circle,
               color: color.withOpacity(0.13),
             ),
-            child: Icon(icon, size: 32, color: color),
+            child:
+                Image.asset(assetIconPath, width: 32, height: 32, color: color),
           ),
         ),
         const SizedBox(height: 6),

@@ -317,11 +317,29 @@ class _LandingScreenState extends State<LandingScreen> {
                       children: [
                         _gridItem(
                           context: context,
+                          title: 'Events',
+                          description:
+                              'Stay updated with the latest fest information',
+                          imagePath: 'assets/techniche_events.png',
+                          color: const Color(0xFF23242B),
+                          onTap: () =>
+                              Navigator.pushNamed(context, '/events-screen'),
+                        ),
+                        _gridItem(
+                          context: context,
                           title: 'CA Portal',
                           description: 'Manage tasks and track your progress',
                           imagePath: 'assets/ca_icon.png',
                           color: const Color(0xFF23242B),
                           onTap: () => _handleAuthNavigation(context),
+                        ),
+                        _gridItem(
+                          context: context,
+                          title: 'Buy Merch!',
+                          description: 'Roam around the campus in style',
+                          imagePath: 'assets/shirt.png',
+                          color: const Color(0xFF23242B),
+                          onTap: () => Navigator.pushNamed(context, '/merch'),
                         ),
                         _gridItem(
                           context: context,
@@ -333,25 +351,15 @@ class _LandingScreenState extends State<LandingScreen> {
                           onTap: () => Navigator.pushNamed(
                               context, '/technothlon-screen'),
                         ),
-                        _gridItem(
-                          context: context,
-                          title: 'Events',
-                          description:
-                              'Stay updated with the latest fest information',
-                          imagePath: 'assets/techniche_events.png',
-                          color: const Color(0xFF23242B),
-                          onTap: () =>
-                              Navigator.pushNamed(context, '/events-screen'),
-                        ),
-                        _gridItem(
-                          context: context,
-                          title: 'GHM',
-                          description: 'Track your steps and participate',
-                          imagePath: 'assets/ghm_logo.jpg',
-                          color: const Color(0xFF23242B),
-                          onTap: () =>
-                              Navigator.pushNamed(context, '/ghm-selection'),
-                        ),
+                        // _gridItem(r
+                        //   context: context,
+                        //   title: 'GHM',
+                        //   description: 'Track your steps and participate',
+                        //   imagePath: 'assets/ghm_logo.jpg',
+                        //   color: const Color(0xFF23242B),
+                        //   onTap: () =>
+                        //       Navigator.pushNamed(context, '/ghm-selection'),
+                        // ),
                       ],
                     ),
                   ),
@@ -399,10 +407,21 @@ class _LandingScreenState extends State<LandingScreen> {
                   width: 48,
                   height: 48,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF35363C),
+                    color: imagePath == 'assets/shirt.png'
+                        ? const Color.fromARGB(255, 174, 174, 174)
+                        : const Color(0xFF35363C),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Image.asset(imagePath, fit: BoxFit.contain),
+                  child: imagePath == 'assets/shirt.png'
+                      ? Center(
+                          child: Image.asset(
+                            imagePath,
+                            fit: BoxFit.contain,
+                            width: 28,
+                            height: 28,
+                          ),
+                        )
+                      : Image.asset(imagePath, fit: BoxFit.contain),
                 ),
                 const SizedBox(height: 8),
                 Text(

@@ -2,6 +2,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import '../model/events_data.dart';
 import '../utils/animate_gradient_background.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class _Star {
   final Offset position;
@@ -9,7 +10,6 @@ class _Star {
   final double initialOpacity;
   final double twinkleSpeed;
   final double twinkleOffset;
-
 
   _Star({
     required this.position,
@@ -34,7 +34,6 @@ class SubCategoryScreen extends StatefulWidget {
   State<SubCategoryScreen> createState() => _SubCategoryScreenState();
 }
 
-
 class _SubCategoryScreenState extends State<SubCategoryScreen>
     with TickerProviderStateMixin {
   final Set<int> _expanded = {};
@@ -55,7 +54,7 @@ class _SubCategoryScreenState extends State<SubCategoryScreen>
     _starController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 5),
-    )..repeat(); 
+    )..repeat();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final random = Random();
@@ -67,7 +66,7 @@ class _SubCategoryScreenState extends State<SubCategoryScreen>
             random.nextDouble() * (size.height * 2),
           ),
           radius: random.nextDouble() * 1.8 + 0.6,
-          initialOpacity: random.nextDouble() * 0.6 + 0.2, 
+          initialOpacity: random.nextDouble() * 0.6 + 0.2,
           twinkleSpeed: random.nextDouble() * 0.5 + 0.2,
           twinkleOffset: random.nextDouble() * 2 * pi,
         ));
@@ -109,7 +108,7 @@ class _SubCategoryScreenState extends State<SubCategoryScreen>
 
     return Scaffold(
       backgroundColor: Colors.transparent,
-        extendBodyBehindAppBar: true,
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
         title: Text(widget.categoryTitle),
         backgroundColor: Colors.transparent,
@@ -119,43 +118,43 @@ class _SubCategoryScreenState extends State<SubCategoryScreen>
         children: [
           const AnimatedGradientBackground(),
           if (_stars.isNotEmpty)
-          CustomPaint(
+            CustomPaint(
               size: Size.infinite,
               painter: _StarryBackgroundPainter(
                 stars: _stars,
                 animation: _starController,
               ),
             ),
-              Padding(
-        padding: EdgeInsets.only(
-          top: MediaQuery.of(context).padding.top + kToolbarHeight,
-        ),
-      child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: sidePadding),
-            child: SizedBox(
-              height: totalHeight,
-              width: usableWidth,
-              child: Stack(
-                children: [
-                  CustomPaint(
-                    size: Size(usableWidth, totalHeight),
-                    painter: _TrackPainter(
-                      centers: centers,
-                      trackColor: Colors.white.withOpacity(0.3),
-                    ),
+          Padding(
+            padding: EdgeInsets.only(
+              top: MediaQuery.of(context).padding.top + kToolbarHeight,
+            ),
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: sidePadding),
+                child: SizedBox(
+                  height: totalHeight,
+                  width: usableWidth,
+                  child: Stack(
+                    children: [
+                      CustomPaint(
+                        size: Size(usableWidth, totalHeight),
+                        painter: _TrackPainter(
+                          centers: centers,
+                          trackColor: Colors.white.withOpacity(0.3),
+                        ),
+                      ),
+                      for (int i = 0; i < widget.subCategories.length; i++)
+                        _buildStop(i, leftX, rightX, theme),
+                    ],
                   ),
-                    for (int i = 0; i < widget.subCategories.length; i++)
-                      _buildStop(i, leftX, rightX, theme),
-                  ],
                 ),
               ),
             ),
           ),
-              ),
         ],
       ),
-      );
+    );
   }
 
   Widget _buildStop(int i, double leftX, double rightX, ThemeData theme) {
@@ -234,11 +233,47 @@ class _SubCategoryScreenState extends State<SubCategoryScreen>
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(color: Colors.white.withOpacity(0.2)),
                     ),
-                    child: Text(
-                      event.title,
-                      style: theme.textTheme.bodyMedium
-                          ?.copyWith(color: Colors.white70),
-                      textAlign: TextAlign.center,
+                    child: Column(
+                      children: [
+                        Text(
+                          event.title,
+                          style: theme.textTheme.bodyMedium
+                              ?.copyWith(color: Colors.white70),
+                          textAlign: TextAlign.center,
+                        ),
+                        if (event.redirectUrl != null) ...[
+                          const SizedBox(height: 8),
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.cyanAccent,
+                                foregroundColor: Colors.black,
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 8),
+                                textStyle: const TextStyle(
+                                    fontWeight: FontWeight.bold),
+                              ),
+                              onPressed: () async {
+                                final url = Uri.parse(event.redirectUrl!);
+                                if (await canLaunchUrl(url)) {
+                                  await launchUrl(url,
+                                      mode: LaunchMode.externalApplication);
+                                } else {
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                          content: Text(
+                                              'Cannot open registration link')),
+                                    );
+                                  }
+                                }
+                              },
+                              child: const Text('Register Now'),
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
                   ),
               ],
@@ -260,6 +295,7 @@ class _SubCategoryScreenState extends State<SubCategoryScreen>
     return y;
   }
 }
+
 class _StarryBackgroundPainter extends CustomPainter {
   final List<_Star> stars;
   final Animation<double> animation;
@@ -272,17 +308,17 @@ class _StarryBackgroundPainter extends CustomPainter {
     final paint = Paint()..color = Colors.white;
     final glowPaint = Paint();
 
-
     for (final star in stars) {
-      final sineValue =
-          sin(star.twinkleOffset + (animation.value * 2 * pi * star.twinkleSpeed));
-      
+      final sineValue = sin(
+          star.twinkleOffset + (animation.value * 2 * pi * star.twinkleSpeed));
+
       final normalizedSine = (sineValue + 1) / 2;
 
       final opacity = star.initialOpacity * normalizedSine;
-      final glowOpacity = opacity * 0.5; 
+      final glowOpacity = opacity * 0.5;
       glowPaint.color = Colors.white.withOpacity(glowOpacity);
-      glowPaint.maskFilter = MaskFilter.blur(BlurStyle.normal, star.radius * 3.0);
+      glowPaint.maskFilter =
+          MaskFilter.blur(BlurStyle.normal, star.radius * 3.0);
       canvas.drawCircle(star.position, star.radius, glowPaint);
       paint.color = Colors.white.withOpacity(opacity);
       canvas.drawCircle(star.position, star.radius, paint);

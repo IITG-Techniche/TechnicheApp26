@@ -1,6 +1,7 @@
 import 'package:amazon_clone/utils/ca_bottom_nav_bar.dart';
 import 'package:amazon_clone/view/auth/authScreen.dart';
 import 'package:amazon_clone/view/landing_screen.dart';
+import 'package:amazon_clone/view/merch_screen.dart';
 import 'package:amazon_clone/view/ghm/marathon_screen.dart';
 import 'package:amazon_clone/view/ghm/ghm_selection.dart';
 import 'package:amazon_clone/view/ghm/ghm_registration.dart';
@@ -8,7 +9,6 @@ import 'package:amazon_clone/view/techniche_screen.dart';
 import 'package:amazon_clone/view/schedule_screen.dart';
 import 'package:amazon_clone/view/techno/papers_display.dart';
 import 'package:amazon_clone/view/utilities_screen.dart';
-
 
 import 'package:flutter/material.dart';
 
@@ -61,7 +61,13 @@ Route<dynamic> generateRoute(RouteSettings routeSettings) {
         builder: (_) => const TechnothlonScreen(),
       );
 
-    case '/schedule': 
+    case '/merch':
+      return MaterialPageRoute(
+        settings: routeSettings,
+        builder: (_) => const MerchScreen(),
+      );
+
+    case '/schedule':
       return MaterialPageRoute(
         settings: routeSettings,
         builder: (_) => const SchedulePage(),

@@ -1,6 +1,10 @@
 class EventDetail {
   final String title;
-  const EventDetail({required this.title});
+  final String? redirectUrl;
+  const EventDetail({
+    required this.title,
+    this.redirectUrl,
+  });
 }
 
 class SubCategory {
@@ -74,14 +78,6 @@ final List<MainCategory> eventData = [
         events: const [],
       ),
       SubCategory(
-        title: 'Tech-Expo',
-        imageAsset: 'assets/techexpo.jpg',
-        events: const [
-          EventDetail(title: 'Juniors'),
-          EventDetail(title: 'Seniors'),
-        ],
-      ),
-      SubCategory(
         title: 'Technothlon',
         imageAsset: 'assets/techno.png',
         events: const [
@@ -91,67 +87,106 @@ final List<MainCategory> eventData = [
       ),
     ],
   ),
-  // MainCategory(
-  //   title: 'Workshops',
-  //   subCategories: [
-  //     SubCategory(
-  //       title: 'Software Development',
-  //       imageAsset: 'assets/aqua.png',
-  //       events: const [
-  //         EventDetail(title: 'Full Stack'),
-  //         EventDetail(title: 'Prompt Engineering'),
-  //       ],
-  //     ),
-  //     SubCategory(
-  //       title: 'Cyber Security',
-  //       imageAsset: 'assets/aqua.png',
-  //       events: const [
-  //         EventDetail(title: 'Ethical Hacking 101'),
-  //         EventDetail(title: 'Network Security'),
-  //       ],
-  //     ),
-  //     SubCategory(
-  //       title: 'AWS Workshop',
-  //       imageAsset: 'assets/aqua.png',
-  //       events: const [
-  //         EventDetail(title: 'Server Handling Basics'),
-  //         EventDetail(title: 'Cloud Infrastructure'),
-  //       ],
-  //     ),
-  //   ],
-  // ),
-  // MainCategory(
-  //   title: 'Exhibitions',
-  //   subCategories: [
-  //     SubCategory(
-  //       title: 'Army Expo',
-  //       imageAsset: 'assets/aqua.png',
-  //       events: const [
-  //         EventDetail(title: 'Indian Army Weapons Showcase'),
-  //       ],
-  //     ),
-  //     SubCategory(
-  //       title: 'Road Show',
-  //       imageAsset: 'assets/aqua.png',
-  //       events: const [
-  //         EventDetail(title: 'Fleet of Roadsters Roaring in campus'),
-  //       ],
-  //     ),
-  //   ],
-  // ),
-  // MainCategory(
-  //   title: 'Lecture Series',
-  //   subCategories: [
-  //     SubCategory(
-  //       title: 'Leadership',
-  //       imageAsset: 'assets/aqua.png',
-  //       events: const [
-  //         EventDetail(title: 'Keynote'),
-  //         EventDetail(title: 'Panel Discussion'),
-  //       ],
-  //     ),
-  //   ],
-  // ),
+  MainCategory(
+    title: 'Workshops',
+    subCategories: [
+      SubCategory(
+        title: 'Full Stack Web Development',
+        imageAsset: 'assets/webdev.jpg',
+        events: const [
+          EventDetail(
+              title: '',
+              redirectUrl:
+                  "https://unstop.com/workshops-webinars/full-stack-web-development-bootcamp-iit-guwahati-1541887"),
+        ],
+      ),
+      SubCategory(
+        title: 'Arduino Project Development',
+        imageAsset: 'assets/arduino.jpg',
+        events: const [
+          EventDetail(
+              title: '',
+              redirectUrl:
+                  "https://unstop.com/workshops-webinars/arduino-project-development-workshop-iit-guwahati-1541858"),
+        ],
+      ),
+      SubCategory(
+        title: 'Generative AI',
+        imageAsset: 'assets/genai.jpg',
+        events: const [
+          EventDetail(
+              title: '',
+              redirectUrl:
+                  "https://unstop.com/workshops-webinars/generative-ai-agentic-ai-workshop-iit-guwahati-1541805"),
+        ],
+      ),
+      SubCategory(
+        title: 'Cybersecurity',
+        imageAsset: 'assets/cybersec.jpg',
+        events: const [
+          EventDetail(
+              title: '',
+              redirectUrl:
+                  "https://unstop.com/workshops-webinars/cybersecurity-and-ethical-hacking-workshop-iit-guwahati-1541776"),
+        ],
+      ),
+    ],
+  ),
+  MainCategory(
+    title: 'Exhibitions',
+    subCategories: [
+      SubCategory(
+        title: 'Tech-Expo',
+        imageAsset: 'assets/techexpo.jpg',
+        events: const [
+          EventDetail(title: 'Juniors'),
+          EventDetail(title: 'Seniors'),
+        ],
+      ),
+      SubCategory(
+        title: 'Army Expo',
+        imageAsset: 'assets/army-expo.jpg',
+        events: const [
+          EventDetail(title: 'Indian Army Weapons Showcase'),
+        ],
+      ),
+      SubCategory(
+        title: 'Road Show',
+        imageAsset: 'assets/road-show.webp',
+        events: const [
+          EventDetail(title: 'Fleet of Roadsters Roaring in campus'),
+        ],
+      ),
+    ],
+  ),
+  MainCategory(
+    title: 'Lecture Series',
+    subCategories: [
+      SubCategory(
+        title: 'Mr. Ashneer Grover',
+        imageAsset: 'assets/ash.jpg',
+        events: const [
+          // EventDetail(title: 'Former manageing Director of BharatPe ')
+        ],
+      ),
+      SubCategory(
+        title: 'Mr. PushkarRaj Salunke',
+        imageAsset: 'assets/revamp.jpg',
+        events: const [
+          // EventDetail(
+          //     title:
+          //         'From building India’s first transformable EVs to redefining mobility')
+        ],
+      ),
+      SubCategory(
+        title: 'Mr. Dinesh Sharma',
+        imageAsset: 'assets/asus.jpg',
+        events: const [
+          //EventDetail(title: 'The powerhouse behind ASUS India’s success')
+        ],
+      ),
+    ],
+  ),
   MainCategory(
     title: 'Nexus',
     subCategories: [

@@ -1,10 +1,11 @@
 import 'package:amazon_clone/utils/animate_gradient_background.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'dart:convert';
 import 'package:intl/intl.dart';
-import 'package:amazon_clone/view/landing_screen.dart' hide AnimatedGradientBackground;
-
+import 'package:amazon_clone/view/landing_screen.dart'
+    hide AnimatedGradientBackground;
 
 const Map<String, Map<String, dynamic>> categoryStyles = {
   'Robotics': {'icon': Icons.smart_toy_outlined, 'color': Color(0xff00ffdd)},
@@ -122,6 +123,11 @@ class _SchedulePageState extends State<SchedulePage>
           title: const Text('Events Timeline'),
           centerTitle: true,
           backgroundColor: Colors.transparent,
+          systemOverlayStyle: const SystemUiOverlayStyle(
+            statusBarIconBrightness: Brightness.light,
+            statusBarColor:
+                Colors.transparent, // keep status bar visually transparent
+          ),
           elevation: 0,
         ),
         body: Stack(
