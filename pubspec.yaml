@@ -58,7 +58,7 @@ dependencies:
   firebase_remote_config: ^6.0.0
   flutter_map_marker_popup: ^7.0.0
   animated_glitch: ^2.0.0+2
-  webview_flutter: ^4.13.0
+  model_viewer_plus: ^1.9.3
   
 
 dev_dependencies:

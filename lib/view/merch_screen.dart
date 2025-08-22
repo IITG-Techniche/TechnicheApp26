@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:animated_glitch/animated_glitch.dart';
+import 'package:model_viewer_plus/model_viewer_plus.dart';
 
 class MerchScreen extends StatefulWidget {
   static const String routeName = '/merch';
@@ -13,7 +14,6 @@ class MerchScreen extends StatefulWidget {
 }
 
 class _MerchScreenState extends State<MerchScreen> {
-  // initialize controller in initState so we can set a large initial page for a circular feel
   late final PageController _pageController;
 
   final AnimatedGlitchController _glitchController = AnimatedGlitchController(
@@ -29,16 +29,18 @@ class _MerchScreenState extends State<MerchScreen> {
     {
       "title": "Glitched GameBoy",
       "image": "assets/glitched.png",
+       "model": "assets/blackmerch.glb",
       "price": "₹449",
       "description":
-          "When circuits fry but style survives. It’s rebellious, loud, and built for those who’d rather crash the system than play by its rules."
+          "When circuits fry but style survives. It’s rebellious, loud, and built for those who’d rather crash the system than play by its rules.",
     },
     {
       "title": "Glorified GoodBoy",
       "image": "assets/goodboy.png",
+      "model": "assets/merchself.glb",
       "price": "₹399",
       "description":
-          "Channeling collective consciousness, algorithms, and aesthetics that scream main character energy. Rock it, & you’re not just in the club, you are the vibe."
+          "Channeling collective consciousness, algorithms, and aesthetics that scream main character energy. Rock it, & you’re not just in the club, you are the vibe.",
     },
   ];
 
@@ -47,14 +49,13 @@ class _MerchScreenState extends State<MerchScreen> {
   @override
   void initState() {
     super.initState();
-
-    // start at a large page so nextPage feels "infinite" (round-and-round)
     _pageController = PageController(initialPage: merchItems.length * 1000);
 
-    // Precache asset images after first frame to avoid flicker
     WidgetsBinding.instance.addPostFrameCallback((_) {
       for (var item in merchItems) {
-        precacheImage(AssetImage(item['image']!), context);
+        if (item['image'] != null) {
+          precacheImage(AssetImage(item['image']!), context);
+        }
       }
       _startAutoScroll();
     });
@@ -70,11 +71,6 @@ class _MerchScreenState extends State<MerchScreen> {
       );
     });
   }
-
-  // void _stopAutoScroll() {
-  //   _autoScrollTimer?.cancel();
-  //   _autoScrollTimer = null;
-  // }
 
   void _startGlitchIfNeeded() {
     if (!_glitchActive) {
@@ -104,7 +100,6 @@ class _MerchScreenState extends State<MerchScreen> {
     _pageController.dispose();
     super.dispose();
   }
-// ...existing code...
 
   @override
   Widget build(BuildContext context) {
@@ -149,7 +144,6 @@ class _MerchScreenState extends State<MerchScreen> {
                     ),
                   ),
                   const SizedBox(height: 8),
-// ...existing code...
                   Text(
                     'Roam around the campus in style! Browse and buy official Techniche merchandise.',
                     style: TextStyle(
@@ -158,15 +152,12 @@ class _MerchScreenState extends State<MerchScreen> {
                     ),
                   ),
                   const SizedBox(height: 5),
-
-                  // Detect scroll start/end reliably and trigger glitch accordingly
                   Expanded(
                     child: NotificationListener<ScrollNotification>(
                       onNotification: (notification) {
                         if (notification is ScrollStartNotification) {
                           _startGlitchIfNeeded();
                         } else if (notification is ScrollEndNotification) {
-                          // tiny delay to let final frames render
                           Future.delayed(const Duration(milliseconds: 60), () {
                             _stopGlitchIfNeeded();
                           });
@@ -179,7 +170,8 @@ class _MerchScreenState extends State<MerchScreen> {
                           final item = merchItems[index % merchItems.length];
                           return _merchCard(
                             title: item["title"]!,
-                            imagePath: item["image"]!,
+                            imagePath: item["image"],
+                            modelPath: item["model"],
                             price: item["price"]!,
                             description: item["description"]!,
                             onBuy: _launchURL,
@@ -199,12 +191,12 @@ class _MerchScreenState extends State<MerchScreen> {
 
   Widget _merchCard({
     required String title,
-    required String imagePath,
+    String? imagePath,
+    String? modelPath,
     required String price,
     required String description,
     required VoidCallback onBuy,
   }) {
-    // Floating item — no box container around the card
     return Center(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 20.0),
@@ -217,16 +209,26 @@ class _MerchScreenState extends State<MerchScreen> {
                 height: 320,
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(18),
-                  child: AnimatedGlitch(
-                    controller: _glitchController,
-                    showColorChannels: true,
-                    showDistortions: true,
-                    child: Image.asset(
-                      imagePath,
-                      fit: BoxFit.contain,
-                      gaplessPlayback: true,
-                    ),
-                  ),
+                  child: modelPath != null
+                      ? ModelViewer(
+                          src: modelPath,
+                          alt: "3D Shirt Model",
+                          ar: true,
+                          autoRotate: true,
+                          cameraControls: true,
+                          disableZoom: false,
+                          backgroundColor: Colors.transparent,
+                        )
+                      : AnimatedGlitch(
+                          controller: _glitchController,
+                          showColorChannels: true,
+                          showDistortions: true,
+                          child: Image.asset(
+                            imagePath!,
+                            fit: BoxFit.contain,
+                            gaplessPlayback: true,
+                          ),
+                        ),
                 ),
               ),
               const SizedBox(height: 16),
@@ -283,7 +285,7 @@ class _MerchScreenState extends State<MerchScreen> {
 }
 
 /* ---------------------------
-  Background (unchanged)
+  Background Gradient
 ----------------------------*/
 class _AnimatedGradientBackground extends StatefulWidget {
   const _AnimatedGradientBackground({Key? key}) : super(key: key);
@@ -298,10 +300,10 @@ class _AnimatedGradientBackgroundState
   late AnimationController _controller;
   late Animation<double> _animation;
   final List<List<Color>> gradients = [
-    [const Color(0xFF181A20), const Color(0xFF23242B), const Color(0xFF35363C)],
-    [const Color(0xFF23242B), const Color(0xFF35363C), const Color(0xFF181A20)],
-    [const Color(0xFF35363C), const Color(0xFF23242B), const Color(0xFF181A20)],
-    [const Color(0xFF181A20), const Color(0xFF35363C), const Color(0xFF23242B)],
+    [Color(0xFF181A20), Color(0xFF23242B), Color(0xFF35363C)],
+    [Color(0xFF23242B), Color(0xFF35363C), Color(0xFF181A20)],
+    [Color(0xFF35363C), Color(0xFF23242B), Color(0xFF181A20)],
+    [Color(0xFF181A20), Color(0xFF35363C), Color(0xFF23242B)],
   ];
   int _currentGradient = 0;
 
