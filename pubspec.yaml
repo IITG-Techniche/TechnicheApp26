@@ -30,12 +30,9 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  cupertino_icons: ^1.0.8
   url_launcher: ^6.1.8
   http: ^1.1.0
-  provider: ^6.1.0
   shared_preferences: ^2.2.2
-  flutter_dotenv: ^5.2.1
   pedometer:
     git:
       url: https://github.com/DhruvGupta21/flutter-plugins
@@ -53,7 +50,6 @@ dependencies:
   latlong2: ^0.9.1
   geolocator: ^13.0.1
   location: ^8.0.1
-  flutter_map_location_marker: ^9.1.1
   google_fonts: ^6.3.0
   animated_text_kit: ^4.2.3
   timeline_tile: ^2.0.0
@@ -62,6 +58,7 @@ dependencies:
   firebase_remote_config: ^6.0.0
   flutter_map_marker_popup: ^7.0.0
   animated_glitch: ^2.0.0+2
+  webview_flutter: ^4.13.0
   
 
 dev_dependencies:
@@ -94,28 +91,29 @@ flutter:
   uses-material-design: true
   assets: 
     - assets/
-    - assets/data/events.json
-    - assets/techniche_header.jpeg
-    - assets/logo_withoutBG.png
-    - assets/splash.json
-    - assets/welcome.json
-    - assets/pyq.json
-    - assets/ghm.json
-    - assets/portal.json
-    - assets/events.json
-    - assets/scifibg.json
-    - assets/stroke.json
-    - assets/dhruv-app.jpg
-    - assets/arya-app.jpg
-    - assets/ayush-app.jpg
-    - assets/divyansh-app.jpg
-    - assets/kashish-app.jpg
-    - assets/goodboy.png
-    - assets/glitched.png
-    - assets/webdev.jpg
-    - assets/genai.jpg
-    - assets/cybersec.jpg
-    - assets/arduino.jpg
+    # - assets/data/events.json
+    # - assets/techniche_header.jpeg
+    # - assets/logo_withoutBG.png
+    # - assets/splash.json
+    # - assets/welcome.json
+    # - assets/pyq.json
+    # - assets/ghm.json
+    # - assets/portal.json
+    # - assets/events.json
+    # - assets/scifibg.json
+    # - assets/stroke.json
+    # - assets/dhruv-app.jpg
+    # - assets/arya-app.jpg
+    # - assets/ayush-app.jpg
+    # - assets/divyansh-app.jpg
+    # - assets/kashish-app.jpg
+    # - assets/goodboy.png
+    # - assets/glitched.png
+    # - assets/webdev.jpg
+    # - assets/genai.jpg
+    # - assets/cybersec.jpg
+    # - assets/arduino.jpg
+    # - assets/Vector.png
   # To add assets to your application, add an assets section, like this:
   # assets:
   #   - images/a_dot_burr.jpeg

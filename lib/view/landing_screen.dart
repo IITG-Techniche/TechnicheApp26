@@ -1,4 +1,6 @@
+import 'package:amazon_clone/model/events_data.dart'; // Import your event data
 import 'package:amazon_clone/view/auth/authScreen.dart';
+import 'package:amazon_clone/view/sub_category_screen.dart'; // Import the workshop screen
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:amazon_clone/utils/ca_bottom_nav_bar.dart';
@@ -188,13 +190,6 @@ class _LandingScreenState extends State<LandingScreen> {
       const UtilitiesScreen(),
     ];
 
-    // final mapAppBar = AppBar(
-    //   title: const Text('Campus Map'),
-    //    centerTitle: true,
-    //     backgroundColor: Colors.transparent,
-    //     elevation: 0,
-    // );
-
     return UpgradeAlert(
       upgrader: Upgrader(
         debugLogging: kDebugMode,
@@ -224,7 +219,6 @@ class _LandingScreenState extends State<LandingScreen> {
             child: screens.elementAt(_selectedIndex),
           ),
         ),
-        // floatingActionButton: _selectedIndex == 0 ? mapFab : null,
         bottomNavigationBar: GlowingBottomNavBar(
           currentIndex: _selectedIndex,
           onTap: _onItemTapped,
@@ -244,6 +238,9 @@ class _LandingScreenState extends State<LandingScreen> {
 
   Widget _buildHomeContent(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
+    final workshopsCategory =
+        eventData.firstWhere((category) => category.title == 'Workshops');
+
     return Scaffold(
       backgroundColor: Colors.transparent,
       extendBodyBehindAppBar: true,
@@ -343,23 +340,24 @@ class _LandingScreenState extends State<LandingScreen> {
                         ),
                         _gridItem(
                           context: context,
-                          title: 'Technothlon',
+                          title: 'Workshops',
                           description:
-                              'See unique question papers of Technothlon!',
-                          imagePath: 'assets/techno_logo.jpg',
+                              'Go and register, seats are limited. Hurry up!',
+                          imagePath: 'assets/output.jpg',
                           color: const Color(0xFF23242B),
-                          onTap: () => Navigator.pushNamed(
-                              context, '/technothlon-screen'),
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => SubCategoryScreen(
+                                  categoryTitle: workshopsCategory.title,
+                                  subCategories:
+                                      workshopsCategory.subCategories,
+                                ),
+                              ),
+                            );
+                          },
                         ),
-                        // _gridItem(r
-                        //   context: context,
-                        //   title: 'GHM',
-                        //   description: 'Track your steps and participate',
-                        //   imagePath: 'assets/ghm_logo.jpg',
-                        //   color: const Color(0xFF23242B),
-                        //   onTap: () =>
-                        //       Navigator.pushNamed(context, '/ghm-selection'),
-                        // ),
                       ],
                     ),
                   ),
@@ -421,7 +419,9 @@ class _LandingScreenState extends State<LandingScreen> {
                             height: 28,
                           ),
                         )
-                      : Image.asset(imagePath, fit: BoxFit.contain),
+                      : ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: Image.asset(imagePath, fit: BoxFit.cover)),
                 ),
                 const SizedBox(height: 8),
                 Text(
