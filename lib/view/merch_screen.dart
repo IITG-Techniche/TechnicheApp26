@@ -158,7 +158,7 @@ class _MerchScreenState extends State<MerchScreen> {
                         if (notification is ScrollStartNotification) {
                           _startGlitchIfNeeded();
                         } else if (notification is ScrollEndNotification) {
-                          Future.delayed(const Duration(milliseconds: 60), () {
+                          Future.delayed(const Duration(milliseconds: 100), () {
                             _stopGlitchIfNeeded();
                           });
                         }
@@ -213,10 +213,11 @@ class _MerchScreenState extends State<MerchScreen> {
                       ? ModelViewer(
                           src: modelPath,
                           alt: "3D Shirt Model",
-                          ar: true,
                           autoRotate: true,
-                          cameraControls: true,
-                          disableZoom: false,
+                          // cameraControls: true,
+                          rotationPerSecond: "20deg",
+                          autoRotateDelay: 0, 
+                          disableZoom: true,
                           backgroundColor: Colors.transparent,
                         )
                       : AnimatedGlitch(
@@ -327,7 +328,7 @@ class _AnimatedGradientBackgroundState
 
   @override
   void dispose() {
-    _controller.dispose();
+    // _controller.dispose();
     super.dispose();
   }
 

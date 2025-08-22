@@ -1,6 +1,6 @@
-import 'package:amazon_clone/model/events_data.dart'; // Import your event data
+import 'package:amazon_clone/model/events_data.dart'; 
 import 'package:amazon_clone/view/auth/authScreen.dart';
-import 'package:amazon_clone/view/sub_category_screen.dart'; // Import the workshop screen
+import 'package:amazon_clone/view/sub_category_screen.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:amazon_clone/utils/ca_bottom_nav_bar.dart';
