@@ -219,7 +219,8 @@ class _LandingScreenState extends State<LandingScreen> {
             child: screens.elementAt(_selectedIndex),
           ),
         ),
-        bottomNavigationBar: GlowingBottomNavBar(
+      bottomNavigationBar: SafeArea(
+child:GlowingBottomNavBar(
           currentIndex: _selectedIndex,
           onTap: _onItemTapped,
           items: [
@@ -232,6 +233,7 @@ class _LandingScreenState extends State<LandingScreen> {
                 icon: Icons.workspace_premium_sharp, label: 'Utilities'),
           ],
         ),
+      ),
       ),
     );
   }

@@ -29,7 +29,7 @@ class _MerchScreenState extends State<MerchScreen> {
     {
       "title": "Glitched GameBoy",
       "image": "assets/glitched.png",
-       "model": "assets/blackmerch.glb",
+      "model": "assets/blackmerch.glb",
       "price": "₹449",
       "description":
           "When circuits fry but style survives. It’s rebellious, loud, and built for those who’d rather crash the system than play by its rules.",
@@ -40,7 +40,7 @@ class _MerchScreenState extends State<MerchScreen> {
       "model": "assets/merchself.glb",
       "price": "₹399",
       "description":
-          "Channeling collective consciousness, algorithms, and aesthetics that scream main character energy. Rock it, & you’re not just in the club, you are the vibe.",
+          "Channeling collective consciousness, algorithms, and aesthetics that scream main character energy. Rock it, & Beyond the club, you are the vibe.",
     },
   ];
 
@@ -200,75 +200,99 @@ class _MerchScreenState extends State<MerchScreen> {
     return Center(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 20.0),
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              SizedBox(
-                width: 320,
-                height: 320,
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(18),
-                  child: modelPath != null
-                      ? ModelViewer(
-                          src: modelPath,
-                          alt: "3D Shirt Model",
-                          autoRotate: true,
-                          // cameraControls: true,
-                          rotationPerSecond: "20deg",
-                          autoRotateDelay: 0, 
-                          disableZoom: true,
-                          backgroundColor: Colors.transparent,
-                        )
-                      : AnimatedGlitch(
-                          controller: _glitchController,
-                          showColorChannels: true,
-                          showDistortions: true,
-                          child: Image.asset(
-                            imagePath!,
-                            fit: BoxFit.contain,
-                            gaplessPlayback: true,
-                          ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(
+              width: 320,
+              height: 320,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(18),
+                child: modelPath != null
+                    ? ModelViewer(
+                        src: modelPath,
+                        alt: "3D Shirt Model",
+                        autoRotate: true,
+                        // cameraControls: true,
+                        rotationPerSecond: "20deg",
+                        autoRotateDelay: 0,
+                        disableZoom: true,
+                        backgroundColor: Colors.transparent,
+                      )
+                    : AnimatedGlitch(
+                        controller: _glitchController,
+                        showColorChannels: true,
+                        showDistortions: true,
+                        child: Image.asset(
+                          imagePath!,
+                          fit: BoxFit.contain,
+                          gaplessPlayback: true,
                         ),
-                ),
+                      ),
               ),
-              const SizedBox(height: 16),
-              Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                  letterSpacing: 0.5,
-                ),
+            ),
+            // const SizedBox(height: 12),
+            Text(
+              title,
+              style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+                letterSpacing: 0.5,
               ),
-              const SizedBox(height: 8),
-              Text(
-                price,
-                style: const TextStyle(
-                  fontSize: 18,
-                  color: Colors.white,
-                  fontWeight: FontWeight.w600,
-                ),
+            ),
+            // const SizedBox(height: 6),
+            Text(
+              price,
+              style: const TextStyle(
+                fontSize: 18,
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
               ),
-              const SizedBox(height: 12),
-              Text(
-                description,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 15,
-                  color: Colors.white.withOpacity(0.8),
-                  fontWeight: FontWeight.w400,
-                  height: 1.3,
-                ),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              description,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 15,
+                color: Colors.white.withOpacity(0.8),
+                fontWeight: FontWeight.w400,
+                height: 1.3,
               ),
-              const SizedBox(height: 16),
-              ElevatedButton.icon(
+            ),
+            const SizedBox(height: 12),
+            Container(
+              decoration: BoxDecoration(
+                // Gradient for the 3D effect
+                gradient: const LinearGradient(
+                  colors: [
+                    Color(0xFF0D47A1), // Darker blue
+                    Colors.blueAccent, // Lighter blue
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(12),
+                // Shadow for the glowing effect
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.blueAccent.withOpacity(0.6),
+                    blurRadius: 18,
+                    spreadRadius: 2,
+                    offset: const Offset(0, 4), // Shadow position
+                  ),
+                ],
+              ),
+              child: ElevatedButton.icon(
                 onPressed: onBuy,
                 icon: const Icon(Icons.shopping_cart, color: Colors.white),
                 label: const Text("Buy Now"),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blueAccent,
+                  // Make the button's own background transparent
+                  backgroundColor: Colors.transparent,
+                  // Disable the default button shadow
+                  shadowColor: Colors.transparent,
                   foregroundColor: Colors.white,
                   padding:
                       const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
@@ -277,8 +301,8 @@ class _MerchScreenState extends State<MerchScreen> {
                   ),
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

@@ -32,11 +32,12 @@ class _CaBottomNavBarState extends State<CaBottomNavBar> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: screens[screen_index],
-      bottomNavigationBar: GlowingBottomNavBar(
-        onTap: updateScreen,
-        currentIndex: screen_index,
-        items: [
-          GlowingBottomNavBarItem(
+      bottomNavigationBar: SafeArea(
+        child: GlowingBottomNavBar(
+          onTap: updateScreen,
+          currentIndex: screen_index,
+          items: [
+            GlowingBottomNavBarItem(
             icon: Icons.home_filled,
             label: "Home",
           ),
@@ -53,6 +54,7 @@ class _CaBottomNavBarState extends State<CaBottomNavBar> {
             label: "Profile",
           ),
         ],
+      ),
       ),
     );
   }
