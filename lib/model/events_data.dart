@@ -192,7 +192,7 @@ final List<MainCategory> eventData = [
     subCategories: [
       SubCategory(
         title: 'Networking Events',
-        imageAsset: 'assets/nexus.png',
+        imageAsset: 'assets/nexus.jpg',
         events: const [
           EventDetail(title: 'Icebreaking & Keynote'),
           EventDetail(title: 'Live Project'),

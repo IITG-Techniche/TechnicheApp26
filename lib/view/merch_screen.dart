@@ -52,18 +52,21 @@ class _MerchScreenState extends State<MerchScreen> {
     _pageController = PageController(initialPage: merchItems.length * 1000);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
       for (var item in merchItems) {
         if (item['image'] != null) {
           precacheImage(AssetImage(item['image']!), context);
         }
       }
-      _startAutoScroll();
+      if (mounted) {
+        _startAutoScroll();
+      }
     });
   }
 
   void _startAutoScroll() {
     _autoScrollTimer?.cancel();
-    _autoScrollTimer = Timer.periodic(const Duration(seconds: 8), (_) {
+    _autoScrollTimer = Timer.periodic(const Duration(seconds: 10), (_) {
       if (!_pageController.hasClients || !mounted) return;
       _pageController.nextPage(
         duration: const Duration(milliseconds: 600),
@@ -352,7 +355,7 @@ class _AnimatedGradientBackgroundState
 
   @override
   void dispose() {
-    // _controller.dispose();
+    _controller.dispose();
     super.dispose();
   }
 

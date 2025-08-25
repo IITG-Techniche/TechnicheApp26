@@ -1,6 +1,7 @@
-import 'package:amazon_clone/model/events_data.dart'; 
+// import 'package:amazon_clone/model/events_data.dart';
 import 'package:amazon_clone/view/auth/authScreen.dart';
-import 'package:amazon_clone/view/sub_category_screen.dart';
+// import 'package:amazon_clone/view/sub_category_screen.dart';
+import 'package:amazon_clone/view/workshops_screen.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:amazon_clone/utils/ca_bottom_nav_bar.dart';
@@ -219,29 +220,29 @@ class _LandingScreenState extends State<LandingScreen> {
             child: screens.elementAt(_selectedIndex),
           ),
         ),
-      bottomNavigationBar: SafeArea(
-child:GlowingBottomNavBar(
-          currentIndex: _selectedIndex,
-          onTap: _onItemTapped,
-          items: [
-            GlowingBottomNavBarItem(icon: Icons.map_sharp, label: 'Map'),
-            GlowingBottomNavBarItem(icon: Icons.history_edu, label: 'Legacy'),
-            GlowingBottomNavBarItem(
-                icon: Icons.home_filled, label: 'Home'), // Home in the middle
-            GlowingBottomNavBarItem(icon: Icons.schedule, label: 'Schedule'),
-            GlowingBottomNavBarItem(
-                icon: Icons.workspace_premium_sharp, label: 'Utilities'),
-          ],
+        bottomNavigationBar: SafeArea(
+          child: GlowingBottomNavBar(
+            currentIndex: _selectedIndex,
+            onTap: _onItemTapped,
+            items: [
+              GlowingBottomNavBarItem(icon: Icons.map_sharp, label: 'Map'),
+              GlowingBottomNavBarItem(icon: Icons.history_edu, label: 'Legacy'),
+              GlowingBottomNavBarItem(
+                  icon: Icons.home_filled, label: 'Home'), // Home in the middle
+              GlowingBottomNavBarItem(icon: Icons.schedule, label: 'Schedule'),
+              GlowingBottomNavBarItem(
+                  icon: Icons.workspace_premium_sharp, label: 'Utilities'),
+            ],
+          ),
         ),
-      ),
       ),
     );
   }
 
   Widget _buildHomeContent(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-    final workshopsCategory =
-        eventData.firstWhere((category) => category.title == 'Workshops');
+    // final workshopsCategory =
+    //     eventData.firstWhere((category) => category.title == 'Workshops');
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -348,15 +349,9 @@ child:GlowingBottomNavBar(
                           imagePath: 'assets/output.jpg',
                           color: const Color(0xFF23242B),
                           onTap: () {
-                            Navigator.push(
+                            Navigator.pushNamed(
                               context,
-                              MaterialPageRoute(
-                                builder: (_) => SubCategoryScreen(
-                                  categoryTitle: workshopsCategory.title,
-                                  subCategories:
-                                      workshopsCategory.subCategories,
-                                ),
-                              ),
+                              WorkshopsScreen.routeName,
                             );
                           },
                         ),

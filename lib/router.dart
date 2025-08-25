@@ -9,6 +9,7 @@ import 'package:amazon_clone/view/techniche_screen.dart';
 import 'package:amazon_clone/view/schedule_screen.dart';
 import 'package:amazon_clone/view/techno/papers_display.dart';
 import 'package:amazon_clone/view/utilities_screen.dart';
+import 'package:amazon_clone/view/workshops_screen.dart';
 
 import 'package:flutter/material.dart';
 
@@ -77,6 +78,12 @@ Route<dynamic> generateRoute(RouteSettings routeSettings) {
       return MaterialPageRoute(
         settings: routeSettings,
         builder: (_) => const UtilitiesScreen(),
+      );
+
+    case WorkshopsScreen.routeName:
+      return MaterialPageRoute(
+        settings: routeSettings,
+        builder: (_) => const WorkshopsScreen(),
       );
 
     default:
