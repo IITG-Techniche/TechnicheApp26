@@ -1,6 +1,6 @@
 workflows:
-  ios-simulator-build:
-    name: iOS Simulator Build (Debug - No Signing)
+  ios-simulator-build-and-run:
+    name: iOS Simulator Build and Run (Debug - No Signing)
     environment:
       flutter: stable
       xcode: latest
@@ -8,8 +8,10 @@ workflows:
 
     scripts:
       - name: Install Flutter dependencies
-        script: |
-          flutter pub get
+        script: flutter pub get
+
+      - name: Run Flutter tests
+        script: flutter test
 
       - name: Set iOS deployment target to 15.5
         script: |
@@ -22,8 +24,17 @@ workflows:
           cd ..
 
       - name: Build for iOS simulator (debug mode)
+        script: flutter build ios --simulator --debug --no-codesign
+
+      - name: Boot iOS Simulator
         script: |
-          flutter build ios --simulator --debug --no-codesign
+          xcrun simctl boot "iPhone 14"
+          open -a Simulator || true
+
+      - name: Install and Launch the App
+        script: |
+          xcrun simctl install booted build/ios/iphonesimulator/Runner.app
+          xcrun simctl launch booted com.techniche.techniche-app
 
     artifacts:
       - build/ios/iphonesimulator/Runner.app
