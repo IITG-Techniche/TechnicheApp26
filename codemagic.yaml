@@ -1,0 +1,29 @@
+workflows:
+  ios-simulator-build:
+    name: iOS Simulator Build (Debug - No Signing)
+    environment:
+      flutter: stable
+      xcode: latest
+      cocoapods: default
+
+    scripts:
+      - name: Install Flutter dependencies
+        script: |
+          flutter pub get
+
+      - name: Set iOS deployment target to 15.5
+        script: |
+          sed -i.bak "s/^# platform :ios.*/platform :ios, '15.5'/" ios/Podfile || echo "platform :ios, '15.5'" >> ios/Podfile
+
+      - name: Install CocoaPods dependencies
+        script: |
+          cd ios
+          pod install
+          cd ..
+
+      - name: Build for iOS simulator (debug mode)
+        script: |
+          flutter build ios --simulator --debug --no-codesign
+
+    artifacts:
+      - build/ios/iphonesimulator/Runner.app
