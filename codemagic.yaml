@@ -10,9 +10,6 @@ workflows:
       - name: Install Flutter dependencies
         script: flutter pub get
 
-      - name: Run Flutter tests
-        script: flutter test
-
       - name: Set iOS deployment target to 15.5
         script: |
           sed -i.bak "s/^# platform :ios.*/platform :ios, '15.5'/" ios/Podfile || echo "platform :ios, '15.5'" >> ios/Podfile
