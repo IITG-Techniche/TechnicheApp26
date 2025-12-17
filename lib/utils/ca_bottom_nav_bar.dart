@@ -1,9 +1,9 @@
-//import 'package:amazon_clone/view/auth/authScreen.dart';
-import 'package:amazon_clone/utils/bottom_nav_bar.dart';
-import 'package:amazon_clone/view/ca/homescreen.dart';
-import 'package:amazon_clone/view/ca/leaderboard.dart';
-import 'package:amazon_clone/view/ca/profilescreen.dart';
-import 'package:amazon_clone/view/ca/taskscreen.dart';
+//import 'package:techniche26/view/auth/authScreen.dart';
+import 'package:techniche26/utils/bottom_nav_bar.dart';
+import 'package:techniche26/view/ca/homescreen.dart';
+import 'package:techniche26/view/ca/leaderboard.dart';
+import 'package:techniche26/view/ca/profilescreen.dart';
+import 'package:techniche26/view/ca/taskscreen.dart';
 import 'package:flutter/material.dart';
 
 class CaBottomNavBar extends StatefulWidget {
@@ -38,23 +38,23 @@ class _CaBottomNavBarState extends State<CaBottomNavBar> {
           currentIndex: screen_index,
           items: [
             GlowingBottomNavBarItem(
-            icon: Icons.home_filled,
-            label: "Home",
-          ),
-          GlowingBottomNavBarItem(
-            icon: Icons.task_alt_outlined,
-            label: "Tasks",
-          ),
-          GlowingBottomNavBarItem(
-            icon: Icons.leaderboard_sharp,
-            label: "Leaderboard",
-          ),
-          GlowingBottomNavBarItem(
-            icon: Icons.account_circle_sharp,
-            label: "Profile",
-          ),
-        ],
-      ),
+              icon: Icons.home_filled,
+              label: "Home",
+            ),
+            GlowingBottomNavBarItem(
+              icon: Icons.task_alt_outlined,
+              label: "Tasks",
+            ),
+            GlowingBottomNavBarItem(
+              icon: Icons.leaderboard_sharp,
+              label: "Leaderboard",
+            ),
+            GlowingBottomNavBarItem(
+              icon: Icons.account_circle_sharp,
+              label: "Profile",
+            ),
+          ],
+        ),
       ),
     );
   }

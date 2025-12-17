@@ -1,14 +1,13 @@
-import 'package:amazon_clone/model/events_data.dart'; // Adjust this import path to your events_data.dart file
-import 'package:amazon_clone/view/sub_category_screen.dart'; // Adjust this import path to your screen
+import 'package:techniche26/model/events_data.dart'; 
+import 'package:techniche26/view/sub_category_screen.dart'; 
 import 'package:flutter/material.dart';
 
 class WorkshopNavigationCard extends StatelessWidget {
-  // The workshop data is now passed into the widget.
   final MainCategory workshopData;
 
   const WorkshopNavigationCard({
     super.key,
-    required this.workshopData, // Added workshopData to the constructor.
+    required this.workshopData, 
   });
 
   @override
@@ -29,17 +28,16 @@ class WorkshopNavigationCard extends StatelessWidget {
         ],
       ),
       child: Card(
-        color: theme.colorScheme.surface.withOpacity(0.8), // Use surface color from your theme
+        color: theme.colorScheme.surface
+            .withOpacity(0.8), 
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
           side: BorderSide(color: theme.colorScheme.primary, width: 1.5),
         ),
-        elevation: 0, // Elevation is handled by the container's box shadow
+        elevation: 0, 
         child: InkWell(
           borderRadius: BorderRadius.circular(16),
           onTap: () {
-            // Since SubCategoryScreen is not in your named router,
-            // we push it directly using MaterialPageRoute.
             Navigator.push(
               context,
               MaterialPageRoute(

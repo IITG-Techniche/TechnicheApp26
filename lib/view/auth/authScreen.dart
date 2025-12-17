@@ -1,5 +1,5 @@
-import 'package:amazon_clone/controller/authController.dart';
-import 'package:amazon_clone/utils/errorHandler.dart';
+import 'package:techniche26/controller/authController.dart';
+import 'package:techniche26/utils/errorHandler.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';

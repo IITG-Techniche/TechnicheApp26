@@ -1,4 +1,4 @@
-import 'package:amazon_clone/constant/global.dart';
+import 'package:techniche26/constant/global.dart';
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
@@ -164,7 +164,8 @@ class TopThreeWidget extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final isSmallScreen = constraints.maxWidth < 600;
-        final itemWidth = (constraints.maxWidth - 48) / 3; // Account for padding
+        final itemWidth =
+            (constraints.maxWidth - 48) / 3; // Account for padding
 
         return Container(
           padding: const EdgeInsets.all(16.0),
@@ -267,7 +268,7 @@ class PodiumItem extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         Container(
-          width: 70,  // Reduced width from 80 to 70
+          width: 70, // Reduced width from 80 to 70
           height: height,
           decoration: BoxDecoration(
             color: _getPositionColor(),

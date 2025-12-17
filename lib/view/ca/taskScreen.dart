@@ -1,5 +1,5 @@
-import 'package:amazon_clone/constant/global.dart';
-import 'package:amazon_clone/controller/provider_controller/user_provider.dart';
+import 'package:techniche26/constant/global.dart';
+import 'package:techniche26/controller/provider_controller/user_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -254,7 +254,9 @@ class _TasksScreenState extends State<TasksScreen> {
         backgroundColor: Colors.grey.shade200,
         selectedColor: Theme.of(context).primaryColor.withOpacity(0.2),
         labelStyle: TextStyle(
-          color: isSelected ? const Color.fromARGB(221, 241, 238, 238) : Colors.black87,
+          color: isSelected
+              ? const Color.fromARGB(221, 241, 238, 238)
+              : Colors.black87,
           fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
         ),
         shape: RoundedRectangleBorder(

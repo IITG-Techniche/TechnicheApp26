@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'package:amazon_clone/model/techno_paper_model.dart';
+import 'package:techniche26/model/techno_paper_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';

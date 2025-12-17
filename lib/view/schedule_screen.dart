@@ -1,10 +1,10 @@
-import 'package:amazon_clone/utils/animate_gradient_background.dart';
+import 'package:techniche26/utils/animate_gradient_background.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'dart:convert';
 import 'package:intl/intl.dart';
-import 'package:amazon_clone/view/landing_screen.dart'
+import 'package:techniche26/view/landing_screen.dart'
     hide AnimatedGradientBackground;
 
 const Map<String, Map<String, dynamic>> categoryStyles = {

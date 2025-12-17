@@ -1,8 +1,8 @@
-import 'package:amazon_clone/controller/provider_controller/user_provider.dart';
-import 'package:amazon_clone/controller/authController.dart';
-import 'package:amazon_clone/utils/errorHandler.dart';
+import 'package:techniche26/controller/provider_controller/user_provider.dart';
+import 'package:techniche26/controller/authController.dart';
+import 'package:techniche26/utils/errorHandler.dart';
 // ignore: unused_import
-import 'package:amazon_clone/model/userModel.dart'; // Import UserModel
+import 'package:techniche26/model/userModel.dart'; // Import UserModel
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart'; // Import Google Fonts
@@ -237,7 +237,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     return Scaffold(
       backgroundColor: bgColor,
-       appBar: AppBar(
+      appBar: AppBar(
         systemOverlayStyle: const SystemUiOverlayStyle(
           statusBarColor: Colors.transparent,
           statusBarIconBrightness: Brightness.light,

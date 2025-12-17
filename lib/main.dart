@@ -1,19 +1,30 @@
-import 'package:amazon_clone/controller/provider_controller/user_provider.dart';
-import 'package:amazon_clone/router.dart';
+import './controller/provider_controller/user_provider.dart';
+import 'router.dart';
 import 'view/splash_screen_wrapper.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+import 'package:flutter_riverpod/flutter_riverpod.dart'
+    hide ChangeNotifierProvider;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await Firebase.initializeApp();
+  await Supabase.initialize(
+    url: 'https://oroilzktoorpcofqkqam.supabase.co',
+    anonKey:
+        '<prefer publishable key instead of anon key for mobile and desktop apps>',
+  );
 
-  runApp(MultiProvider(
-    providers: [ChangeNotifierProvider(create: (context) => UserProvider())],
-    child: const MyApp(),
+  runApp(ProviderScope(
+    child: MultiProvider(
+      providers: [ChangeNotifierProvider(create: (context) => UserProvider())],
+      child: const MyApp(),
+    ),
   ));
 }
 
@@ -25,21 +36,18 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       onGenerateRoute: (settings) => generateRoute(settings),
       debugShowCheckedModeBanner: false,
-      title: 'Techniche 2025',
+      title: 'Techniche 2026',
       theme: ThemeData(
         brightness: Brightness.dark,
         fontFamily: 'Orbitron',
         scaffoldBackgroundColor: const Color(0xFF18122B), // deep purple/black
-        colorScheme: ColorScheme(
-          brightness: Brightness.dark,
+        colorScheme: ColorScheme.dark(
           primary: Color(0xFF00FFF7), // neon cyan
           onPrimary: Colors.black,
           secondary: Color(0xFF00FFF7), // neon cyan
           onSecondary: Colors.black,
           error: Color(0xFFFF1744),
           onError: Colors.white,
-          background: Color(0xFF18122B),
-          onBackground: Color(0xFF00FFF7),
           surface: Color(0xFF232946), // dark blue
           onSurface: Color(0xFF00FFF7),
         ),
@@ -66,15 +74,15 @@ class MyApp extends StatelessWidget {
         ),
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ButtonStyle(
-            backgroundColor: MaterialStateProperty.all(Color(0xFF00FFF7)),
-            foregroundColor: MaterialStateProperty.all(Color(0xFF18122B)),
-            shape: MaterialStateProperty.all(RoundedRectangleBorder(
+            backgroundColor: WidgetStateProperty.all(Color(0xFF00FFF7)),
+            foregroundColor: WidgetStateProperty.all(Color(0xFF18122B)),
+            shape: WidgetStateProperty.all(RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
               side: BorderSide(color: Color(0xFF00FFF7), width: 2),
             )),
-            shadowColor: MaterialStateProperty.all(Color(0xFF00FFF7)),
-            elevation: MaterialStateProperty.all(12),
-            textStyle: MaterialStateProperty.all(TextStyle(
+            shadowColor: WidgetStateProperty.all(Color(0xFF00FFF7)),
+            elevation: WidgetStateProperty.all(12),
+            textStyle: WidgetStateProperty.all(TextStyle(
               fontFamily: 'Orbitron',
               fontWeight: FontWeight.bold,
               fontSize: 18,

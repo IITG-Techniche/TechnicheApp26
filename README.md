@@ -1,4 +1,4 @@
-# amazon_clone
+# techniche26
 
 A new Flutter project.
 

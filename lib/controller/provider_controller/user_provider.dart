@@ -1,4 +1,4 @@
-import 'package:amazon_clone/model/userModel.dart';
+import 'package:techniche26/model/userModel.dart';
 import 'package:flutter/material.dart';
 //import 'package:shared_preferences/shared_preferences.dart';
 

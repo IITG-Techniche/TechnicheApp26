@@ -18,30 +18,14 @@ class NotificationService {
   final FirebaseMessaging _fcm = FirebaseMessaging.instance;
   final FlutterLocalNotificationsPlugin _localNotifications = FlutterLocalNotificationsPlugin();
 
-  /// The main method to call on app startup.
   Future<void> initializeAndHandleNotifications() async {
-    print("--- Starting Notification Setup ---");
-
-    // 1. Initialize Local Notifications and Create Channel
-    // This must be done before handling messages to ensure the channel exists.
     await _initializeLocalNotifications();
-
-    // 2. Set background message handler
     FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-    
-    // 3. Handle foreground messages
-    FirebaseMessaging.onMessage.listen(_handleForegroundMessage);
-
-    // 4. Check for notification permission
     PermissionStatus status = await Permission.notification.status;
-    print("Current notification permission status: $status");
-
     if (!status.isGranted) {
-      print("Permission not granted. Requesting now...");
       status = await Permission.notification.request();
       print("Permission request result: $status");
     }
-
     if (status.isGranted) {
       print("Permission is granted. Proceeding with token and subscription.");
       await _getTokenAndSubscribe();
@@ -52,22 +36,16 @@ class NotificationService {
     print("--- Notification Setup Complete ---");
   }
 
-  /// Initializes the local notifications plugin and creates the necessary Android channel.
   Future<void> _initializeLocalNotifications() async {
-    // Define the channel. The ID MUST match the one in AndroidManifest.xml
     const AndroidNotificationChannel channel = AndroidNotificationChannel(
       'high_importance_channel', // id
       'High Importance Notifications', // title
       description: 'This channel is used for important notifications.',
       importance: Importance.max,
     );
-
-    // Create the channel on the device
     await _localNotifications
         .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
         ?.createNotificationChannel(channel);
-
-    // Initialize the plugin
     const AndroidInitializationSettings initializationSettingsAndroid =
         AndroidInitializationSettings('@mipmap/ic_launcher');
     const InitializationSettings initializationSettings =
@@ -75,28 +53,6 @@ class NotificationService {
     await _localNotifications.initialize(initializationSettings);
   }
 
-  /// Handles messages that arrive while the app is in the foreground.
-  void _handleForegroundMessage(RemoteMessage message) {
-    print("Foreground message received: ${message.notification?.title}");
-    final notification = message.notification;
-    if (notification != null) {
-      // Manually display a local notification.
-      _localNotifications.show(
-        notification.hashCode,
-        notification.title,
-        notification.body,
-        NotificationDetails(
-          android: AndroidNotificationDetails(
-            'high_importance_channel', // Channel ID
-            'High Importance Notifications', // Channel Name
-            icon: '@mipmap/ic_launcher',
-          ),
-        ),
-      );
-    }
-  }
-
-  /// Gets the FCM token, stores it, and subscribes to the 'all_users' topic.
   Future<void> _getTokenAndSubscribe() async {
     try {
       final String? token = await _fcm.getToken();

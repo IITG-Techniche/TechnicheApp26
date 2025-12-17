@@ -1,23 +1,25 @@
-// import 'package:amazon_clone/model/events_data.dart';
-import 'package:amazon_clone/view/auth/authScreen.dart';
-// import 'package:amazon_clone/view/sub_category_screen.dart';
-import 'package:amazon_clone/view/workshops_screen.dart';
+// import 'package:techniche26/model/events_data.dart';
+import 'package:techniche26/view/auth/authScreen.dart';
+import 'package:techniche26/utils/app_drawer.dart';
+// import 'package:techniche26/view/sub_category_screen.dart';
+import 'package:techniche26/view/workshops_screen.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:amazon_clone/utils/ca_bottom_nav_bar.dart';
-import 'package:amazon_clone/view/map_screen.dart';
-import 'package:amazon_clone/view/utilities_screen.dart';
-import 'package:amazon_clone/view/legacy_screen.dart';
-import 'package:amazon_clone/controller/authController.dart';
-import 'package:amazon_clone/utils/bottom_nav_bar.dart';
+import 'package:techniche26/utils/ca_bottom_nav_bar.dart';
+import 'package:techniche26/view/map_screen.dart';
+import 'package:techniche26/view/utilities_screen.dart';
+import 'package:techniche26/view/legacy_screen.dart';
+import 'package:techniche26/controller/riverpod_controller/auth_riverpod_controller.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:techniche26/utils/bottom_nav_bar.dart';
 import 'package:upgrader/upgrader.dart';
 import 'package:lottie/lottie.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:amazon_clone/services/notification_service.dart';
+import 'package:techniche26/services/notification_service.dart';
 import 'package:flutter/services.dart';
-import 'package:amazon_clone/view/schedule_screen.dart';
+import 'package:techniche26/view/schedule_screen.dart';
 
-class LandingScreen extends StatefulWidget {
+class LandingScreen extends ConsumerStatefulWidget {
   static const String routeName = '/landing-screen';
   final int initialTab;
   final String? initialVenue;
@@ -29,7 +31,7 @@ class LandingScreen extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  State<LandingScreen> createState() => _LandingScreenState();
+  ConsumerState<LandingScreen> createState() => _LandingScreenState();
 }
 
 // RetroTransition and ScanlinePainter classes remain unchanged...
@@ -126,7 +128,7 @@ class ScanlinePainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
-class _LandingScreenState extends State<LandingScreen> {
+class _LandingScreenState extends ConsumerState<LandingScreen> {
   late int _selectedIndex;
 
   final GlobalKey<MapScreenState> _mapKey = GlobalKey<MapScreenState>();
@@ -158,10 +160,13 @@ class _LandingScreenState extends State<LandingScreen> {
         barrierDismissible: false,
         builder: (_) => const Center(child: CircularProgressIndicator()),
       );
-      bool isAuth = await AuthController().isUserAuthenticated();
+      bool isAuth =
+          await ref.read(authControllerProvider).isUserAuthenticated();
       if (context.mounted) Navigator.of(context).pop();
       if (isAuth) {
-        bool valid = await AuthController().validateTokenAndFetchUser(context);
+        bool valid = await ref
+            .read(authControllerProvider)
+            .validateTokenAndFetchUser(context);
         if (valid && context.mounted) {
           Navigator.pushNamed(context, CaBottomNavBar.routeName);
         } else if (context.mounted) {
@@ -264,6 +269,7 @@ class _LandingScreenState extends State<LandingScreen> {
         ),
         elevation: 0,
       ),
+      drawer: const AppDrawer(),
       body: Stack(
         children: [
           const AnimatedGradientBackground(),

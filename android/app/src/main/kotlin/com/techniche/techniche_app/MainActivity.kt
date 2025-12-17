@@ -1,4 +1,4 @@
-package com.example.amazon_clone
+package com.techniche.techniche_app
 
 import io.flutter.embedding.android.FlutterActivity
 

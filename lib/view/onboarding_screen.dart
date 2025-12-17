@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lottie/lottie.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:amazon_clone/controller/authController.dart';
-import 'package:amazon_clone/utils/ca_bottom_nav_bar.dart';
-import 'package:amazon_clone/view/landing_screen.dart';
+import 'package:techniche26/controller/riverpod_controller/auth_riverpod_controller.dart';
+import 'package:techniche26/utils/ca_bottom_nav_bar.dart';
+import 'package:techniche26/view/landing_screen.dart';
 
-class OnboardingScreen extends StatefulWidget {
+class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({Key? key}) : super(key: key);
   @override
-  State<OnboardingScreen> createState() => _OnboardingScreenState();
+  ConsumerState<OnboardingScreen> createState() => _OnboardingScreenState();
 }
 
-class _OnboardingScreenState extends State<OnboardingScreen>
+class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
     with TickerProviderStateMixin {
   double _opacity = 1.0;
   bool _isTransitioning = false;
@@ -25,27 +26,27 @@ class _OnboardingScreenState extends State<OnboardingScreen>
     {
       "title": "Let the Chaos Begin",
       "subtitle": "IIT Guwahati’s Premier Techno-Management Fest",
-      "lottie": "assets/welcome.json",
+      "lottie": "assets/onboarding/welcome.json",
     },
     {
       "title": "Campus Ambassador Portal",
       "subtitle": "Submit tasks & earn your way to the top of leaderboard",
-      "lottie": "assets/portal.json",
+      "lottie": "assets/onboarding/portal.json",
     },
     {
       "title": "Events Page",
       "subtitle": "Register for events, workshops and competitions",
-      "lottie": "assets/events.json",
+      "lottie": "assets/onboarding/events.json",
     },
     {
       "title": "Guwahati Half Marathon",
       "subtitle": "Run for a Better Tomorrow",
-      "lottie": "assets/ghm.json",
+      "lottie": "assets/onboarding/ghm.json",
     },
     {
       "title": "Technothlon PYQs",
       "subtitle": "Practice past question papers & hone your skills",
-      "lottie": "assets/pyq.json",
+      "lottie": "assets/onboarding/pyq.json",
     },
   ];
 
@@ -98,10 +99,16 @@ class _OnboardingScreenState extends State<OnboardingScreen>
 
     String? token = prefs.getString("token");
     if (token != null && token.isNotEmpty) {
-      await AuthController().fetchUserData(context);
-      Navigator.pushReplacementNamed(context, CaBottomNavBar.routeName);
+      if (mounted) {
+        await ref.read(authControllerProvider).fetchUserData(context);
+        if (mounted) {
+          Navigator.pushReplacementNamed(context, CaBottomNavBar.routeName);
+        }
+      }
     } else {
-      Navigator.pushReplacementNamed(context, LandingScreen.routeName);
+      if (mounted) {
+        Navigator.pushReplacementNamed(context, LandingScreen.routeName);
+      }
     }
   }
 

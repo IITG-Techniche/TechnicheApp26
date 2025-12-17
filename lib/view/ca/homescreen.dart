@@ -1,5 +1,5 @@
-import 'package:amazon_clone/controller/provider_controller/user_provider.dart';
-import 'package:amazon_clone/controller/authController.dart';
+import 'package:techniche26/controller/provider_controller/user_provider.dart';
+import 'package:techniche26/controller/authController.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart'; // Import Google Fonts
@@ -297,10 +297,10 @@ class Homescreen extends StatelessWidget {
             letterSpacing: 1.1,
           ),
         ),
-         leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: Colors.white),
-            onPressed: () =>  AuthController().logoutUser(context),
-          ),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => AuthController().logoutUser(context),
+        ),
         actions: [
           Theme(
             data: Theme.of(context).copyWith(
@@ -438,7 +438,8 @@ class Homescreen extends StatelessWidget {
                 padding:
                     const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
                 decoration: BoxDecoration(
-                  border: Border.all(color: neonMagenta.withOpacity(0.5), width: 1),
+                  border:
+                      Border.all(color: neonMagenta.withOpacity(0.5), width: 1),
                   borderRadius: BorderRadius.circular(30),
                 ),
                 child: Text(

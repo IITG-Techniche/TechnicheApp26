@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:amazon_clone/controller/authController.dart';
-import 'package:amazon_clone/utils/ca_bottom_nav_bar.dart';
-import 'package:amazon_clone/view/landing_screen.dart';
-import 'package:amazon_clone/view/onboarding_screen.dart';
+import 'package:techniche26/controller/authController.dart';
+import 'package:techniche26/utils/ca_bottom_nav_bar.dart';
+import 'package:techniche26/view/landing_screen.dart';
+import 'package:techniche26/view/onboarding_screen.dart';
 import 'splash_screen.dart';
 
 class SplashScreenWrapper extends StatefulWidget {

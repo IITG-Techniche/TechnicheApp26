@@ -1,15 +1,15 @@
-import 'package:amazon_clone/utils/ca_bottom_nav_bar.dart';
-import 'package:amazon_clone/view/auth/authScreen.dart';
-import 'package:amazon_clone/view/landing_screen.dart';
-import 'package:amazon_clone/view/merch_screen.dart';
-import 'package:amazon_clone/view/ghm/marathon_screen.dart';
-import 'package:amazon_clone/view/ghm/ghm_selection.dart';
-import 'package:amazon_clone/view/ghm/ghm_registration.dart';
-import 'package:amazon_clone/view/techniche_screen.dart';
-import 'package:amazon_clone/view/schedule_screen.dart';
-import 'package:amazon_clone/view/techno/papers_display.dart';
-import 'package:amazon_clone/view/utilities_screen.dart';
-import 'package:amazon_clone/view/workshops_screen.dart';
+import 'package:techniche26/utils/ca_bottom_nav_bar.dart';
+import 'package:techniche26/view/auth/authScreen.dart';
+import 'package:techniche26/view/landing_screen.dart';
+import 'package:techniche26/view/merch_screen.dart';
+import 'package:techniche26/view/ghm/marathon_screen.dart';
+import 'package:techniche26/view/ghm/ghm_selection.dart';
+import 'package:techniche26/view/ghm/ghm_registration.dart';
+import 'package:techniche26/view/techniche_screen.dart';
+import 'package:techniche26/view/schedule_screen.dart';
+import 'package:techniche26/view/techno/papers_display.dart';
+import 'package:techniche26/view/utilities_screen.dart';
+import 'package:techniche26/view/workshops_screen.dart';
 
 import 'package:flutter/material.dart';
 

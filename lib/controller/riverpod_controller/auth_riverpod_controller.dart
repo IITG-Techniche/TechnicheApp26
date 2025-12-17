@@ -1,20 +1,26 @@
 import 'dart:convert';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:techniche26/constant/global.dart';
-import 'package:techniche26/controller/provider_controller/user_provider.dart';
 import 'package:techniche26/utils/ca_bottom_nav_bar.dart';
 import 'package:techniche26/utils/errorHandler.dart';
-import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:techniche26/controller/riverpod_controller/user_riverpod_provider.dart';
+
+final authControllerProvider = Provider((ref) => AuthController(ref));
 
 class AuthController {
+  final Ref _ref;
+
+  AuthController(this._ref);
+
   Future<bool> signInUser({
     required BuildContext context,
     required String email,
     required String password,
   }) async {
-    // Show loading dialog with better styling
+    // Show loading dialog
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -35,7 +41,7 @@ class AuthController {
                   valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFF00F7)),
                 ),
                 const SizedBox(height: 20),
-                Text(
+                const Text(
                   "Signing in...",
                   style: TextStyle(
                     fontSize: 16,
@@ -82,65 +88,61 @@ class AuthController {
             'token': responseData['token'],
           };
 
-          // Update user provider
+          // Update user provider (Riverpod)
+          _ref.read(userProvider.notifier).setUser(jsonEncode(userData));
+
+          // Show "Loading account..." dialog while fetching user data
           if (context.mounted) {
-            // Make sure to wait for the provider update to complete
-            await Provider.of<UserProvider>(context, listen: false)
-                .setUser(jsonEncode(userData));
-
-            // Show "Loading account..." dialog while fetching user data
-            if (context.mounted) {
-              showDialog(
-                context: context,
-                barrierDismissible: false,
-                builder: (BuildContext context) {
-                  return Dialog(
-                    elevation: 0,
-                    backgroundColor: Colors.transparent,
-                    child: Container(
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(15),
-                      ),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const CircularProgressIndicator(
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                                Color(0xFFFF00F7)),
-                          ),
-                          const SizedBox(height: 20),
-                          Text(
-                            "Loading account data...",
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ],
-                      ),
+            showDialog(
+              context: context,
+              barrierDismissible: false,
+              builder: (BuildContext context) {
+                return Dialog(
+                  elevation: 0,
+                  backgroundColor: Colors.transparent,
+                  child: Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(15),
                     ),
-                  );
-                },
-              );
-            }
-
-            // Add this critical line:
-            await fetchUserData(context); // Fetches complete user profile
-
-            // Hide the second loading dialog
-            if (context.mounted) {
-              Navigator.of(context).pop();
-            }
-
-            showMessage(context, "Logged in Successfully!");
-            if (context.mounted) {
-              Navigator.pushNamedAndRemoveUntil(
-                  context, CaBottomNavBar.routeName, (route) => false);
-            }
-            return true;
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const CircularProgressIndicator(
+                          valueColor:
+                              AlwaysStoppedAnimation<Color>(Color(0xFFFF00F7)),
+                        ),
+                        const SizedBox(height: 20),
+                        const Text(
+                          "Loading account data...",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            );
           }
+
+          // Fetch full profile
+          await fetchUserData(context);
+
+          // Hide the second loading dialog
+          if (context.mounted) {
+            Navigator.of(context).pop();
+          }
+
+          showMessage(context, "Logged in Successfully!");
+          if (context.mounted) {
+            Navigator.pushNamedAndRemoveUntil(
+                context, CaBottomNavBar.routeName, (route) => false);
+          }
+          return true;
         } else {
           showMessage(context, "Login failed - no token received",
               isError: true);
@@ -172,36 +174,26 @@ class AuthController {
         return false;
       }
 
-      // Add basic token expiration check if your token includes expiration
-      // This is a simple example - your actual implementation may differ
-      // based on your token structure
-
       try {
-        // If your token is a JWT, you can do a basic check
-        // This is a very basic check - not a full JWT validation
         final parts = token.split('.');
         if (parts.length != 3) {
-          return false; // Not a valid JWT format
+          return false;
         }
 
-        // Decode the payload part (middle part)
         String normalizedPayload = base64Url.normalize(parts[1]);
         Map<String, dynamic> payload =
             json.decode(utf8.decode(base64Url.decode(normalizedPayload)));
 
-        // Check if token has expiration claim
         if (payload.containsKey('exp')) {
           int expiry = payload['exp'];
           int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
 
           if (now >= expiry) {
-            // Token has expired
             return false;
           }
         }
       } catch (e) {
         print("Token parsing error: $e");
-        // If there's any error parsing the token, assume it's invalid
         return false;
       }
 
@@ -268,7 +260,7 @@ class AuthController {
 
       return true;
     } catch (e) {
-      // Hide loading dialog in case of error
+      // Hide loading dialog
       if (context.mounted) {
         Navigator.of(context).pop();
       }
@@ -280,23 +272,19 @@ class AuthController {
 
   Future<void> fetchUserData(BuildContext context) async {
     try {
-      print("Starting fetchUserData");
+      print("Starting fetchUserData (Riverpod)");
       final prefs = await SharedPreferences.getInstance();
       String? token = prefs.getString("token");
 
-      print(
-          "Token from prefs: ${token?.substring(0, 10)}..."); // Print first 10 chars for debugging
-
       if (token == null || token.isEmpty) {
-        print("No token found, clearing auth data");
         await _clearAuthData(context);
         return;
       }
 
       String uri = GlobalVariables.baseUrl;
 
-      // First validate token
-      print("Validating token");
+      // Validate token (simplified for brevity, assume valid if calling this directly or validation happened before)
+      // Ideally should re-validate or trust caller. Let's do a quick validation.
       final tokenRes = await http.post(
         Uri.parse("$uri/caauth/validatetokenApp"),
         headers: {
@@ -305,24 +293,12 @@ class AuthController {
         },
       );
 
-      print("Token validation response status: ${tokenRes.statusCode}");
-      print("Token validation response body: ${tokenRes.body}");
-
-      if (tokenRes.statusCode != 200) {
-        print("Token validation failed with status: ${tokenRes.statusCode}");
+      if (tokenRes.statusCode != 200 || !jsonDecode(tokenRes.body)) {
         await _clearAuthData(context);
         return;
       }
 
-      final bool isValid = jsonDecode(tokenRes.body);
-      if (!isValid) {
-        print("Token is not valid");
-        await _clearAuthData(context);
-        return;
-      }
-
-      // If token is valid, fetch user data
-      print("Token is valid, fetching user data");
+      // Fetch user data
       final userRes = await http.get(
         Uri.parse("$uri/caauth/getUserApp"),
         headers: {
@@ -331,19 +307,13 @@ class AuthController {
         },
       );
 
-      print("User data response status: ${userRes.statusCode}");
-
       if (userRes.statusCode == 200) {
         final userData = jsonDecode(userRes.body);
-        userData['token'] = token; // Ensure token is included
+        userData['token'] = token;
 
-        print("User data fetched successfully");
-        if (context.mounted) {
-          await Provider.of<UserProvider>(context, listen: false)
-              .setUser(jsonEncode(userData));
-        }
+        // Update Riverpod state
+        _ref.read(userProvider.notifier).setUser(jsonEncode(userData));
       } else {
-        print("Failed to fetch user data: ${userRes.statusCode}");
         await _clearAuthData(context);
       }
     } catch (e) {
@@ -354,25 +324,16 @@ class AuthController {
 
   Future<void> logoutUser(BuildContext context) async {
     try {
-      // First clear all auth data
       await _clearAuthData(context);
-
-      // Show success message
       showMessage(context, "Logged out successfully");
 
-      // Navigate to landing screen instead of auth screen
       if (context.mounted) {
-        // This ensures we go back to the landing page first
         Navigator.pushNamedAndRemoveUntil(
-            context,
-            '/landing-screen', // Go to landing screen, not directly to auth
-            (route) => false);
+            context, '/landing-screen', (route) => false);
       }
     } catch (e) {
       print("Logout error: $e");
       showMessage(context, "An error occurred during logout", isError: true);
-
-      // Even if logout fails, try to clear auth data and redirect
       await _clearAuthData(context);
       if (context.mounted) {
         Navigator.pushNamedAndRemoveUntil(
@@ -384,18 +345,12 @@ class AuthController {
   Future<void> _clearAuthData(BuildContext context) async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      // Clear token
       await prefs.remove('token');
-      // Clear any other auth-related data that might be stored
       await prefs.remove('user');
       await prefs.remove('userData');
-      // Add any other auth-related keys that might be saved
 
-      // Clear provider state
-      if (context.mounted) {
-        await Provider.of<UserProvider>(context, listen: false).clearUser();
-        // Don't call notifyListeners directly from outside the provider class
-      }
+      // Clear Riverpod state
+      _ref.read(userProvider.notifier).clearUser();
     } catch (e) {
       print("Error clearing auth data: $e");
     }
