@@ -37,17 +37,25 @@ class User {
     };
   }
 
+  /// Helper to safely parse int from dynamic value (handles String/int/null)
+  static int _parseInt(dynamic value, [int defaultValue = 0]) {
+    if (value == null) return defaultValue;
+    if (value is int) return value;
+    if (value is String) return int.tryParse(value) ?? defaultValue;
+    return defaultValue;
+  }
+
   factory User.fromDBtoApp(Map<String, dynamic> map) {
     return User(
-      t_id: map['t_id'] ?? '',
-      email: map['email'] ?? '',
-      name: map['name'] ?? '',
-      token: map['token'] ?? '',
-      points: map['points'] ?? '',
-      city: map['city'] ?? '',
-      state: map['state'] ?? '',
-      contact: map['contact'] ?? '',
-      institution: map['institution'] ?? '',
+      t_id: map['t_id']?.toString() ?? '',
+      email: map['email']?.toString() ?? '',
+      name: map['name']?.toString() ?? '',
+      token: map['token']?.toString() ?? '',
+      points: _parseInt(map['points']),
+      city: map['city']?.toString() ?? '',
+      state: map['state']?.toString() ?? '',
+      contact: _parseInt(map['contact']),
+      institution: map['institution']?.toString() ?? '',
     );
   }
 

@@ -1,7 +1,5 @@
-// import 'package:techniche26/model/events_data.dart';
-import 'package:techniche26/view/auth/authScreen.dart';
+import 'package:techniche26/view/auth/ca_auth_screen.dart';
 import 'package:techniche26/utils/app_drawer.dart';
-// import 'package:techniche26/view/sub_category_screen.dart';
 import 'package:techniche26/view/workshops_screen.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -9,7 +7,7 @@ import 'package:techniche26/utils/ca_bottom_nav_bar.dart';
 import 'package:techniche26/view/map_screen.dart';
 import 'package:techniche26/view/utilities_screen.dart';
 import 'package:techniche26/view/legacy_screen.dart';
-import 'package:techniche26/controller/riverpod_controller/auth_riverpod_controller.dart';
+import 'package:techniche26/controller/riverpod_controller/ca_auth_riverpod_controller.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:techniche26/utils/bottom_nav_bar.dart';
 import 'package:upgrader/upgrader.dart';
@@ -18,6 +16,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:techniche26/services/notification_service.dart';
 import 'package:flutter/services.dart';
 import 'package:techniche26/view/schedule_screen.dart';
+import 'package:techniche26/utils/animate_gradient_background.dart';
 
 class LandingScreen extends ConsumerStatefulWidget {
   static const String routeName = '/landing-screen';
@@ -25,10 +24,10 @@ class LandingScreen extends ConsumerStatefulWidget {
   final String? initialVenue;
 
   const LandingScreen({
-    Key? key,
+    super.key,
     this.initialTab = 2, // Set Home as default (middle)
     this.initialVenue,
-  }) : super(key: key);
+  });
 
   @override
   ConsumerState<LandingScreen> createState() => _LandingScreenState();
@@ -39,10 +38,10 @@ class RetroTransition extends StatelessWidget {
   final Animation<double> animation;
   final Widget child;
   const RetroTransition({
-    Key? key,
+    super.key,
     required this.animation,
     required this.child,
-  }) : super(key: key);
+  });
 
   double _clamp(double v, {double min = 0.0, double max = 1.0}) =>
       v < min ? min : (v > max ? max : v);
@@ -152,8 +151,8 @@ class _LandingScreenState extends ConsumerState<LandingScreen> {
     });
   }
 
+//Riverpod implementation for CA Portal
   Future<void> _handleAuthNavigation(BuildContext context) async {
-    // ... (Your existing auth navigation logic is unchanged)
     try {
       showDialog(
         context: context,
@@ -161,19 +160,19 @@ class _LandingScreenState extends ConsumerState<LandingScreen> {
         builder: (_) => const Center(child: CircularProgressIndicator()),
       );
       bool isAuth =
-          await ref.read(authControllerProvider).isUserAuthenticated();
+          await ref.read(caAuthControllerProvider).isCaUserAuthenticated();
       if (context.mounted) Navigator.of(context).pop();
       if (isAuth) {
         bool valid = await ref
-            .read(authControllerProvider)
+            .read(caAuthControllerProvider)
             .validateTokenAndFetchUser(context);
         if (valid && context.mounted) {
           Navigator.pushNamed(context, CaBottomNavBar.routeName);
         } else if (context.mounted) {
-          Navigator.pushNamed(context, AuthScreen.routeName);
+          Navigator.pushNamed(context, CaAuthScreen.routeName);
         }
       } else if (context.mounted) {
-        Navigator.pushNamed(context, AuthScreen.routeName);
+        Navigator.pushNamed(context, CaAuthScreen.routeName);
       }
     } catch (_) {
       if (context.mounted) {
@@ -181,7 +180,7 @@ class _LandingScreenState extends ConsumerState<LandingScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Error accessing CA portal.')),
         );
-        Navigator.pushNamed(context, AuthScreen.routeName);
+        Navigator.pushNamed(context, CaAuthScreen.routeName);
       }
     }
   }
@@ -197,11 +196,11 @@ class _LandingScreenState extends ConsumerState<LandingScreen> {
     ];
 
     return UpgradeAlert(
-      upgrader: Upgrader(
-        debugLogging: kDebugMode,
-        debugDisplayAlways: kDebugMode,
-        durationUntilAlertAgain: const Duration(days: 1),
-      ),
+      // upgrader: Upgrader(
+      //   debugLogging: kDebugMode,
+      //   debugDisplayAlways: kDebugMode,
+      //   durationUntilAlertAgain: const Duration(days: 1),
+      // ),
       child: Scaffold(
         backgroundColor: Colors.transparent,
         body: AnimatedSwitcher(
@@ -246,13 +245,11 @@ class _LandingScreenState extends ConsumerState<LandingScreen> {
 
   Widget _buildHomeContent(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-    // final workshopsCategory =
-    //     eventData.firstWhere((category) => category.title == 'Workshops');
-
     return Scaffold(
       backgroundColor: Colors.transparent,
       extendBodyBehindAppBar: true,
       appBar: AppBar(
+        toolbarHeight: kToolbarHeight + 16,
         systemOverlayStyle: const SystemUiOverlayStyle(
           statusBarColor: Colors.transparent,
           statusBarIconBrightness: Brightness.light,
@@ -466,73 +463,6 @@ class _LandingScreenState extends ConsumerState<LandingScreen> {
           ],
         ),
       ),
-    );
-  }
-}
-
-class AnimatedGradientBackground extends StatefulWidget {
-  const AnimatedGradientBackground({Key? key}) : super(key: key);
-  @override
-  State<AnimatedGradientBackground> createState() =>
-      _AnimatedGradientBackgroundState();
-}
-
-class _AnimatedGradientBackgroundState extends State<AnimatedGradientBackground>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _animation;
-  final List<List<Color>> gradients = [
-    [const Color(0xFF181A20), const Color(0xFF23242B), const Color(0xFF35363C)],
-    [const Color(0xFF23242B), const Color(0xFF35363C), const Color(0xFF181A20)],
-    [const Color(0xFF35363C), const Color(0xFF23242B), const Color(0xFF181A20)],
-    [const Color(0xFF181A20), const Color(0xFF35363C), const Color(0xFF23242B)],
-  ];
-  int _currentGradient = 0;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller =
-        AnimationController(vsync: this, duration: const Duration(seconds: 1))
-          ..addListener(() {
-            setState(() {});
-          })
-          ..addStatusListener((status) {
-            if (status == AnimationStatus.completed) {
-              _currentGradient = (_currentGradient + 1) % gradients.length;
-              _controller.forward(from: 0);
-            }
-          });
-    _animation = CurvedAnimation(parent: _controller, curve: Curves.easeInOut);
-    _controller.forward();
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final nextGradient = gradients[(_currentGradient + 1) % gradients.length];
-    final currentGradient = gradients[_currentGradient];
-    return AnimatedBuilder(
-      animation: _animation,
-      builder: (context, child) {
-        return Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: List.generate(currentGradient.length, (i) {
-                return Color.lerp(
-                    currentGradient[i], nextGradient[i], _animation.value)!;
-              }),
-            ),
-          ),
-        );
-      },
     );
   }
 }

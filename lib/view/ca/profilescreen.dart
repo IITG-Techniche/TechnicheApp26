@@ -1,26 +1,26 @@
-import 'package:techniche26/controller/provider_controller/user_provider.dart';
-import 'package:techniche26/controller/authController.dart';
+/// CA (Campus Ambassador) Profile Screen
+library;
+
+import 'package:techniche26/controller/riverpod_controller/ca_user_provider.dart';
+import 'package:techniche26/controller/riverpod_controller/ca_auth_riverpod_controller.dart';
 import 'package:techniche26/utils/errorHandler.dart';
-// ignore: unused_import
-import 'package:techniche26/model/userModel.dart'; // Import UserModel
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:google_fonts/google_fonts.dart'; // Import Google Fonts
-import 'package:provider/provider.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class ProfileScreen extends StatefulWidget {
+class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
 
   @override
-  State<ProfileScreen> createState() => _ProfileScreenState();
+  ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
 }
 
-class _ProfileScreenState extends State<ProfileScreen> {
-  // --- Theme Colors Inspired by Legacy Screen ---
+class _ProfileScreenState extends ConsumerState<ProfileScreen> {
+  // --- Theme Colors ---
   final Color neonMagenta = const Color(0xFFFF00F7);
   final Color neonCyan = const Color(0xFF00FFFF);
   final Color bgColor = const Color(0xFF0A0A0A);
-  // --- End Theme Colors ---
 
   bool _isLoading = false;
 
@@ -30,17 +30,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
     _refreshUserData();
   }
 
-  // Function to refresh user data, logic remains the same
   Future<void> _refreshUserData() async {
     setState(() {
       _isLoading = true;
     });
 
     try {
-      await AuthController().fetchUserData(context);
-      if (context.mounted) {
-        showMessage(context, "Profile updated");
-      }
+      await ref.read(caAuthControllerProvider).fetchUserData(context);
+      // Silently refresh - no success popup needed
     } catch (e) {
       if (context.mounted) {
         showMessage(context, "Failed to update profile", isError: true);
@@ -54,7 +51,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
-  // Themed widget to display a row of user information
   Widget _buildInfoRow(String label, String value, double fontSize) {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 6),
@@ -91,7 +87,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  // Themed header widget with user name and points
   Widget _buildHeader(String name, String points, double fontSize) {
     return Container(
       padding: const EdgeInsets.all(20),
@@ -169,7 +164,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  // Themed logout button
   Widget _buildLogoutButton(BuildContext context, double fontSize) {
     return Container(
       margin: const EdgeInsets.only(top: 24),
@@ -198,7 +192,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   TextButton(
                     onPressed: () {
                       Navigator.of(context).pop();
-                      AuthController().logoutUser(context);
+                      ref.read(caAuthControllerProvider).logoutUser(context);
                     },
                     child: Text("Logout",
                         style: GoogleFonts.orbitron(color: Colors.red)),
@@ -231,7 +225,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final user = Provider.of<UserProvider>(context).user;
+    final user = ref.watch(caUserProvider);
     final screenWidth = MediaQuery.of(context).size.width;
     final fontSize = screenWidth * 0.04;
 
@@ -254,7 +248,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
         actions: [
           IconButton(
-            icon: Icon(Icons.refresh, color: Colors.white),
+            icon: const Icon(Icons.refresh, color: Colors.white),
             onPressed: _refreshUserData,
             tooltip: 'Refresh Profile',
           ),

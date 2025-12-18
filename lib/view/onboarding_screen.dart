@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lottie/lottie.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:techniche26/controller/riverpod_controller/auth_riverpod_controller.dart';
+import 'package:techniche26/constant/sharedPerfence.dart';
+import 'package:techniche26/controller/riverpod_controller/ca_auth_riverpod_controller.dart';
 import 'package:techniche26/utils/ca_bottom_nav_bar.dart';
 import 'package:techniche26/view/landing_screen.dart';
 
 class OnboardingScreen extends ConsumerStatefulWidget {
-  const OnboardingScreen({Key? key}) : super(key: key);
+  const OnboardingScreen({super.key});
   @override
   ConsumerState<OnboardingScreen> createState() => _OnboardingScreenState();
 }
@@ -59,9 +60,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
       return AnimationController(vsync: this)
         ..duration = const Duration(milliseconds: 0) // will get set onLoaded
         ..addStatusListener((status) {
-          if (status == AnimationStatus.completed) {
-            // do nothing (one-shot)
-          }
+          if (status == AnimationStatus.completed) {}
         });
     });
 
@@ -95,12 +94,12 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
     });
     await Future.delayed(const Duration(milliseconds: 350));
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('seenOnboarding', true);
+    await prefs.setBool(SharedPreferenceConstants.seenOnboarding, true);
 
-    String? token = prefs.getString("token");
+    String? token = prefs.getString('ca_token');
     if (token != null && token.isNotEmpty) {
       if (mounted) {
-        await ref.read(authControllerProvider).fetchUserData(context);
+        await ref.read(caAuthControllerProvider).fetchUserData(context);
         if (mounted) {
           Navigator.pushReplacementNamed(context, CaBottomNavBar.routeName);
         }

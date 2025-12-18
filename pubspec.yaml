@@ -60,6 +60,7 @@ flutter:
   uses-material-design: true
   assets: 
     - assets/
+    - assets/onboarding/
   
 
   # To add custom fonts to your application, add a fonts section here,

@@ -1,20 +1,17 @@
-import 'package:techniche26/controller/provider_controller/user_provider.dart';
-import 'package:techniche26/controller/authController.dart';
+/// CA (Campus Ambassador) Home Screen
+library;
+
+import 'package:techniche26/controller/riverpod_controller/ca_user_provider.dart';
+import 'package:techniche26/controller/riverpod_controller/ca_auth_riverpod_controller.dart';
+import '../../constant/appTheme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:google_fonts/google_fonts.dart'; // Import Google Fonts
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-class Homescreen extends StatelessWidget {
+class Homescreen extends ConsumerWidget {
   static const String routeName = '/home-screen';
   const Homescreen({super.key});
-
-  // --- Theme Colors Inspired by Legacy Screen ---
-  final Color neonMagenta = const Color(0xFFFF00F7);
-  final Color neonCyan = const Color(0xFF00FFFF);
-  final Color bgColor = const Color(0xFF0A0A0A);
-  // --- End Theme Colors ---
 
   // Function to launch phone dialer
   Future<void> _makePhoneCall(String phoneNumber) async {
@@ -41,10 +38,10 @@ class Homescreen extends StatelessWidget {
       context: context,
       builder: (BuildContext context) {
         return Dialog(
-          backgroundColor: bgColor.withOpacity(0.95),
+          backgroundColor: AppTheme.darkBackground.withOpacity(0.95),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
-            side: BorderSide(color: neonCyan.withOpacity(0.7)),
+            side: BorderSide(color: AppTheme.primaryColor.withOpacity(0.7)),
           ),
           child: SingleChildScrollView(
             child: Padding(
@@ -55,10 +52,11 @@ class Homescreen extends StatelessWidget {
                 children: [
                   Text(
                     'Frequently Asked Questions',
-                    style: GoogleFonts.orbitron(
+                    style: TextStyle(
+                      fontFamily: AppTheme.fontFamily,
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
-                      color: neonCyan,
+                      color: AppTheme.primaryColor,
                     ),
                   ),
                   const SizedBox(height: 24),
@@ -107,7 +105,9 @@ class Homescreen extends StatelessWidget {
                       onPressed: () => Navigator.pop(context),
                       child: Text(
                         'Close',
-                        style: GoogleFonts.orbitron(color: neonMagenta),
+                        style: TextStyle(
+                            fontFamily: AppTheme.fontFamily,
+                            color: AppTheme.secondaryColor),
                       ),
                     ),
                   ),
@@ -126,10 +126,10 @@ class Homescreen extends StatelessWidget {
       context: context,
       builder: (BuildContext context) {
         return Dialog(
-          backgroundColor: bgColor.withOpacity(0.95),
+          backgroundColor: AppTheme.darkBackground.withOpacity(0.95),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
-            side: BorderSide(color: neonCyan.withOpacity(0.7)),
+            side: BorderSide(color: AppTheme.primaryColor.withOpacity(0.7)),
           ),
           child: Padding(
             padding: const EdgeInsets.all(24.0),
@@ -138,10 +138,11 @@ class Homescreen extends StatelessWidget {
               children: [
                 Text(
                   'Contact Us',
-                  style: GoogleFonts.orbitron(
+                  style: TextStyle(
+                    fontFamily: AppTheme.fontFamily,
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
-                    color: neonCyan,
+                    color: AppTheme.primaryColor,
                   ),
                 ),
                 const SizedBox(height: 24),
@@ -153,7 +154,7 @@ class Homescreen extends StatelessWidget {
                       children: [
                         Icon(
                           Icons.phone,
-                          color: neonMagenta,
+                          color: AppTheme.secondaryColor,
                         ),
                         const SizedBox(width: 12),
                         Column(
@@ -161,14 +162,16 @@ class Homescreen extends StatelessWidget {
                           children: [
                             Text(
                               'Raghav',
-                              style: GoogleFonts.orbitron(
+                              style: TextStyle(
+                                fontFamily: AppTheme.fontFamily,
                                 fontWeight: FontWeight.bold,
                                 color: Colors.white,
                               ),
                             ),
                             Text(
                               '+91 98173 37227',
-                              style: GoogleFonts.orbitron(
+                              style: TextStyle(
+                                fontFamily: AppTheme.fontFamily,
                                 color: Colors.white70,
                               ),
                             ),
@@ -187,7 +190,7 @@ class Homescreen extends StatelessWidget {
                       children: [
                         Icon(
                           Icons.phone,
-                          color: neonMagenta,
+                          color: AppTheme.secondaryColor,
                         ),
                         const SizedBox(width: 12),
                         Column(
@@ -195,14 +198,16 @@ class Homescreen extends StatelessWidget {
                           children: [
                             Text(
                               'Sayantan',
-                              style: GoogleFonts.orbitron(
+                              style: TextStyle(
+                                fontFamily: AppTheme.fontFamily,
                                 fontWeight: FontWeight.bold,
                                 color: Colors.white,
                               ),
                             ),
                             Text(
                               '+91 94371 16372',
-                              style: GoogleFonts.orbitron(
+                              style: TextStyle(
+                                fontFamily: AppTheme.fontFamily,
                                 color: Colors.white70,
                               ),
                             ),
@@ -217,7 +222,9 @@ class Homescreen extends StatelessWidget {
                   onPressed: () => Navigator.pop(context),
                   child: Text(
                     'Close',
-                    style: GoogleFonts.orbitron(color: neonMagenta),
+                    style: TextStyle(
+                        fontFamily: AppTheme.fontFamily,
+                        color: AppTheme.secondaryColor),
                   ),
                 ),
               ],
@@ -237,7 +244,8 @@ class Homescreen extends StatelessWidget {
         children: [
           Text(
             question,
-            style: GoogleFonts.orbitron(
+            style: TextStyle(
+              fontFamily: AppTheme.fontFamily,
               fontWeight: FontWeight.bold,
               fontSize: 16,
               color: Colors.white,
@@ -246,7 +254,8 @@ class Homescreen extends StatelessWidget {
           const SizedBox(height: 6),
           Text(
             answer,
-            style: GoogleFonts.orbitron(
+            style: TextStyle(
+              fontFamily: AppTheme.fontFamily,
               fontSize: 14,
               height: 1.4,
               color: Colors.white70,
@@ -258,31 +267,26 @@ class Homescreen extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: bgColor, // Set dark background
-      appBar: _buildAppBar(context),
-      body: Consumer<UserProvider>(
-        builder: (context, userProvider, child) {
-          final user = userProvider.user;
+  Widget build(BuildContext context, WidgetRef ref) {
+    final user = ref.watch(caUserProvider);
 
-          if (user.name.isEmpty || user.email.isEmpty) {
-            return _buildLoadingState(context);
-          }
-          return _buildContent(context, user);
-        },
-      ),
+    return Scaffold(
+      backgroundColor: AppTheme.darkBackground,
+      appBar: _buildAppBar(context, ref),
+      body: user.name.isEmpty || user.email.isEmpty
+          ? _buildLoadingState(context, ref)
+          : _buildContent(context, user),
     );
   }
 
   // Themed App Bar
-  PreferredSize _buildAppBar(BuildContext context) {
+  PreferredSize _buildAppBar(BuildContext context, WidgetRef ref) {
     return PreferredSize(
       preferredSize:
           Size.fromHeight(MediaQuery.of(context).size.height * 0.075),
       child: AppBar(
         systemOverlayStyle: SystemUiOverlayStyle(
-          statusBarColor: bgColor,
+          statusBarColor: AppTheme.darkBackground,
           statusBarIconBrightness: Brightness.light,
         ),
         backgroundColor: Colors.transparent,
@@ -291,7 +295,8 @@ class Homescreen extends StatelessWidget {
         automaticallyImplyLeading: false,
         title: Text(
           'Campus Ambassador',
-          style: GoogleFonts.orbitron(
+          style: TextStyle(
+            fontFamily: AppTheme.fontFamily,
             color: Colors.white,
             fontWeight: FontWeight.w500,
             letterSpacing: 1.1,
@@ -299,18 +304,21 @@ class Homescreen extends StatelessWidget {
         ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => AuthController().logoutUser(context),
+          // Navigate back to landing screen WITHOUT logging out
+          onPressed: () => Navigator.pushNamedAndRemoveUntil(
+              context, '/landing-screen', (route) => false),
         ),
         actions: [
           Theme(
             data: Theme.of(context).copyWith(
               popupMenuTheme: PopupMenuThemeData(
-                color: bgColor.withOpacity(0.95),
-                textStyle: GoogleFonts.orbitron(color: Colors.white70),
+                color: AppTheme.darkBackground.withOpacity(0.95),
+                textStyle: TextStyle(
+                    fontFamily: AppTheme.fontFamily, color: Colors.white70),
               ),
             ),
             child: PopupMenuButton<String>(
-              icon: Icon(Icons.more_vert, color: neonCyan),
+              icon: Icon(Icons.more_vert, color: AppTheme.primaryColor),
               onSelected: (value) {
                 if (value == 'faq') {
                   _showFAQDialog(context);
@@ -318,6 +326,49 @@ class Homescreen extends StatelessWidget {
                   _showContactDialog(context);
                 } else if (value == 'report') {
                   _sendEmail('pr@technicheiitg.in');
+                } else if (value == 'signout') {
+                  // Show confirmation dialog
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext dialogContext) {
+                      return AlertDialog(
+                        backgroundColor: AppTheme.darkBackground,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          side: BorderSide(color: Colors.red.withOpacity(0.7)),
+                        ),
+                        title: Text("Sign Out",
+                            style: TextStyle(
+                                fontFamily: AppTheme.fontFamily,
+                                color: Colors.white)),
+                        content: Text("Are you sure you want to sign out?",
+                            style: TextStyle(
+                                fontFamily: AppTheme.fontFamily,
+                                color: Colors.white70)),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.of(dialogContext).pop(),
+                            child: Text("Cancel",
+                                style: TextStyle(
+                                    fontFamily: AppTheme.fontFamily,
+                                    color: Colors.white70)),
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              Navigator.of(dialogContext).pop();
+                              ref
+                                  .read(caAuthControllerProvider)
+                                  .logoutUser(context);
+                            },
+                            child: Text("Sign Out",
+                                style: TextStyle(
+                                    fontFamily: AppTheme.fontFamily,
+                                    color: Colors.red)),
+                          ),
+                        ],
+                      );
+                    },
+                  );
                 }
               },
               itemBuilder: (BuildContext context) {
@@ -355,23 +406,24 @@ class Homescreen extends StatelessWidget {
   }
 
   // Themed Loading state widget
-  Widget _buildLoadingState(BuildContext context) {
+  Widget _buildLoadingState(BuildContext context, WidgetRef ref) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           CircularProgressIndicator(
-            color: neonCyan,
+            color: AppTheme.primaryColor,
             strokeWidth: 2,
           ),
           const SizedBox(height: 20),
           TextButton(
             onPressed: () =>
-                context.read<AuthController>().fetchUserData(context),
+                ref.read(caAuthControllerProvider).fetchUserData(context),
             child: Text(
               'Retry Loading Data',
-              style: GoogleFonts.orbitron(
-                color: neonMagenta,
+              style: TextStyle(
+                fontFamily: AppTheme.fontFamily,
+                color: AppTheme.secondaryColor,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -394,22 +446,11 @@ class Homescreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Center(
-            //   child: Container(
-            //     height: size.height * 0.12,
-            //     width: size.width * 0.5,
-            //     decoration: const BoxDecoration(
-            //       image: DecorationImage(
-            //         image: AssetImage('assets/logo_withoutBG.png'),
-            //         fit: BoxFit.contain,
-            //       ),
-            //     ),
-            //   ),
-            // ),
             SizedBox(height: size.height * 0.02),
             Text(
               'Welcome, ${user.name}',
-              style: GoogleFonts.orbitron(
+              style: TextStyle(
+                fontFamily: AppTheme.fontFamily,
                 fontSize: 22,
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
@@ -420,12 +461,14 @@ class Homescreen extends StatelessWidget {
               padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
               decoration: BoxDecoration(
                 color: Colors.black.withOpacity(0.3),
-                border: Border.all(color: neonCyan.withOpacity(0.5)),
+                border:
+                    Border.all(color: AppTheme.primaryColor.withOpacity(0.5)),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Text(
                 "Techniche, IIT Guwahati's annual techno-management fest, is a hub for innovation and impact. Our CA Program connects students from 1000+ colleges, fostering skills in marketing, and event planning. As the backbone of Techniche, CAs play a crucial role in making the 27th edition a grand success!",
-                style: GoogleFonts.orbitron(
+                style: TextStyle(
+                  fontFamily: AppTheme.fontFamily,
                   fontSize: 14,
                   height: 1.4,
                   color: Colors.white70,
@@ -438,17 +481,19 @@ class Homescreen extends StatelessWidget {
                 padding:
                     const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
                 decoration: BoxDecoration(
-                  border:
-                      Border.all(color: neonMagenta.withOpacity(0.5), width: 1),
+                  border: Border.all(
+                      color: AppTheme.secondaryColor.withOpacity(0.5),
+                      width: 1),
                   borderRadius: BorderRadius.circular(30),
                 ),
                 child: Text(
                   '• LEAD • INSPIRE • ELEVATE •',
-                  style: GoogleFonts.orbitron(
+                  style: TextStyle(
+                    fontFamily: AppTheme.fontFamily,
                     fontSize: 13,
                     letterSpacing: 1.2,
                     fontWeight: FontWeight.w500,
-                    color: neonMagenta,
+                    color: AppTheme.secondaryColor,
                   ),
                 ),
               ),
@@ -459,16 +504,16 @@ class Homescreen extends StatelessWidget {
               padding: const EdgeInsets.all(20),
               margin: const EdgeInsets.only(bottom: 20),
               decoration: BoxDecoration(
-                border: Border.all(color: neonMagenta, width: 1.5),
+                border: Border.all(color: AppTheme.secondaryColor, width: 1.5),
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: neonMagenta.withOpacity(0.5),
+                    color: AppTheme.secondaryColor.withOpacity(0.5),
                     blurRadius: 12,
                     spreadRadius: 1,
                   ),
                 ],
-                color: bgColor.withOpacity(0.8),
+                color: AppTheme.darkBackground.withOpacity(0.8),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -479,7 +524,8 @@ class Homescreen extends StatelessWidget {
                     children: [
                       Text(
                         'CAMPUS AMBASSADOR',
-                        style: GoogleFonts.orbitron(
+                        style: TextStyle(
+                          fontFamily: AppTheme.fontFamily,
                           color: Colors.white70,
                           fontWeight: FontWeight.w600,
                           fontSize: 12,
@@ -488,8 +534,9 @@ class Homescreen extends StatelessWidget {
                       ),
                       Text(
                         '${user.points} POINTS',
-                        style: GoogleFonts.orbitron(
-                          color: neonCyan,
+                        style: TextStyle(
+                          fontFamily: AppTheme.fontFamily,
+                          color: AppTheme.primaryColor,
                           fontWeight: FontWeight.bold,
                           fontSize: 14,
                         ),
@@ -499,7 +546,8 @@ class Homescreen extends StatelessWidget {
                   const SizedBox(height: 20),
                   Text(
                     user.name,
-                    style: GoogleFonts.orbitron(
+                    style: TextStyle(
+                      fontFamily: AppTheme.fontFamily,
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
                       fontSize: 20,
@@ -508,7 +556,8 @@ class Homescreen extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(
                     user.email,
-                    style: GoogleFonts.orbitron(
+                    style: TextStyle(
+                      fontFamily: AppTheme.fontFamily,
                       color: Colors.white.withOpacity(0.8),
                       fontSize: 14,
                     ),
@@ -518,7 +567,8 @@ class Homescreen extends StatelessWidget {
                     children: [
                       Text(
                         'UNIQUE CA ID:',
-                        style: GoogleFonts.orbitron(
+                        style: TextStyle(
+                          fontFamily: AppTheme.fontFamily,
                           color: Colors.white70,
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
@@ -527,8 +577,9 @@ class Homescreen extends StatelessWidget {
                       const SizedBox(width: 10),
                       Text(
                         user.t_id,
-                        style: GoogleFonts.orbitron(
-                          color: neonCyan,
+                        style: TextStyle(
+                          fontFamily: AppTheme.fontFamily,
+                          color: AppTheme.primaryColor,
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
                           letterSpacing: 1.2,

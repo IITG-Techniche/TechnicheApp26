@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:timeline_tile/timeline_tile.dart';
-import 'landing_screen.dart' show AnimatedGradientBackground;
+import 'package:techniche26/utils/animate_gradient_background.dart';
 
 class LegacyPage extends StatelessWidget {
   final Color neonPink = const Color.fromARGB(255, 32, 72, 164);

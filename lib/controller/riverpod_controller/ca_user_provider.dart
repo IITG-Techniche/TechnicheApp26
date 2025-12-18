@@ -1,9 +1,12 @@
+/// CA (Campus Ambassador) User State Provider using Riverpod
+library;
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:techniche26/model/userModel.dart';
-import 'dart:convert';
 
-class UserNotifier extends StateNotifier<User> {
-  UserNotifier()
+/// Notifier for CA User state
+class CaUserNotifier extends StateNotifier<User> {
+  CaUserNotifier()
       : super(User(
           email: '',
           t_id: '',
@@ -16,23 +19,26 @@ class UserNotifier extends StateNotifier<User> {
           institution: '',
         ));
 
-  // Update user state from JSON string
+  /// Check if CA user is logged in (has valid token in state)
+  bool get isCaLoggedIn => state.token.isNotEmpty;
+
+  /// Update user state from JSON string
   void setUser(String userData) {
     try {
       state = User.fromJson(userData);
     } catch (e) {
-      print("Error setting user data in Riverpod: $e");
+      print("Error setting CA user data in Riverpod: $e");
       clearUser();
-      rethrow; // Re-throw to allow controller to handle the error
+      rethrow;
     }
   }
 
-  // Update specific fields or replace the user object
+  /// Update specific fields or replace the user object
   void updateUser(User newUser) {
     state = newUser;
   }
 
-  // Clear user state (logout)
+  /// Clear user state (logout)
   void clearUser() {
     state = User(
       email: '',
@@ -48,7 +54,7 @@ class UserNotifier extends StateNotifier<User> {
   }
 }
 
-// Global provider for accessing user state
-final userProvider = StateNotifierProvider<UserNotifier, User>((ref) {
-  return UserNotifier();
+/// Global provider for accessing CA user state
+final caUserProvider = StateNotifierProvider<CaUserNotifier, User>((ref) {
+  return CaUserNotifier();
 });

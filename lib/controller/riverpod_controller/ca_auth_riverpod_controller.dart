@@ -1,3 +1,6 @@
+/// This controller handles all authentication logic for Campus Ambassador users.
+/// It manages login, token validation, user data fetching, and logout.
+library;
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -6,15 +9,24 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:techniche26/constant/global.dart';
 import 'package:techniche26/utils/ca_bottom_nav_bar.dart';
 import 'package:techniche26/utils/errorHandler.dart';
-import 'package:techniche26/controller/riverpod_controller/user_riverpod_provider.dart';
+import 'package:techniche26/controller/riverpod_controller/ca_user_provider.dart';
 
-final authControllerProvider = Provider((ref) => AuthController(ref));
+/// Provider for accessing CA Authentication Controller
+final caAuthControllerProvider = Provider((ref) => CaAuthController(ref));
 
-class AuthController {
+/// CA Authentication Controller
+///
+/// Handles all Campus Ambassador authentication flows:
+/// - Sign in with email/password
+/// - Token validation
+/// - User data fetching
+/// - Logout
+class CaAuthController {
   final Ref _ref;
 
-  AuthController(this._ref);
+  CaAuthController(this._ref);
 
+  /// Sign in a CA user with email and password
   Future<bool> signInUser({
     required BuildContext context,
     required String email,
@@ -34,14 +46,14 @@ class AuthController {
               color: Colors.white,
               borderRadius: BorderRadius.circular(15),
             ),
-            child: Column(
+            child: const Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const CircularProgressIndicator(
+                CircularProgressIndicator(
                   valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFF00F7)),
                 ),
-                const SizedBox(height: 20),
-                const Text(
+                SizedBox(height: 20),
+                Text(
                   "Signing in...",
                   style: TextStyle(
                     fontSize: 16,
@@ -78,9 +90,9 @@ class AuthController {
         final responseData = jsonDecode(response.body);
 
         if (responseData['token'] != null) {
-          // Save token
+          // Save token to SharedPreferences for persistence
           final prefs = await SharedPreferences.getInstance();
-          await prefs.setString('token', responseData['token']);
+          await prefs.setString('ca_token', responseData['token']);
 
           // Create complete user data with token
           final userData = {
@@ -88,8 +100,8 @@ class AuthController {
             'token': responseData['token'],
           };
 
-          // Update user provider (Riverpod)
-          _ref.read(userProvider.notifier).setUser(jsonEncode(userData));
+          // Update Riverpod state
+          _ref.read(caUserProvider.notifier).setUser(jsonEncode(userData));
 
           // Show "Loading account..." dialog while fetching user data
           if (context.mounted) {
@@ -106,15 +118,15 @@ class AuthController {
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(15),
                     ),
-                    child: Column(
+                    child: const Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const CircularProgressIndicator(
+                        CircularProgressIndicator(
                           valueColor:
                               AlwaysStoppedAnimation<Color>(Color(0xFFFF00F7)),
                         ),
-                        const SizedBox(height: 20),
-                        const Text(
+                        SizedBox(height: 20),
+                        Text(
                           "Loading account data...",
                           style: TextStyle(
                             fontSize: 16,
@@ -158,17 +170,18 @@ class AuthController {
       if (context.mounted) {
         Navigator.of(context).pop();
       }
-      print("Login error: $e");
+      print("CA Login error: $e");
       showMessage(context, "An error occurred during login", isError: true);
       await _clearAuthData(context);
       return false;
     }
   }
 
-  Future<bool> isUserAuthenticated() async {
+  /// Check if CA user is authenticated (has valid token)
+  Future<bool> isCaUserAuthenticated() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      String? token = prefs.getString("token");
+      String? token = prefs.getString("ca_token");
 
       if (token == null || token.isEmpty) {
         return false;
@@ -193,21 +206,22 @@ class AuthController {
           }
         }
       } catch (e) {
-        print("Token parsing error: $e");
+        print("CA Token parsing error: $e");
         return false;
       }
 
       return true;
     } catch (e) {
-      print("Auth check error: $e");
+      print("CA Auth check error: $e");
       return false;
     }
   }
 
+  /// Validate token with server and fetch user data
   Future<bool> validateTokenAndFetchUser(BuildContext context) async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      String? token = prefs.getString("token");
+      String? token = prefs.getString("ca_token");
 
       if (token == null || token.isEmpty) {
         return false;
@@ -264,17 +278,18 @@ class AuthController {
       if (context.mounted) {
         Navigator.of(context).pop();
       }
-      print("Token validation error: $e");
+      print("CA Token validation error: $e");
       await _clearAuthData(context);
       return false;
     }
   }
 
+  /// Fetch CA user data from server
   Future<void> fetchUserData(BuildContext context) async {
     try {
-      print("Starting fetchUserData (Riverpod)");
+      print("Starting fetchUserData (CA Riverpod)");
       final prefs = await SharedPreferences.getInstance();
-      String? token = prefs.getString("token");
+      String? token = prefs.getString("ca_token");
 
       if (token == null || token.isEmpty) {
         await _clearAuthData(context);
@@ -283,8 +298,7 @@ class AuthController {
 
       String uri = GlobalVariables.baseUrl;
 
-      // Validate token (simplified for brevity, assume valid if calling this directly or validation happened before)
-      // Ideally should re-validate or trust caller. Let's do a quick validation.
+      // Validate token
       final tokenRes = await http.post(
         Uri.parse("$uri/caauth/validatetokenApp"),
         headers: {
@@ -312,16 +326,17 @@ class AuthController {
         userData['token'] = token;
 
         // Update Riverpod state
-        _ref.read(userProvider.notifier).setUser(jsonEncode(userData));
+        _ref.read(caUserProvider.notifier).setUser(jsonEncode(userData));
       } else {
         await _clearAuthData(context);
       }
     } catch (e) {
-      print("Error fetching user data: $e");
+      print("Error fetching CA user data: $e");
       await _clearAuthData(context);
     }
   }
 
+  /// Logout CA user
   Future<void> logoutUser(BuildContext context) async {
     try {
       await _clearAuthData(context);
@@ -332,7 +347,7 @@ class AuthController {
             context, '/landing-screen', (route) => false);
       }
     } catch (e) {
-      print("Logout error: $e");
+      print("CA Logout error: $e");
       showMessage(context, "An error occurred during logout", isError: true);
       await _clearAuthData(context);
       if (context.mounted) {
@@ -342,17 +357,18 @@ class AuthController {
     }
   }
 
+  /// Clear all CA auth data
   Future<void> _clearAuthData(BuildContext context) async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.remove('token');
-      await prefs.remove('user');
-      await prefs.remove('userData');
+      await prefs.remove('ca_token');
+      await prefs.remove('ca_user');
+      await prefs.remove('ca_userData');
 
       // Clear Riverpod state
-      _ref.read(userProvider.notifier).clearUser();
+      _ref.read(caUserProvider.notifier).clearUser();
     } catch (e) {
-      print("Error clearing auth data: $e");
+      print("Error clearing CA auth data: $e");
     }
   }
 }

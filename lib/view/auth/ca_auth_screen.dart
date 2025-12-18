@@ -1,91 +1,29 @@
-import 'package:techniche26/controller/authController.dart';
+/// This screen handles the login UI for Campus Ambassador users.
+library;
+import 'package:techniche26/controller/riverpod_controller/ca_auth_riverpod_controller.dart';
 import 'package:techniche26/utils/errorHandler.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:techniche26/utils/animate_gradient_background.dart';
 
-// AnimatedGradientBackground Widget (No changes)
-class AnimatedGradientBackground extends StatefulWidget {
-  const AnimatedGradientBackground({Key? key}) : super(key: key);
+class CaAuthScreen extends ConsumerStatefulWidget {
+  static const String routeName = '/ca-auth-screen';
+  const CaAuthScreen({super.key});
+
   @override
-  State<AnimatedGradientBackground> createState() =>
-      _AnimatedGradientBackgroundState();
+  ConsumerState<CaAuthScreen> createState() => _CaAuthScreenState();
 }
 
-class _AnimatedGradientBackgroundState extends State<AnimatedGradientBackground>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _animation;
-  final List<List<Color>> gradients = [
-    [const Color(0xFF181A20), const Color(0xFF23242B), const Color(0xFF35363C)],
-    [const Color(0xFF23242B), const Color(0xFF35363C), const Color(0xFF181A20)],
-    [const Color(0xFF35363C), const Color(0xFF23242B), const Color(0xFF181A20)],
-    [const Color(0xFF181A20), const Color(0xFF35363C), const Color(0xFF23242B)],
-  ];
-  int _currentGradient = 0;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller =
-        AnimationController(vsync: this, duration: const Duration(seconds: 5))
-          ..addListener(() {
-            setState(() {});
-          })
-          ..addStatusListener((status) {
-            if (status == AnimationStatus.completed) {
-              _currentGradient = (_currentGradient + 1) % gradients.length;
-              _controller.forward(from: 0);
-            }
-          });
-    _animation = CurvedAnimation(parent: _controller, curve: Curves.easeInOut);
-    _controller.forward();
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final nextGradient = gradients[(_currentGradient + 1) % gradients.length];
-    final currentGradient = gradients[_currentGradient];
-    return AnimatedBuilder(
-      animation: _animation,
-      builder: (context, child) {
-        return Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: List.generate(currentGradient.length, (i) {
-                return Color.lerp(
-                    currentGradient[i], nextGradient[i], _animation.value)!;
-              }),
-            ),
-          ),
-        );
-      },
-    );
-  }
-}
-
-class AuthScreen extends StatefulWidget {
-  static const String routeName = '/auth-screen';
-  const AuthScreen({super.key});
-
-  @override
-  State<AuthScreen> createState() => _AuthScreenState();
-}
-
-class _AuthScreenState extends State<AuthScreen> {
+class _CaAuthScreenState extends ConsumerState<CaAuthScreen> {
   var signInKey = GlobalKey<FormState>();
   bool _isPasswordVisible = false;
   bool _isSigningIn = false;
 
-  // --- Methods are unchanged ---
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
+
   void _submit(String email, String password) async {
     final isValid = signInKey.currentState!.validate();
     if (!isValid) {
@@ -98,11 +36,11 @@ class _AuthScreenState extends State<AuthScreen> {
     });
 
     try {
-      await AuthController().signInUser(
-        context: context,
-        email: email,
-        password: password,
-      );
+      await ref.read(caAuthControllerProvider).signInUser(
+            context: context,
+            email: email,
+            password: password,
+          );
     } catch (e) {
       showMessage(context, "Failed to sign in. Please try again.",
           isError: true);
@@ -115,9 +53,6 @@ class _AuthScreenState extends State<AuthScreen> {
     }
   }
 
-  final emailController = TextEditingController();
-  final passwordController = TextEditingController();
-
   Future<void> _launchURL() async {
     final Uri url = Uri.parse('https://www.techniche.org.in/ca');
 
@@ -128,11 +63,9 @@ class _AuthScreenState extends State<AuthScreen> {
       showMessage(context, 'Could not launch $url', isError: true);
     }
   }
-  // --- End of unchanged methods ---
 
   @override
   Widget build(BuildContext context) {
-    // --- Unchanged variables ---
     final screenSize = MediaQuery.of(context).size;
     final screenHeight = screenSize.height;
     final screenWidth = screenSize.width;
@@ -149,9 +82,7 @@ class _AuthScreenState extends State<AuthScreen> {
 
     const accentColor = Colors.blueAccent;
     final disabledColor = Colors.grey.shade800;
-    // --- End of unchanged variables ---
 
-    // ** NEW: Decoration for the text input boxes **
     final inputDecoration = BoxDecoration(
       gradient: const LinearGradient(
         colors: [Color(0xFF2E2F36), Color(0xFF23242B)],
@@ -226,7 +157,6 @@ class _AuthScreenState extends State<AuthScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          // --- Header text unchanged ---
                           Text(
                             "Sign in to the Techniche CA Portal",
                             style: TextStyle(
@@ -245,10 +175,9 @@ class _AuthScreenState extends State<AuthScreen> {
                               color: Colors.white,
                             ),
                           ),
-                          SizedBox(
-                              height: spaceBetween * 1.5), // Increased space
+                          SizedBox(height: spaceBetween * 1.5),
 
-                          // ** CHANGED: Email TextField with new gradient style **
+                          // Email TextField
                           Container(
                             decoration: _isSigningIn
                                 ? disabledInputDecoration
@@ -263,7 +192,7 @@ class _AuthScreenState extends State<AuthScreen> {
                                 if (value!.isEmpty ||
                                     !RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
                                         .hasMatch(value)) {
-                                  return "  Please enter a valid email address"; // Added padding for alignment
+                                  return "  Please enter a valid email address";
                                 }
                                 return null;
                               },
@@ -281,7 +210,7 @@ class _AuthScreenState extends State<AuthScreen> {
                           ),
                           SizedBox(height: spaceBetween),
 
-                          // ** CHANGED: Password TextField with new gradient style **
+                          // Password TextField
                           Container(
                             decoration: _isSigningIn
                                 ? disabledInputDecoration
@@ -294,7 +223,7 @@ class _AuthScreenState extends State<AuthScreen> {
                                   fontSize: bodyTextSize, color: Colors.white),
                               validator: (value) {
                                 if (value!.isEmpty) {
-                                  return "  Password cannot be empty"; // Added padding
+                                  return "  Password cannot be empty";
                                 }
                                 return null;
                               },
@@ -327,7 +256,6 @@ class _AuthScreenState extends State<AuthScreen> {
                             ),
                           ),
 
-                          // --- Rest of the UI is unchanged ---
                           CheckboxListTile(
                             value: _isPasswordVisible,
                             onChanged: _isSigningIn
@@ -361,8 +289,7 @@ class _AuthScreenState extends State<AuthScreen> {
                                   color: _isSigningIn
                                       ? disabledColor
                                       : accentColor,
-                                  borderRadius: BorderRadius.circular(
-                                      12), // Matching border radius
+                                  borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Center(
                                   child: _isSigningIn

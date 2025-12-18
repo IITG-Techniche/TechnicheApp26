@@ -1,22 +1,24 @@
+/// CA (Campus Ambassador) Tasks Screen
+library;
+
 import 'package:techniche26/constant/global.dart';
-import 'package:techniche26/controller/provider_controller/user_provider.dart';
+import 'package:techniche26/controller/riverpod_controller/ca_user_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:html/parser.dart' as html_parser;
 import 'package:url_launcher/url_launcher.dart';
 
-// Main screen widget
-class TasksScreen extends StatefulWidget {
-  const TasksScreen({Key? key}) : super(key: key);
+class TasksScreen extends ConsumerStatefulWidget {
+  const TasksScreen({super.key});
 
   @override
-  State<TasksScreen> createState() => _TasksScreenState();
+  ConsumerState<TasksScreen> createState() => _TasksScreenState();
 }
 
-class _TasksScreenState extends State<TasksScreen> {
+class _TasksScreenState extends ConsumerState<TasksScreen> {
   final String baseUrl = GlobalVariables.baseUrl;
   final Map<String, TextEditingController> linkControllers = {};
 
@@ -40,7 +42,6 @@ class _TasksScreenState extends State<TasksScreen> {
     super.dispose();
   }
 
-  // API Service Methods
   Future<void> fetchTasks() async {
     if (!mounted) return;
 
@@ -50,7 +51,7 @@ class _TasksScreenState extends State<TasksScreen> {
     });
 
     try {
-      final user = Provider.of<UserProvider>(context, listen: false).user;
+      final user = ref.read(caUserProvider);
       final response = await http.post(
         Uri.parse('$baseUrl/catasksupload/showusertasksupdated'),
         headers: <String, String>{
@@ -93,10 +94,9 @@ class _TasksScreenState extends State<TasksScreen> {
   Future<void> submitTask(
       String taskId, String link, bool isResubmission) async {
     try {
-      final user = Provider.of<UserProvider>(context, listen: false).user;
+      final user = ref.read(caUserProvider);
 
       if (isResubmission) {
-        // Handle resubmission for rejected tasks
         final response = await http.put(
           Uri.parse('$baseUrl/catasksupload/submitCorrectLinkByUser'),
           headers: <String, String>{
@@ -113,7 +113,6 @@ class _TasksScreenState extends State<TasksScreen> {
           throw Exception('Failed to resubmit task');
         }
 
-        // Move task from rejected to pending state
         setState(() {
           final taskIndex =
               rejectedTasks.indexWhere((t) => t['id'].toString() == taskId);
@@ -123,7 +122,6 @@ class _TasksScreenState extends State<TasksScreen> {
           }
         });
       } else {
-        // Handle initial submission
         final submitResponse = await http.post(
           Uri.parse('$baseUrl/catasksupload/submitTaskByUser'),
           headers: <String, String>{
@@ -142,7 +140,6 @@ class _TasksScreenState extends State<TasksScreen> {
           throw Exception('Failed to submit task');
         }
 
-        // Update task status
         final updateResponse = await http.put(
           Uri.parse('$baseUrl/catasksupload/updateDoneInCATask'),
           headers: <String, String>{
@@ -160,7 +157,6 @@ class _TasksScreenState extends State<TasksScreen> {
           throw Exception('Failed to update task status');
         }
 
-        // Move task from nonsubmitted to pending state
         setState(() {
           final taskIndex =
               nonsubmittedTasks.indexWhere((t) => t['id'].toString() == taskId);
@@ -171,10 +167,8 @@ class _TasksScreenState extends State<TasksScreen> {
         });
       }
 
-      // Clear the input field
       linkControllers[taskId]?.clear();
 
-      // Show success dialog
       if (mounted) {
         showSuccessDialog();
       }
@@ -185,7 +179,6 @@ class _TasksScreenState extends State<TasksScreen> {
     }
   }
 
-  // Helper Methods
   List get filteredTasks {
     switch (selectedFilter) {
       case 'success':
@@ -211,13 +204,12 @@ class _TasksScreenState extends State<TasksScreen> {
       case 'rejected':
         return Colors.red;
       case 'pending':
-        return Color(0xFFFF00F7); // neon pink
+        return const Color(0xFFFF00F7);
       default:
         return Colors.blue;
     }
   }
 
-  // UI Components
   void showSuccessDialog() {
     showDialog(
       context: context,
@@ -301,7 +293,6 @@ class _TasksScreenState extends State<TasksScreen> {
               ],
             ),
             const SizedBox(height: 12),
-            // Description (HTML rendering with Read More)
             if ((task['descriptions'] ?? '').isNotEmpty)
               _ExpandableHtmlDescription(htmlData: task['descriptions']),
             const SizedBox(height: 8),
@@ -327,14 +318,14 @@ class _TasksScreenState extends State<TasksScreen> {
                 isResubmission: status == 'rejected',
               )
             else if (status == 'pending')
-              TaskStatusView(
+              const TaskStatusView(
                 status: 'pending',
                 message: 'Submission under review',
                 statusText: 'Pending Review',
                 statusColor: Color(0xFFFF00F7),
               )
             else if (status == 'accepted')
-              TaskStatusView(
+              const TaskStatusView(
                 status: 'accepted',
                 message: 'Task completed',
                 statusText: 'Verified',
@@ -425,7 +416,6 @@ class _TasksScreenState extends State<TasksScreen> {
       ),
       body: Column(
         children: [
-          // Filter chips
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
             child: SingleChildScrollView(
@@ -440,8 +430,6 @@ class _TasksScreenState extends State<TasksScreen> {
               ),
             ),
           ),
-
-          // Main content
           Expanded(
             child: isLoading
                 ? const Center(child: CircularProgressIndicator())
@@ -458,14 +446,15 @@ class _TasksScreenState extends State<TasksScreen> {
                                   final task = filteredTasks[index];
                                   String status;
 
-                                  if (acceptedTasks.contains(task))
+                                  if (acceptedTasks.contains(task)) {
                                     status = 'accepted';
-                                  else if (rejectedTasks.contains(task))
+                                  } else if (rejectedTasks.contains(task)) {
                                     status = 'rejected';
-                                  else if (pendingTasks.contains(task))
+                                  } else if (pendingTasks.contains(task)) {
                                     status = 'pending';
-                                  else
+                                  } else {
                                     status = 'nonsubmitted';
+                                  }
 
                                   return buildTaskCard(task, status);
                                 },
@@ -485,11 +474,11 @@ class TaskPointsBadge extends StatelessWidget {
   final Color color;
 
   const TaskPointsBadge({
-    Key? key,
+    super.key,
     required this.points,
     required this.status,
     required this.color,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -520,11 +509,11 @@ class TaskSubmissionForm extends StatelessWidget {
   final bool isResubmission;
 
   const TaskSubmissionForm({
-    Key? key,
+    super.key,
     required this.controller,
     required this.onSubmit,
     this.isResubmission = false,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -583,12 +572,12 @@ class TaskStatusView extends StatelessWidget {
   final Color statusColor;
 
   const TaskStatusView({
-    Key? key,
+    super.key,
     required this.status,
     required this.message,
     required this.statusText,
     required this.statusColor,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -644,8 +633,7 @@ class TaskStatusView extends StatelessWidget {
 
 class _ExpandableHtmlDescription extends StatefulWidget {
   final String htmlData;
-  const _ExpandableHtmlDescription({Key? key, required this.htmlData})
-      : super(key: key);
+  const _ExpandableHtmlDescription({required this.htmlData});
 
   @override
   State<_ExpandableHtmlDescription> createState() =>
@@ -661,7 +649,7 @@ class _ExpandableHtmlDescriptionState
     final document = html_parser.parse(widget.htmlData);
     final text = document.body?.text ?? '';
     if (text.length <= previewCharLimit) return text;
-    return text.substring(0, previewCharLimit) + '...';
+    return '${text.substring(0, previewCharLimit)}...';
   }
 
   @override

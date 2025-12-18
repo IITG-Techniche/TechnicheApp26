@@ -1,12 +1,15 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'landing_screen.dart' show AnimatedGradientBackground;
+import 'package:techniche26/utils/animate_gradient_background.dart';
 
 class UtilitiesScreen extends StatefulWidget {
   static const String routeName = '/utilities-screen';
   const UtilitiesScreen({Key? key}) : super(key: key);
+ 
 
   @override
   State<UtilitiesScreen> createState() => _UtilitiesScreenState();
@@ -14,6 +17,8 @@ class UtilitiesScreen extends StatefulWidget {
 
 class _UtilitiesScreenState extends State<UtilitiesScreen> {
   bool showFAQ = false;
+  
+  final Color neonCyan = const Color(0xFF00FFFF);
 
   void _showContactsModal(String title, List<_Contact> contacts) {
     showModalBottomSheet(
@@ -73,36 +78,6 @@ class _UtilitiesScreenState extends State<UtilitiesScreen> {
     ];
 
     return Scaffold(
-      backgroundColor: Colors.transparent,
-      // IMPORTANT: don't draw the scaffold body behind the app bar — prevents clipping on devices with tall status bars / notches
-      extendBodyBehindAppBar: false,
-      appBar: AppBar(
-        title: const Padding(
-          padding: EdgeInsets.only(top: 20),
-          child: Text('Utilities & Contacts'),
-        ),
-        centerTitle: true,
-        systemOverlayStyle: const SystemUiOverlayStyle(
-          statusBarIconBrightness: Brightness.light,
-          statusBarColor:
-              Colors.transparent, // keep status bar visually transparent
-        ),
-        backgroundColor: const Color.fromARGB(255, 37, 37, 37),
-        elevation: 0,
-        // small flexibleSpace so the top area blends with the animated background
-        flexibleSpace: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                Colors.transparent,
-                Color.fromRGBO(0, 0, 0, 0.06),
-              ],
-            ),
-          ),
-        ),
-      ),
       body: Stack(
         children: [
           const AnimatedGradientBackground(),
@@ -111,10 +86,24 @@ class _UtilitiesScreenState extends State<UtilitiesScreen> {
               padding: const EdgeInsets.all(16.0),
               child: ListView(
                 children: [
-                  const Text(
-                    'Quick Contacts',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
+                        AnimatedTextKit(
+                  animatedTexts: [
+                    TypewriterAnimatedText(
+                      'Utilities &  Contacts',
+                      textStyle: GoogleFonts.orbitron(
+                        color: neonCyan,
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      speed: const Duration(milliseconds: 80),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                  totalRepeatCount: 1,
+                  isRepeatingAnimation: false,
+                  displayFullTextOnTap: true,
+                  pause: const Duration(milliseconds: 500),
+                ),
                   const SizedBox(height: 12),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,

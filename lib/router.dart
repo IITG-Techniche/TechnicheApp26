@@ -1,5 +1,5 @@
 import 'package:techniche26/utils/ca_bottom_nav_bar.dart';
-import 'package:techniche26/view/auth/authScreen.dart';
+import 'package:techniche26/view/auth/ca_auth_screen.dart';
 import 'package:techniche26/view/landing_screen.dart';
 import 'package:techniche26/view/merch_screen.dart';
 import 'package:techniche26/view/ghm/marathon_screen.dart';
@@ -21,10 +21,17 @@ Route<dynamic> generateRoute(RouteSettings routeSettings) {
         builder: (_) => const LandingScreen(),
       );
 
-    case AuthScreen.routeName:
+    case CaAuthScreen.routeName:
       return MaterialPageRoute(
         settings: routeSettings,
-        builder: (_) => const AuthScreen(),
+        builder: (_) => const CaAuthScreen(),
+      );
+
+    // Keep old route for backward compatibility
+    case '/auth-screen':
+      return MaterialPageRoute(
+        settings: routeSettings,
+        builder: (_) => const CaAuthScreen(),
       );
 
     case CaBottomNavBar.routeName:

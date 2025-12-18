@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:techniche26/model/techno_paper_model.dart';
+import 'package:techniche26/constant/appTheme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -32,7 +33,7 @@ class _TechnothlonScreenState extends State<TechnothlonScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF181A20),
+      backgroundColor: AppTheme.scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text(
           "Technothlon PYQs",
@@ -42,21 +43,22 @@ class _TechnothlonScreenState extends State<TechnothlonScreen> {
               fontSize: 22,
               letterSpacing: 1.1),
         ),
-        backgroundColor: const Color(0xFF23242B),
+        backgroundColor: AppTheme.cardColor,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
         automaticallyImplyLeading: true,
         systemOverlayStyle: SystemUiOverlayStyle(
-          statusBarColor: Color(0xFF181A20),
+          statusBarColor: AppTheme.scaffoldBackgroundColor,
           statusBarIconBrightness: Brightness.light,
         ),
       ),
       body: FutureBuilder<List<TechnoPaperModel>>(
         future: papersFuture,
         builder: (context, snapshot) {
-          if (!snapshot.hasData)
+          if (!snapshot.hasData) {
             return const Center(
-                child: CircularProgressIndicator(color: Colors.blueAccent));
+                child: CircularProgressIndicator(color: AppTheme.primaryColor));
+          }
 
           final data = snapshot.data!;
           final years = data.map((e) => e.year).toSet().toList()
@@ -84,15 +86,16 @@ class _TechnothlonScreenState extends State<TechnothlonScreen> {
               }
 
               final List<TableRow> rows = [];
-              if (_hasContent(matrix['English']))
+              if (_hasContent(matrix['English'])) {
                 rows.add(_buildRow("English", matrix['English']));
+              }
               if (_hasContent(matrix['Hindi']))
                 rows.add(_buildRow("Hindi", matrix['Hindi']));
               if (_hasContent(matrix['Answer Key']))
                 rows.add(_buildRow("Answer Key", matrix['Answer Key']));
 
               return Card(
-                color: const Color(0xFF23242B),
+                color: AppTheme.cardColor,
                 margin:
                     const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                 elevation: 0,
@@ -104,7 +107,7 @@ class _TechnothlonScreenState extends State<TechnothlonScreen> {
                 child: Theme(
                   data: Theme.of(context).copyWith(
                     dividerColor: Colors.transparent,
-                    splashColor: Colors.blueAccent.withOpacity(0.08),
+                    splashColor: AppTheme.primaryColor.withOpacity(0.08),
                   ),
                   child: ExpansionTile(
                     initiallyExpanded: expandedMap[year]!,
@@ -112,7 +115,7 @@ class _TechnothlonScreenState extends State<TechnothlonScreen> {
                       "Technothlon $year",
                       style: TextStyle(
                         color: expandedMap[year]!
-                            ? Colors.blueAccent
+                            ? AppTheme.primaryColor
                             : Colors.white,
                         fontWeight: FontWeight.bold,
                         fontSize: 18,
@@ -170,7 +173,7 @@ class _TechnothlonScreenState extends State<TechnothlonScreen> {
 
   TableRow _buildRow(String title, Map<String, TechnoPaperModel?>? row) {
     return TableRow(
-      decoration: const BoxDecoration(color: Color(0xFF23242B)),
+      decoration: const BoxDecoration(color: AppTheme.cardColor),
       children: [
         Padding(
           padding: const EdgeInsets.all(8),
@@ -205,13 +208,13 @@ class _TechnothlonScreenState extends State<TechnothlonScreen> {
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 10),
           decoration: BoxDecoration(
-            color: Colors.blueAccent.withOpacity(0.13),
+            color: AppTheme.primaryColor.withOpacity(0.13),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Text(
             paper.squad,
             style: const TextStyle(
-              color: Colors.blueAccent,
+              color: AppTheme.primaryColor,
               fontWeight: FontWeight.w600,
               decoration: TextDecoration.underline,
               fontSize: 15,

@@ -1,11 +1,12 @@
 import 'package:techniche26/utils/animate_gradient_background.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'dart:convert';
 import 'package:intl/intl.dart';
-import 'package:techniche26/view/landing_screen.dart'
-    hide AnimatedGradientBackground;
+import 'package:techniche26/view/landing_screen.dart';
 
 const Map<String, Map<String, dynamic>> categoryStyles = {
   'Robotics': {'icon': Icons.smart_toy_outlined, 'color': Color(0xff00ffdd)},
@@ -42,6 +43,7 @@ class _SchedulePageState extends State<SchedulePage>
   Map<String, dynamic> _scheduleData = {};
   String _selectedCategory = 'All';
   List<String> _categories = ['All'];
+  final Color neonCyan = const Color(0xFF00FFFF);
 
   @override
   void initState() {
@@ -118,18 +120,6 @@ class _SchedulePageState extends State<SchedulePage>
     if (!_isScheduleLive) {
       return Scaffold(
         backgroundColor: Colors.transparent,
-        extendBodyBehindAppBar: true,
-        appBar: AppBar(
-          title: const Text('Events Timeline'),
-          centerTitle: true,
-          backgroundColor: Colors.transparent,
-          systemOverlayStyle: const SystemUiOverlayStyle(
-            statusBarIconBrightness: Brightness.light,
-            statusBarColor:
-                Colors.transparent, // keep status bar visually transparent
-          ),
-          elevation: 0,
-        ),
         body: Stack(
           children: [
             const AnimatedGradientBackground(),
@@ -164,86 +154,90 @@ class _SchedulePageState extends State<SchedulePage>
           length: days.length,
           child: Scaffold(
             backgroundColor: Colors.transparent,
-            appBar: AppBar(
-              title: const Text('Events Timeline'),
-              centerTitle: true,
-              backgroundColor: Colors.transparent,
-              elevation: 0,
-              bottom: TabBar(
-                isScrollable: true,
-                indicatorColor: Theme.of(context).colorScheme.secondary,
-                indicatorWeight: 3,
-                tabs: days
-                    .map((day) => Tab(text: day['title'].toUpperCase()))
-                    .toList(),
-              ),
-            ),
-            body: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: DropdownButtonFormField<String>(
-                    value: _selectedCategory,
-                    decoration: InputDecoration(
-                      labelText: 'Filter by Category',
-                      labelStyle: const TextStyle(color: Colors.white70),
-                      filled: true,
-                      fillColor: Colors.white.withOpacity(0.1),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide:
-                            BorderSide(color: Colors.white.withOpacity(0.2)),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(
-                            color: Theme.of(context).colorScheme.secondary),
-                      ),
-                    ),
-                    dropdownColor: const Color(0xFF16213e),
-                    style: const TextStyle(color: Colors.white),
-                    items: _categories.map((String category) {
-                      return DropdownMenuItem<String>(
-                          value: category, child: Text(category));
-                    }).toList(),
-                    onChanged: (newValue) =>
-                        setState(() => _selectedCategory = newValue!),
-                  ),
-                ),
-                Expanded(
-                  child: TabBarView(
-                    children: days.map((day) {
-                      final List<dynamic> allEvents = List.from(
-                          day['events'] ?? [])
-                        ..sort(
-                            (a, b) => a['startTime'].compareTo(b['startTime']));
-                      final List<dynamic> filteredEvents =
-                          _selectedCategory == 'All'
-                              ? allEvents
-                              : allEvents
-                                  .where((event) =>
-                                      event['category'] == _selectedCategory)
-                                  .toList();
-                      if (filteredEvents.isEmpty)
-                        return Center(
-                            child: Text(
-                                'No events for this category on ${day['title']}.',
-                                style: const TextStyle(color: Colors.white70)));
-                      return ListView.builder(
-                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                        itemCount: filteredEvents.length,
-                        itemBuilder: (context, index) => EventTimelineTile(
-                          event: filteredEvents[index],
-                          animation: AnimationController(
-                            vsync: this,
-                            duration: const Duration(milliseconds: 600),
-                          )..forward(),
+            body: SafeArea(
+              child: Column(
+                children: [
+                  const SizedBox(height: 16),
+                  AnimatedTextKit(
+                    animatedTexts: [
+                      TypewriterAnimatedText(
+                        'Events Timeline',
+                        textStyle: GoogleFonts.orbitron(
+                          color: neonCyan,
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
                         ),
-                      );
-                    }).toList(),
+                        speed: const Duration(milliseconds: 80),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
                   ),
-                ),
-              ],
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: DropdownButtonFormField<String>(
+                      value: _selectedCategory,
+                      decoration: InputDecoration(
+                        labelText: 'Filter by Category',
+                        labelStyle: const TextStyle(color: Colors.white70),
+                        filled: true,
+                        fillColor: Colors.white.withOpacity(0.1),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide:
+                              BorderSide(color: Colors.white.withOpacity(0.2)),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(
+                              color: Theme.of(context).colorScheme.secondary),
+                        ),
+                      ),
+                      dropdownColor: const Color(0xFF16213e),
+                      style: const TextStyle(color: Colors.white),
+                      items: _categories.map((String category) {
+                        return DropdownMenuItem<String>(
+                            value: category, child: Text(category));
+                      }).toList(),
+                      onChanged: (newValue) =>
+                          setState(() => _selectedCategory = newValue!),
+                    ),
+                  ),
+                  Expanded(
+                    child: TabBarView(
+                      children: days.map((day) {
+                        final List<dynamic> allEvents =
+                            List.from(day['events'] ?? [])
+                              ..sort((a, b) =>
+                                  a['startTime'].compareTo(b['startTime']));
+                        final List<dynamic> filteredEvents =
+                            _selectedCategory == 'All'
+                                ? allEvents
+                                : allEvents
+                                    .where((event) =>
+                                        event['category'] == _selectedCategory)
+                                    .toList();
+                        if (filteredEvents.isEmpty)
+                          return Center(
+                              child: Text(
+                                  'No events for this category on ${day['title']}.',
+                                  style:
+                                      const TextStyle(color: Colors.white70)));
+                        return ListView.builder(
+                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                          itemCount: filteredEvents.length,
+                          itemBuilder: (context, index) => EventTimelineTile(
+                            event: filteredEvents[index],
+                            animation: AnimationController(
+                              vsync: this,
+                              duration: const Duration(milliseconds: 600),
+                            )..forward(),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
