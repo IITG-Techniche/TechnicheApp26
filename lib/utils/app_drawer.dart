@@ -38,6 +38,12 @@ class AppDrawer extends StatelessWidget {
                   title: 'Technothlon PYQs',
                   routeName: TechnothlonScreen.routeName,
                 ),
+                _buildDrawerItem(
+                  context: context,
+                  icon: Icons.app_registration,
+                  title: 'Techno Registration',
+                  routeName: '/techno-registration',
+                ),
                 const Divider(color: Colors.white24, height: 2),
                 _buildDrawerItem(
                   context: context,

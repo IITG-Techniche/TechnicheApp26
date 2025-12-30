@@ -10,6 +10,7 @@ import 'package:techniche26/view/schedule_screen.dart';
 import 'package:techniche26/view/techno/papers_display.dart';
 import 'package:techniche26/view/utilities_screen.dart';
 import 'package:techniche26/view/workshops_screen.dart';
+import 'package:techniche26/view/techno/registration_screen.dart';
 
 import 'package:flutter/material.dart';
 
@@ -67,6 +68,12 @@ Route<dynamic> generateRoute(RouteSettings routeSettings) {
       return MaterialPageRoute(
         settings: routeSettings,
         builder: (_) => const TechnothlonScreen(),
+      );
+
+    case '/techno-registration':
+      return MaterialPageRoute(
+        settings: routeSettings,
+        builder: (_) => const RegistrationScreen(),
       );
 
     case '/merch':

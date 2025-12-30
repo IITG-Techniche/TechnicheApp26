@@ -16,6 +16,10 @@
         android:usesCleartextTraffic="true"
         android:enableOnBackInvokedCallback="true"
     >
+        <!-- Declare 16 KB page size support for Android 15+ -->
+        <property
+            android:name="android.app.sdk.pagesize.16kb"
+            android:value="true" />
         <activity
             android:name=".MainActivity"
             android:exported="true"

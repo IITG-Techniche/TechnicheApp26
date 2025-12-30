@@ -1,6 +1,7 @@
 import 'package:techniche26/view/auth/ca_auth_screen.dart';
 import 'package:techniche26/utils/app_drawer.dart';
 import 'package:techniche26/view/workshops_screen.dart';
+import 'package:techniche26/view/techno/papers_display.dart'; // Import TechnothlonScreen
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:techniche26/utils/ca_bottom_nav_bar.dart';
@@ -34,77 +35,73 @@ class LandingScreen extends ConsumerStatefulWidget {
 }
 
 // RetroTransition and ScanlinePainter classes remain unchanged...
-class RetroTransition extends StatelessWidget {
-  final Animation<double> animation;
+class RetroTransition extends AnimatedWidget {
   final Widget child;
+
   const RetroTransition({
     super.key,
-    required this.animation,
+    required Animation<double> animation,
     required this.child,
-  });
+  }) : super(listenable: animation);
+
+  Animation<double> get animation => listenable as Animation<double>;
 
   double _clamp(double v, {double min = 0.0, double max = 1.0}) =>
       v < min ? min : (v > max ? max : v);
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: animation,
-      builder: (context, _) {
-        final double t = Curves.easeInOut.transform(animation.value);
-        final double scale = 0.94 + 0.12 * t;
-        final double opacity = _clamp(t);
-        final Offset offset = Offset(0, (1 - t) * 18);
-        final double glowPeak = (1.0 - ((t - 0.5).abs() * 2.0)).clamp(0.0, 1.0);
-        final double glowOpacity = 0.06 * glowPeak;
-        final double scanlineOpacity = 0.06 * glowPeak;
+    final double t = Curves.easeInOut.transform(animation.value);
+    final double scale = 0.94 + 0.12 * t;
+    final double opacity = _clamp(t);
+    final Offset offset = Offset(0, (1 - t) * 18);
+    final double glowPeak = (1.0 - ((t - 0.5).abs() * 2.0)).clamp(0.0, 1.0);
+    final double glowOpacity = 0.06 * glowPeak;
+    final double scanlineOpacity = 0.06 * glowPeak;
 
-        return Transform.translate(
-          offset: offset,
-          child: Transform.scale(
-            scale: scale,
-            child: Opacity(
-              opacity: opacity,
-              child: Stack(
-                fit: StackFit.passthrough,
-                children: [
-                  child,
-                  IgnorePointer(
-                    ignoring: true,
-                    child: Opacity(
-                      opacity: glowOpacity,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [
-                              Colors.cyan.withOpacity(0.12),
-                              Colors.transparent,
-                            ],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            stops: const [0.0, 0.9],
-                          ),
-                        ),
+    return Transform.translate(
+      offset: offset,
+      child: Transform.scale(
+        scale: scale,
+        child: Opacity(
+          opacity: opacity,
+          child: Stack(
+            fit: StackFit.passthrough,
+            children: [
+              child,
+              IgnorePointer(
+                ignoring: true,
+                child: Opacity(
+                  opacity: glowOpacity,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.cyan.withOpacity(0.12),
+                          Colors.transparent,
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        stops: const [0.0, 0.9],
                       ),
                     ),
                   ),
-                  IgnorePointer(
-                    ignoring: true,
-                    child: Opacity(
-                      opacity: scanlineOpacity,
-                      child: const CustomPaint(
-                        painter: ScanlinePainter(),
-                        size: Size.infinite,
-                      ),
-                    ),
-                  ),
-                ],
+                ),
               ),
-            ),
+              IgnorePointer(
+                ignoring: true,
+                child: Opacity(
+                  opacity: scanlineOpacity,
+                  child: const CustomPaint(
+                    painter: ScanlinePainter(),
+                    size: Size.infinite,
+                  ),
+                ),
+              ),
+            ],
           ),
-        );
-      },
-      child: child,
+        ),
+      ),
     );
   }
 }
@@ -338,23 +335,25 @@ class _LandingScreenState extends ConsumerState<LandingScreen> {
                         ),
                         _gridItem(
                           context: context,
-                          title: 'Buy Merch!',
-                          description: 'Roam around the campus in style',
-                          imagePath: 'assets/shirt.png',
+                          title: 'Techno Registration',
+                          description: 'Register for Technothlon 2025 now!',
+                          imagePath:
+                              'assets/techno_logo.jpg', // Keeping same icon for now or update if needed
                           color: const Color(0xFF23242B),
-                          onTap: () => Navigator.pushNamed(context, '/merch'),
+                          onTap: () => Navigator.pushNamed(
+                              context, '/techno-registration'),
                         ),
                         _gridItem(
                           context: context,
-                          title: 'Workshops',
-                          description:
-                              'Go and register, seats are limited. Hurry up!',
-                          imagePath: 'assets/output.jpg',
+                          title: 'Techno PYQs',
+                          description: 'Practice past year papers.',
+                          imagePath:
+                              'assets/techno_logo.jpg', // Keeping same icon for now or update if needed
                           color: const Color(0xFF23242B),
                           onTap: () {
                             Navigator.pushNamed(
                               context,
-                              WorkshopsScreen.routeName,
+                              TechnothlonScreen.routeName,
                             );
                           },
                         ),
@@ -450,15 +449,6 @@ class _LandingScreenState extends ConsumerState<LandingScreen> {
                   ),
                 ),
               ],
-            ),
-            Positioned(
-              bottom: 0,
-              right: 0,
-              child: Icon(
-                Icons.arrow_forward,
-                size: 18,
-                color: Colors.blueAccent.withOpacity(0.7),
-              ),
             ),
           ],
         ),
