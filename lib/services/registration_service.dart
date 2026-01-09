@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import '../model/registration_model.dart';
 
 class RegistrationService {
-  static const String baseUrl = "http://172.17.99.52:3001/api";
+  static const String baseUrl = "https://technothlon.techniche.org.in/api";
 
   // POST /register
   static Future<Map<String, dynamic>> registerTeam(
