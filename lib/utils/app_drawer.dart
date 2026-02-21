@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:techniche26/view/ghm/ghm_selection.dart';
-import 'package:techniche26/view/ghm/marathon_screen.dart';
+import 'package:techniche26/view/marathon/marathon_main.dart';
+import 'package:techniche26/view/ghm/ghm_registration.dart';
 import 'package:techniche26/view/techniche_screen.dart';
 import 'package:techniche26/view/techno/papers_display.dart';
 import 'package:techniche26/view/utilities_screen.dart';
@@ -47,15 +47,16 @@ class AppDrawer extends StatelessWidget {
                 const Divider(color: Colors.white24, height: 2),
                 _buildDrawerItem(
                   context: context,
-                  icon: Icons.directions_run,
-                  title: 'GHM Selection',
-                  routeName: GHMScreen.routeName,
+                  icon: Icons.app_registration,
+                  title: 'GHM Registration',
+                  routeName: GHMRegistrationScreen.routeName,
                 ),
+             
                 _buildDrawerItem(
                   context: context,
-                  icon: Icons.timer,
-                  title: 'Marathon Tracker',
-                  routeName: MarathonScreen.routeName,
+                  icon: Icons.directions_run,
+                  title: 'Marathon Practice',
+                  routeName: MarathonMainScreen.routeName,
                 ),
                 const Divider(color: Colors.white24, height: 2),
                 _buildDrawerItem(

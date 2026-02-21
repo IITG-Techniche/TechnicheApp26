@@ -2,6 +2,7 @@ import 'package:techniche26/view/auth/ca_auth_screen.dart';
 import 'package:techniche26/utils/app_drawer.dart';
 import 'package:techniche26/view/workshops_screen.dart';
 import 'package:techniche26/view/techno/papers_display.dart'; // Import TechnothlonScreen
+import 'package:techniche26/view/marathon/marathon_main.dart'; // Import Marathon Screen
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:techniche26/utils/ca_bottom_nav_bar.dart';
@@ -315,6 +316,35 @@ class _LandingScreenState extends ConsumerState<LandingScreen> {
                       physics: const NeverScrollableScrollPhysics(),
                       childAspectRatio: 0.95,
                       children: [
+                        
+                        // _gridItem(
+                        //   context: context,
+                        //   title: 'CA Portal',
+                        //   description: 'Manage tasks and track your progress',
+                        //   imagePath: 'assets/ca_icon.png',
+                        //   color: const Color(0xFF23242B),
+                        //   onTap: () => _handleAuthNavigation(context),
+                        // ),
+                        _gridItem(
+                          context: context,
+                          title: 'GHM Register',
+                          description: 'Register for GHM',
+                          imagePath: 'assets/ghm.png',
+                          color: const Color(0xFF23242B),
+                          onTap: () => Navigator.pushNamed(context, '/ghm-registration'),
+                        ),
+                        _gridItem(
+                          context: context,
+                          title: 'Practice Run',
+                          description:
+                              'Track your runs and join the leaderboard!',
+                          imagePath: 'assets/ghm_logo.jpg',
+                          color: const Color(0xFF23242B),
+                          onTap: () => Navigator.pushNamed(
+                            context,
+                            MarathonMainScreen.routeName,
+                          ),
+                        ),
                         _gridItem(
                           context: context,
                           title: 'Events',
@@ -324,24 +354,6 @@ class _LandingScreenState extends ConsumerState<LandingScreen> {
                           color: const Color(0xFF23242B),
                           onTap: () =>
                               Navigator.pushNamed(context, '/events-screen'),
-                        ),
-                        _gridItem(
-                          context: context,
-                          title: 'CA Portal',
-                          description: 'Manage tasks and track your progress',
-                          imagePath: 'assets/ca_icon.png',
-                          color: const Color(0xFF23242B),
-                          onTap: () => _handleAuthNavigation(context),
-                        ),
-                        _gridItem(
-                          context: context,
-                          title: 'Techno Registration',
-                          description: 'Register for Technothlon 2025 now!',
-                          imagePath:
-                              'assets/techno_logo.jpg', // Keeping same icon for now or update if needed
-                          color: const Color(0xFF23242B),
-                          onTap: () => Navigator.pushNamed(
-                              context, '/techno-registration'),
                         ),
                         _gridItem(
                           context: context,
@@ -465,18 +477,20 @@ class _ImageCarousel extends StatefulWidget {
 
 class _ImageCarouselState extends State<_ImageCarousel> {
   final List<String> imageUrls = [
-    'assets/robo.png',
-    'assets/aqua.png',
-    'assets/micro.png',
-    'assets/tracktitans.png',
-    'assets/escalade.png',
+    'assets/ghm.png',
+    // 'assets/robo.png',
+    // 'assets/aqua.png',
+    // 'assets/micro.png',
+    // 'assets/tracktitans.png',
+    // 'assets/escalade.png',
   ];
   final List<String> links = [
-    'https://unstop.com/competitions/robowars-iit-guwahati-1499332',
-    'https://unstop.com/competitions/aquawars-30-iit-guwahati-1479317',
-    'https://unstop.com/competitions/micromouse-2025-iit-guwahati-1509198',
-    'https://unstop.com/competitions/track-titans-iit-guwahati-1509142',
-    'https://unstop.com/competitions/escalade-140-iit-guwahati-1477498',
+    'https://techniche.org.in/ghm/register'
+    // 'https://unstop.com/competitions/robowars-iit-guwahati-1499332',
+    // 'https://unstop.com/competitions/aquawars-30-iit-guwahati-1479317',
+    // 'https://unstop.com/competitions/micromouse-2025-iit-guwahati-1509198',
+    // 'https://unstop.com/competitions/track-titans-iit-guwahati-1509142',
+    // 'https://unstop.com/competitions/escalade-140-iit-guwahati-1477498',
   ];
   int _current = 0;
   late PageController _controller;
@@ -538,7 +552,7 @@ class _ImageCarouselState extends State<_ImageCarousel> {
                 aspectRatio: 1,
                 child: Image.asset(
                   imageUrls[i],
-                  fit: BoxFit.cover,
+                  fit: BoxFit.fill,
                   width: double.infinity,
                   height: double.infinity,
                 ),
@@ -554,10 +568,10 @@ class _ImageCarouselState extends State<_ImageCarousel> {
               margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
               width: 8,
               height: 8,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: _current == i ? Colors.white : Colors.grey[700],
-              ),
+              // decoration: BoxDecoration(
+              //   shape: BoxShape.circle,
+              //   color: _current == i ? Colors.white : Colors.grey[700],
+              // ),
             ),
           ),
         ),

@@ -1,9 +1,11 @@
 library;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lottie/lottie.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:techniche26/controller/riverpod_controller/ca_auth_riverpod_controller.dart';
+import 'package:techniche26/providers/marathon_provider.dart';
 import 'package:techniche26/view/landing_screen.dart';
 import 'package:techniche26/view/onboarding_screen.dart';
 
@@ -48,9 +50,14 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
           await ref.read(caAuthControllerProvider).fetchUserData(context);
         }
       }
+
+      // Restore Marathon Enrollment state
+      if (mounted) {
+        await loadMarathonEnrollment(ref);
+      }
     } catch (e) {
       // Silently ignore - user will just not be logged in
-      print("Error restoring CA auth state: $e");
+      print("Error restoring auth or marathon state: $e");
     }
 
     // Always navigate to Landing Screen

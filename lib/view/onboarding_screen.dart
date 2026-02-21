@@ -41,7 +41,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
     },
     {
       "title": "Guwahati Half Marathon",
-      "subtitle": "Run for a Better Tomorrow",
+      "subtitle": "Run for Quality Education",
       "lottie": "assets/onboarding/ghm.json",
     },
     {

@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import '../../constant/appTheme.dart';
 import '../../model/registration_model.dart';
 import '../../services/registration_service.dart';
 import '../../constant/techno_city.dart';
 import 'payment_screen.dart';
+import 'package:google_fonts/google_fonts.dart';
+import '../../utils/animate_gradient_background.dart';
 
 class RegistrationScreen extends StatefulWidget {
   const RegistrationScreen({super.key});
@@ -276,13 +277,36 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
 
   Widget _buildSectionTitle(String title) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 16.0),
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Text(
-        title,
-        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-              color: AppTheme.primaryColor,
-              fontWeight: FontWeight.bold,
-            ),
+        title.toUpperCase(),
+        style: GoogleFonts.orbitron(
+          color: const Color(0xFF00E5FF),
+          fontSize: 14,
+          fontWeight: FontWeight.bold,
+          letterSpacing: 1.2,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSectionCard(
+      {required String title, required List<Widget> children}) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.white.withOpacity(0.1)),
+      ),
+      padding: const EdgeInsets.all(20),
+      margin: const EdgeInsets.only(bottom: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildSectionTitle(title),
+          const SizedBox(height: 10),
+          ...children,
+        ],
       ),
     );
   }
@@ -292,9 +316,26 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12.0),
       child: TextFormField(
+        style: const TextStyle(color: Colors.white, fontSize: 16),
         decoration: InputDecoration(
           labelText: label,
-          labelStyle: const TextStyle(color: AppTheme.textColorSecondary),
+          labelStyle: TextStyle(color: Colors.grey[400], fontSize: 14),
+          filled: true,
+          fillColor: Colors.white.withOpacity(0.05),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: Colors.white.withOpacity(0.1)),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: Colors.white.withOpacity(0.1)),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: Color(0xFF00E5FF), width: 1.5),
+          ),
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         ),
         keyboardType: type,
         validator: (value) =>
@@ -309,9 +350,27 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12.0),
       child: DropdownButtonFormField<String>(
+        dropdownColor: const Color(0xFF1A1D24),
+        style: const TextStyle(color: Colors.white, fontSize: 16),
         decoration: InputDecoration(
           labelText: label,
-          labelStyle: const TextStyle(color: AppTheme.textColorSecondary),
+          labelStyle: TextStyle(color: Colors.grey[400], fontSize: 14),
+          filled: true,
+          fillColor: Colors.white.withOpacity(0.05),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: Colors.white.withOpacity(0.1)),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: Colors.white.withOpacity(0.1)),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: Color(0xFF00E5FF), width: 1.5),
+          ),
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         ),
         value:
             currentValue == null || currentValue.isEmpty ? null : currentValue,
@@ -320,6 +379,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
             .toList(),
         onChanged: onChanged,
         validator: (value) => value == null ? "Required" : null,
+        icon: const Icon(Icons.keyboard_arrow_down, color: Colors.white60),
       ),
     );
   }
@@ -336,9 +396,24 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
               onTap: () async {
                 final picked = await showDatePicker(
                   context: context,
-                  initialDate: DateTime.now(),
+                  initialDate:
+                      DateTime.now().subtract(const Duration(days: 365 * 15)),
                   firstDate: DateTime(1990),
                   lastDate: DateTime.now(),
+                  builder: (context, child) {
+                    return Theme(
+                      data: Theme.of(context).copyWith(
+                        colorScheme: const ColorScheme.dark(
+                          primary: Color(0xFF00E5FF),
+                          onPrimary: Colors.black,
+                          surface: Color(0xFF1A1D24),
+                          onSurface: Colors.white,
+                        ),
+                        dialogBackgroundColor: const Color(0xFF1A1D24),
+                      ),
+                      child: child!,
+                    );
+                  },
                 );
                 if (picked != null) {
                   // Format YYYY-MM-DD
@@ -351,8 +426,24 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
               child: InputDecorator(
                 decoration: InputDecoration(
                   labelText: label,
-                  labelStyle:
-                      const TextStyle(color: AppTheme.textColorSecondary),
+                  labelStyle: TextStyle(color: Colors.grey[400], fontSize: 14),
+                  filled: true,
+                  fillColor: Colors.white.withOpacity(0.05),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide:
+                        BorderSide(color: Colors.white.withOpacity(0.1)),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide:
+                        BorderSide(color: Colors.white.withOpacity(0.1)),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide:
+                        const BorderSide(color: Color(0xFF00E5FF), width: 1.5),
+                  ),
                   errorText: state.errorText,
                 ),
                 child: Text(
@@ -360,8 +451,9 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                       ? 'Select Date'
                       : currentValue,
                   style: TextStyle(
+                      fontSize: 16,
                       color: currentValue == null || currentValue.isEmpty
-                          ? Colors.white54
+                          ? Colors.grey[600]
                           : Colors.white),
                 ),
               ),
@@ -373,212 +465,310 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Student Registration")),
-      body: _isLoading
-          ? const Center(
-              child: CircularProgressIndicator(color: AppTheme.primaryColor))
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(16.0),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildSectionTitle("Student Information 1"),
-                    _buildTextField("Name", (v) => _team.name1 = v!),
-                    _buildDatePicker("Date of Birth", _team.dob1,
-                        (v) => setState(() => _team.dob1 = v)),
-                    _buildTextField("Contact", (v) => _team.contact1 = v!,
-                        type: TextInputType.phone),
-                    _buildTextField("Email", (v) => _team.email1 = v!,
-                        type: TextInputType.emailAddress),
-                    _buildTextField(
-                        "Confirm Email", (v) => _team.confirmEmail1 = v!,
-                        type: TextInputType.emailAddress),
-                    _buildTextField("School", (v) => _team.school1 = v!),
-                    _buildDropdown("Class", _classes, _team.class1,
-                        (v) => setState(() => _team.class1 = v!)),
-
-                    _buildSectionTitle("Student Information 2"),
-                    _buildTextField("Name", (v) => _team.name2 = v!),
-                    _buildDatePicker("Date of Birth", _team.dob2,
-                        (v) => setState(() => _team.dob2 = v)),
-                    _buildTextField("Contact", (v) => _team.contact2 = v!,
-                        type: TextInputType.phone),
-                    _buildTextField("Email", (v) => _team.email2 = v!,
-                        type: TextInputType.emailAddress),
-                    _buildTextField(
-                        "Confirm Email", (v) => _team.confirmEmail2 = v!,
-                        type: TextInputType.emailAddress),
-                    _buildTextField("School", (v) => _team.school2 = v!),
-                    _buildDropdown("Class", _classes, _team.class2,
-                        (v) => setState(() => _team.class2 = v!)),
-
-                    _buildSectionTitle("Team Information"),
-                    _buildDropdown("Squad", _squads, _team.squad,
-                        (v) => setState(() => _team.squad = v!)),
-                    _buildDropdown("Language", _languages, _team.language,
-                        (v) => setState(() => _team.language = v!)),
-
-                    // Country with Autocomplete or Dropdown. Using Dropdown for simplicity if list is small, but list is truncated.
-                    // Using Autocomplete for Country and State is better.
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 12.0),
-                      child: Autocomplete<String>(
-                        optionsBuilder: (TextEditingValue textEditingValue) {
-                          if (textEditingValue.text == '') {
-                            return const Iterable<String>.empty();
-                          }
-                          return _allCountries.where((String option) {
-                            return option
-                                .toLowerCase()
-                                .contains(textEditingValue.text.toLowerCase());
-                          });
-                        },
-                        onSelected: (String selection) {
-                          _team.country = selection;
-                        },
-                        fieldViewBuilder:
-                            (context, controller, focusNode, onFieldSubmitted) {
-                          return TextFormField(
-                            controller: controller,
-                            focusNode: focusNode,
-                            decoration: const InputDecoration(
-                              labelText: "Country",
-                              labelStyle:
-                                  TextStyle(color: AppTheme.textColorSecondary),
+      backgroundColor: Colors.transparent,
+      extendBodyBehindAppBar: true,
+      appBar: AppBar(
+        title: Text(
+          "STUDENT REGISTRATION",
+          style: GoogleFonts.orbitron(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 2,
+            fontSize: 18,
+          ),
+        ),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
+      body: Stack(
+        children: [
+          const AnimatedGradientBackground(),
+          _isLoading
+              ? const Center(
+                  child: CircularProgressIndicator(color: Color(0xFF00E5FF)),
+                )
+              : SafeArea(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const SizedBox(height: 10),
+                          _buildSectionCard(
+                            title: "Student Information 1",
+                            children: [
+                              _buildTextField("Name", (v) => _team.name1 = v!),
+                              _buildDatePicker("Date of Birth", _team.dob1,
+                                  (v) => setState(() => _team.dob1 = v)),
+                              _buildTextField(
+                                  "Contact", (v) => _team.contact1 = v!,
+                                  type: TextInputType.phone),
+                              _buildTextField("Email", (v) => _team.email1 = v!,
+                                  type: TextInputType.emailAddress),
+                              _buildTextField("Confirm Email",
+                                  (v) => _team.confirmEmail1 = v!,
+                                  type: TextInputType.emailAddress),
+                              _buildTextField(
+                                  "School", (v) => _team.school1 = v!),
+                              _buildDropdown("Class", _classes, _team.class1,
+                                  (v) => setState(() => _team.class1 = v!)),
+                            ],
+                          ),
+                          _buildSectionCard(
+                            title: "Student Information 2",
+                            children: [
+                              _buildTextField("Name", (v) => _team.name2 = v!),
+                              _buildDatePicker("Date of Birth", _team.dob2,
+                                  (v) => setState(() => _team.dob2 = v)),
+                              _buildTextField(
+                                  "Contact", (v) => _team.contact2 = v!,
+                                  type: TextInputType.phone),
+                              _buildTextField("Email", (v) => _team.email2 = v!,
+                                  type: TextInputType.emailAddress),
+                              _buildTextField("Confirm Email",
+                                  (v) => _team.confirmEmail2 = v!,
+                                  type: TextInputType.emailAddress),
+                              _buildTextField(
+                                  "School", (v) => _team.school2 = v!),
+                              _buildDropdown("Class", _classes, _team.class2,
+                                  (v) => setState(() => _team.class2 = v!)),
+                            ],
+                          ),
+                          _buildSectionCard(
+                            title: "Team Discovery",
+                            children: [
+                              _buildDropdown("Squad", _squads, _team.squad,
+                                  (v) => setState(() => _team.squad = v!)),
+                              _buildDropdown(
+                                  "Language",
+                                  _languages,
+                                  _team.language,
+                                  (v) => setState(() => _team.language = v!)),
+                              _buildDropdown(
+                                  "How did you hear about Technothlon?",
+                                  _views,
+                                  _team.view,
+                                  (v) => setState(() => _team.view = v!)),
+                            ],
+                          ),
+                          _buildSectionCard(
+                            title: "Location Details",
+                            children: [
+                              _buildAutocomplete(
+                                label: "Country",
+                                options: _allCountries,
+                                onSelected: (val) => _team.country = val,
+                                initialValue: _team.country,
+                                onSaved: (val) => _team.country = val ?? "",
+                              ),
+                              _buildAutocomplete(
+                                label: "State",
+                                options: _allStates,
+                                onSelected: (val) => _handleStateChange(val),
+                                initialValue: _team.state,
+                                onSaved: (val) => _team.state = val ?? "",
+                              ),
+                              _buildAutocomplete(
+                                label: "City",
+                                options: TechnoCity.cityToId.keys.toList(),
+                                onSelected: (val) => _team.city = val,
+                                initialValue: _team.city,
+                                onSaved: (val) => _team.city = val ?? "",
+                                isCity: true,
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 10),
+                          _buildCheckboxTile(
+                            title: "I have read the instructions carefully",
+                            value: _readInstructions,
+                            onChanged: (v) =>
+                                setState(() => _readInstructions = v!),
+                          ),
+                          _buildCheckboxTile(
+                            title: "I confirm my details are correct",
+                            value: _confirmDetails,
+                            onChanged: (v) =>
+                                setState(() => _confirmDetails = v!),
+                          ),
+                          const SizedBox(height: 32),
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              onPressed: (_readInstructions && _confirmDetails)
+                                  ? _submitForm
+                                  : null,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF00E5FF),
+                                foregroundColor: Colors.black,
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 18),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(15),
+                                ),
+                                elevation: 8,
+                                disabledBackgroundColor: Colors.white10,
+                                shadowColor:
+                                    const Color(0xFF00E5FF).withOpacity(0.4),
+                              ),
+                              child: Text(
+                                "PAY NOW",
+                                style: GoogleFonts.orbitron(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 1.5,
+                                ),
+                              ),
                             ),
-                            validator: (value) => value == null || value.isEmpty
-                                ? "Required"
-                                : null,
-                            onSaved: (value) => _team.country = value ?? "",
-                          );
-                        },
+                          ),
+                          const SizedBox(height: 48),
+                        ],
                       ),
                     ),
+                  ),
+                ),
+        ],
+      ),
+    );
+  }
 
-                    // State
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 12.0),
-                      child: Autocomplete<String>(
-                        optionsBuilder: (TextEditingValue textEditingValue) {
-                          if (textEditingValue.text == '') {
-                            return const Iterable<String>.empty();
-                          }
-                          return _allStates.where((String option) {
-                            return option
-                                .toLowerCase()
-                                .contains(textEditingValue.text.toLowerCase());
-                          });
-                        },
-                        onSelected: (String selection) {
-                          _handleStateChange(selection);
-                        },
-                        fieldViewBuilder:
-                            (context, controller, focusNode, onFieldSubmitted) {
-                          return TextFormField(
-                            controller: controller,
-                            focusNode: focusNode,
-                            decoration: const InputDecoration(
-                              labelText: "State",
-                              labelStyle:
-                                  TextStyle(color: AppTheme.textColorSecondary),
-                            ),
-                            validator: (value) => value == null || value.isEmpty
-                                ? "Required"
-                                : null,
-                            onSaved: (value) => _team.state = value ?? "",
-                          );
-                        },
-                      ),
-                    ),
-
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 12.0),
-                      child: Autocomplete<String>(
-                        optionsBuilder: (TextEditingValue textEditingValue) {
-                          if (textEditingValue.text == '') {
-                            return const Iterable<String>.empty();
-                          }
-                          return TechnoCity.cityToId.keys
-                              .where((String option) {
-                            return option
-                                .toLowerCase()
-                                .contains(textEditingValue.text.toLowerCase());
-                          });
-                        },
-                        onSelected: (String selection) {
-                          _team.city = selection;
-                        },
-                        fieldViewBuilder:
-                            (context, controller, focusNode, onFieldSubmitted) {
-                          if (_team.city.isNotEmpty &&
-                              controller.text.isEmpty) {
-                            controller.text = _team.city;
-                          }
-                          return TextFormField(
-                            controller: controller,
-                            focusNode: focusNode,
-                            decoration: const InputDecoration(
-                              labelText: "City",
-                              labelStyle:
-                                  TextStyle(color: AppTheme.textColorSecondary),
-                            ),
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return "Required";
-                              }
-                              if (!TechnoCity.cityToId.containsKey(value)) {
-                                return "Please select a valid city from the list";
-                              }
-                              return null;
-                            },
-                            onSaved: (value) => _team.city = value ?? "",
-                          );
-                        },
-                      ),
-                    ),
-                    _buildDropdown(
-                        "How did you hear about Technothlon?",
-                        _views,
-                        _team.view,
-                        (v) => setState(() => _team.view = v!)),
-
-                    const SizedBox(height: 20),
-                    CheckboxListTile(
-                      title: const Text(
-                          "I have read the instructions carefully",
-                          style: TextStyle(color: Colors.white)),
-                      value: _readInstructions,
-                      onChanged: (v) => setState(() => _readInstructions = v!),
-                      checkColor: AppTheme.scaffoldBackgroundColor,
-                      activeColor: AppTheme.primaryColor,
-                    ),
-                    CheckboxListTile(
-                      title: const Text("I confirm my details are correct",
-                          style: TextStyle(color: Colors.white)),
-                      value: _confirmDetails,
-                      onChanged: (v) => setState(() => _confirmDetails = v!),
-                      checkColor: AppTheme.scaffoldBackgroundColor,
-                      activeColor: AppTheme.primaryColor,
-                    ),
-
-                    const SizedBox(height: 30),
-                    SizedBox(
-                      width: double.infinity,
-                      height: 50,
-                      child: ElevatedButton(
-                        onPressed: (_readInstructions && _confirmDetails)
-                            ? _submitForm
-                            : null,
-                        child: const Text("PAY NOW"),
-                      ),
-                    ),
-                    const SizedBox(height: 40),
-                  ],
+  Widget _buildAutocomplete({
+    required String label,
+    required List<String> options,
+    required Function(String) onSelected,
+    required String initialValue,
+    required Function(String?) onSaved,
+    bool isCity = false,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12.0),
+      child: Autocomplete<String>(
+        optionsBuilder: (TextEditingValue textEditingValue) {
+          if (textEditingValue.text == '') {
+            return const Iterable<String>.empty();
+          }
+          return options.where((String option) {
+            return option
+                .toLowerCase()
+                .contains(textEditingValue.text.toLowerCase());
+          });
+        },
+        onSelected: onSelected,
+        fieldViewBuilder: (context, controller, focusNode, onFieldSubmitted) {
+          if (initialValue.isNotEmpty && controller.text.isEmpty) {
+            controller.text = initialValue;
+          }
+          return TextFormField(
+            controller: controller,
+            focusNode: focusNode,
+            style: const TextStyle(color: Colors.white, fontSize: 16),
+            decoration: InputDecoration(
+              labelText: label,
+              labelStyle: TextStyle(color: Colors.grey[400], fontSize: 14),
+              filled: true,
+              fillColor: Colors.white.withOpacity(0.05),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: Colors.white.withOpacity(0.1)),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: Colors.white.withOpacity(0.1)),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide:
+                    const BorderSide(color: Color(0xFF00E5FF), width: 1.5),
+              ),
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            ),
+            validator: (value) {
+              if (value == null || value.isEmpty) return "Required";
+              if (isCity && !TechnoCity.cityToId.containsKey(value)) {
+                return "Please select a valid city from the list";
+              }
+              return null;
+            },
+            onSaved: onSaved,
+          );
+        },
+        optionsViewBuilder: (context, onSelected, options) {
+          return Align(
+            alignment: Alignment.topLeft,
+            child: Material(
+              color: Colors.transparent,
+              child: Container(
+                width: MediaQuery.of(context).size.width - 80,
+                margin: const EdgeInsets.only(top: 4),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1F2128),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.white.withOpacity(0.1)),
+                ),
+                child: ListView.separated(
+                  padding: EdgeInsets.zero,
+                  shrinkWrap: true,
+                  itemCount: options.length,
+                  separatorBuilder: (context, index) => Divider(
+                    color: Colors.white.withOpacity(0.05),
+                    height: 1,
+                  ),
+                  itemBuilder: (context, index) {
+                    final option = options.elementAt(index);
+                    return ListTile(
+                      title: Text(option,
+                          style: const TextStyle(
+                              color: Colors.white, fontSize: 14)),
+                      onTap: () => onSelected(option),
+                    );
+                  },
                 ),
               ),
             ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildCheckboxTile({
+    required String title,
+    required bool value,
+    required void Function(bool?) onChanged,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+            color: value
+                ? const Color(0xFF00E5FF).withOpacity(0.3)
+                : Colors.white.withOpacity(0.1)),
+      ),
+      child: CheckboxListTile(
+        title: Text(
+          title,
+          style: TextStyle(
+            color: value ? Colors.white : Colors.grey[400],
+            fontSize: 14,
+          ),
+        ),
+        value: value,
+        onChanged: onChanged,
+        checkColor: Colors.black,
+        activeColor: const Color(0xFF00E5FF),
+        dense: true,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 12),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
     );
   }
 }

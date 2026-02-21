@@ -1,7 +1,7 @@
 name: techniche26
 description: "Techniche Official App 2026"
 publish_to: 'none'
-version: 1.2.1+10
+version: 1.2.2+11
 
 environment:
   sdk: ^3.5.3
@@ -44,6 +44,8 @@ dependencies:
   flutter_staggered_animations: ^1.1.1
   carousel_slider: ^5.0.0
   webview_flutter: ^4.13.0
+  flutter_foreground_task: ^6.3.1
+
   
 
 dev_dependencies:

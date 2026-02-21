@@ -1,5 +1,3 @@
-/// This controller handles all authentication logic for Campus Ambassador users.
-/// It manages login, token validation, user data fetching, and logout.
 library;
 import 'dart:convert';
 import 'package:flutter/material.dart';
@@ -10,6 +8,7 @@ import 'package:techniche26/constant/global.dart';
 import 'package:techniche26/utils/ca_bottom_nav_bar.dart';
 import 'package:techniche26/utils/errorHandler.dart';
 import 'package:techniche26/controller/riverpod_controller/ca_user_provider.dart';
+import 'package:techniche26/providers/marathon_provider.dart';
 
 /// Provider for accessing CA Authentication Controller
 final caAuthControllerProvider = Provider((ref) => CaAuthController(ref));
@@ -367,6 +366,7 @@ class CaAuthController {
 
       // Clear Riverpod state
       _ref.read(caUserProvider.notifier).clearUser();
+
     } catch (e) {
       print("Error clearing CA auth data: $e");
     }

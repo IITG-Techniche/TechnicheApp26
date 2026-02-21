@@ -2,8 +2,7 @@ import 'package:techniche26/utils/ca_bottom_nav_bar.dart';
 import 'package:techniche26/view/auth/ca_auth_screen.dart';
 import 'package:techniche26/view/landing_screen.dart';
 import 'package:techniche26/view/merch_screen.dart';
-import 'package:techniche26/view/ghm/marathon_screen.dart';
-import 'package:techniche26/view/ghm/ghm_selection.dart';
+import 'package:techniche26/view/marathon/marathon_main.dart';
 import 'package:techniche26/view/ghm/ghm_registration.dart';
 import 'package:techniche26/view/techniche_screen.dart';
 import 'package:techniche26/view/schedule_screen.dart';
@@ -41,21 +40,15 @@ Route<dynamic> generateRoute(RouteSettings routeSettings) {
         builder: (_) => const CaBottomNavBar(),
       );
 
-    case GHMScreen.routeName:
-      return MaterialPageRoute(
-        settings: routeSettings,
-        builder: (_) => const GHMScreen(),
-      );
     case GHMRegistrationScreen.routeName:
       return MaterialPageRoute(
         settings: routeSettings,
         builder: (_) => const GHMRegistrationScreen(),
       );
-
-    case MarathonScreen.routeName:
+    case MarathonMainScreen.routeName:
       return MaterialPageRoute(
         settings: routeSettings,
-        builder: (_) => const MarathonScreen(),
+        builder: (_) => const MarathonMainScreen(),
       );
 
     case EventsScreen.routeName:

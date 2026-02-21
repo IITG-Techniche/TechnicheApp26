@@ -267,36 +267,36 @@ class _MerchScreenState extends State<MerchScreen> {
             const SizedBox(height: 12),
             Container(
               decoration: BoxDecoration(
-                // Gradient for the 3D effect
-                gradient: const LinearGradient(
+                gradient: LinearGradient(
                   colors: [
-                    Color(0xFF0D47A1), // Darker blue
-                    Colors.blueAccent, // Lighter blue
+                    Colors.grey.shade800,
+                    Colors.grey.shade900,
                   ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
                 borderRadius: BorderRadius.circular(12),
-                // Shadow for the glowing effect
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.blueAccent.withOpacity(0.6),
-                    blurRadius: 18,
-                    spreadRadius: 2,
-                    offset: const Offset(0, 4), // Shadow position
+                    color: Colors.black.withOpacity(0.3),
+                    blurRadius: 10,
+                    spreadRadius: 1,
+                    offset: const Offset(0, 2),
                   ),
                 ],
               ),
               child: ElevatedButton.icon(
-                onPressed: onBuy,
-                icon: const Icon(Icons.shopping_cart, color: Colors.white),
-                label: const Text("Buy Now"),
+                onPressed: null, // Disabled
+                icon: const Icon(Icons.remove_shopping_cart,
+                    color: Colors.white38),
+                label: const Text(
+                  "SOLD OUT",
+                  style: TextStyle(color: Color.fromARGB(97, 224, 25, 25)),
+                ),
                 style: ElevatedButton.styleFrom(
-                  // Make the button's own background transparent
                   backgroundColor: Colors.transparent,
-                  // Disable the default button shadow
                   shadowColor: Colors.transparent,
-                  foregroundColor: Colors.white,
+                  foregroundColor: Colors.white38,
                   padding:
                       const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                   shape: RoundedRectangleBorder(
