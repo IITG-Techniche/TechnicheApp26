@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../../providers/marathon_provider.dart';
-import '../../constant/appTheme.dart';
-import '../../utils/animate_gradient_background.dart';
 
 class MarathonRunTab extends ConsumerWidget {
   const MarathonRunTab({super.key});
@@ -12,316 +11,376 @@ class MarathonRunTab extends ConsumerWidget {
     final runState = ref.watch(liveRunProvider);
     final isRunning = runState.isRunning;
 
-    // Format timer
     int m = runState.elapsedSeconds ~/ 60;
     int s = runState.elapsedSeconds % 60;
     String timeFormatted =
         '${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
 
-    return Stack(
-      children: [
-        const AnimatedGradientBackground(),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              const SizedBox(height: 40),
-              Text('DISTANCE',
-                  style: TextStyle(
-                      color: AppTheme.primaryColor.withOpacity(0.8),
-                      fontFamily: AppTheme.fontFamily,
-                      fontSize: 16,
-                      letterSpacing: 2,
-                      shadows: [
-                        Shadow(
-                            blurRadius: 10,
-                            color: AppTheme.primaryColor,
-                            offset: Offset(0, 0)),
-                      ])),
-              const SizedBox(height: 10),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.baseline,
-                textBaseline: TextBaseline.alphabetic,
-                children: [
-                  Text(
-                    runState.distanceKm.toStringAsFixed(2),
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontFamily: AppTheme.fontFamily,
-                      fontSize: 72,
-                      fontWeight: FontWeight.w900,
-                      shadows: [
-                        Shadow(
-                            color: AppTheme.primaryColor,
-                            blurRadius: 25,
-                            offset: Offset(0, 0))
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  const Text('KM',
-                      style: TextStyle(
-                          color: Colors.white70,
-                          fontFamily: AppTheme.fontFamily,
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold)),
-                ],
-              ),
-              const Spacer(flex: 1),
+    String distStr =
+    runState.distanceKm.toStringAsFixed(2).replaceAll('.', '');
+    List<String> digits = distStr.padLeft(4, '0').split('');
 
-              // 4 Grid metrics
-              Row(
-                children: [
-                  Expanded(
-                      child: _buildMetricBox(
-                          Icons.timer_outlined, 'TIME', timeFormatted)),
-                  const SizedBox(width: 16),
-                  Expanded(
-                      child: _buildMetricBox(Icons.speed, 'CURRENT PACE',
-                          '${runState.currentPace.toStringAsFixed(2)} /km')),
-                ],
-              ),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  Expanded(
-                      child: _buildMetricBox(Icons.directions_walk,
-                          'TOTAL STEPS', '${runState.stepCount}')),
-                  const SizedBox(width: 16),
-                  Expanded(
-                      child: _buildMetricBox(
-                          Icons.local_fire_department_outlined,
-                          'CALORIES',
-                          '${(runState.stepCount * 0.04).toInt()}')),
-                ],
-              ),
-
-              const Spacer(flex: 2),
-
-              // Action Buttons
-              if (isRunning) ...[
-                Row(
-                  children: [
-                    Expanded(
-                      child: ElevatedButton.icon(
-                        onPressed: () {
-                          if (runState.isPaused) {
-                            ref.read(liveRunProvider.notifier).resumeRun();
-                          } else {
-                            ref.read(liveRunProvider.notifier).pauseRun();
-                          }
-                        },
-                        icon: Icon(
-                          runState.isPaused ? Icons.play_arrow : Icons.pause,
-                          color: Colors.black,
-                        ),
-                        label: Text(
-                          runState.isPaused ? 'RESUME' : 'PAUSE',
-                          style: const TextStyle(
-                            color: Colors.black,
-                            fontFamily: AppTheme.fontFamily,
-                            fontWeight: FontWeight.bold,
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: Column(
+        children: [
+          // ── Header ──────────────────────────────────────────────────────
+          SizedBox(
+            height: 144,
+            width: double.infinity,
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                SvgPicture.asset('assets/ghm/frame03.svg', fit: BoxFit.cover),
+                SafeArea(
+                  child: Align(
+                    alignment: Alignment.topLeft,
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 12, top: 10),
+                      child: GestureDetector(
+                        onTap: () => Navigator.of(context).pop(),
+                        child: Container(
+                          width: 47, height: 47,
+                          padding: const EdgeInsets.all(12),
+                          decoration: ShapeDecoration(
+                            color: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              side: const BorderSide(
+                                  width: 1, color: Color(0xFFB2B8BF)),
+                              borderRadius: BorderRadius.circular(24),
+                            ),
                           ),
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.primaryColor,
-                          padding: const EdgeInsets.symmetric(vertical: 20),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12)),
+                          child: SvgPicture.asset('assets/ghm/iconback.svg'),
                         ),
                       ),
                     ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: () async {
-                          final notifier = ref.read(liveRunProvider.notifier);
-                          final service = ref.read(marathonServiceProvider);
-                          final user = ref.read(marathonUsernameProvider);
-
-                          final double finalDist = runState.distanceKm;
-                          final int finalSeconds = runState.elapsedSeconds;
-
-                          notifier.stopRun();
-
-                          try {
-                            if (finalDist >= 0.001) {
-                              final double totalMinutes = finalSeconds / 60.0;
-                              final double finalAvgPace = finalDist > 0
-                                  ? (totalMinutes / finalDist)
-                                  : 0.0;
-
-                              await service.logRun(
-                                username: user,
-                                distanceKm: finalDist,
-                                durationMinutes: totalMinutes,
-                                avgPace: finalAvgPace,
-                              );
-
-                              if (context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                        content:
-                                            Text('Run saved to Leaderboard!')));
-                              }
-                            } else {
-                              if (context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                        content: Text(
-                                            'Run too short to save (<1m)')));
-                              }
-                            }
-                          } catch (e) {
-                            if (context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                      content: Text('Failed to save log: $e')));
-                            }
-                          } finally {
-                            notifier.resetRun();
-                            ref.invalidate(progressStatsProvider);
-                            ref.invalidate(distanceLeaderboardProvider);
-                            ref.invalidate(allRunsProvider);
-                            ref.invalidate(recentRunsProvider);
-                          }
-                        },
-                        icon: const Icon(Icons.stop_circle_outlined,
-                            color: Colors.redAccent),
-                        label: const Text('STOP',
-                            style: TextStyle(
-                                color: Colors.redAccent,
-                                letterSpacing: 1,
-                                fontFamily: AppTheme.fontFamily,
-                                fontWeight: FontWeight.bold)),
-                        style: OutlinedButton.styleFrom(
-                          side: const BorderSide(
-                              color: Colors.redAccent, width: 2),
-                          padding: const EdgeInsets.symmetric(vertical: 20),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12)),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ] else ...[
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      _showPermissionDialog(context, ref);
-                    },
-                    style:
-                        AppTheme.darkTheme.elevatedButtonTheme.style?.copyWith(
-                      padding: WidgetStateProperty.all(
-                          const EdgeInsets.symmetric(vertical: 20)),
-                    ),
-                    child: const Text('START RUN'),
                   ),
                 ),
               ],
-              const SizedBox(height: 20),
-            ],
+            ),
+          ),
+          SizedBox(height:48),
+
+          // ── Content ─────────────────────────────────────────────────────
+          Expanded(
+            child: Transform.translate(
+              offset: const Offset(0, -20),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Column(
+                  children: [
+                    // Distance label
+                    SizedBox(
+                      width: double.infinity,
+                      child: Text(
+                        'DISTANCE : KM',
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          color: Colors.black,
+                          fontSize: 24,
+                          fontFamily: 'Univers',
+                          fontWeight: FontWeight.w700,
+                          height: 1.30,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 32),
+
+                    // ── Digit Block ─────────────────────────────────────
+                    Container(
+                      width: double.infinity,
+                      height: 107,
+                      padding: const EdgeInsets.all(8),
+                      decoration: ShapeDecoration(
+                        color: const Color(0xFF6DAAFB),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(13),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          _buildDigitPair(digits[0], digits[1]),
+                          _buildColon(),
+                          _buildDigitPair(digits[2], digits[3]),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+
+                    // ── Metric Grid ─────────────────────────────────────
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(13),
+                      decoration: ShapeDecoration(
+                        color: const Color(0xFFF3F3F3),
+                        shape: RoundedRectangleBorder(
+                          side: const BorderSide(
+                              width: 1, color: Color(0xFFE8E8E8)),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        spacing: 16,
+                        children: [
+                          Row(
+                            spacing: 16,
+                            children: [
+                              Expanded(
+                                child: _buildMetricCard(
+                                  'assets/ghm/icon1.svg',
+                                  'Current Pace',
+                                  '${runState.currentPace.toStringAsFixed(0)} /KM',
+                                ),
+                              ),
+                              Expanded(
+                                child: _buildMetricCard(
+                                  'assets/ghm/icon2.svg',
+                                  'Total Steps',
+                                  '${runState.stepCount}',
+                                ),
+                              ),
+                            ],
+                          ),
+                          Row(
+                            spacing: 16,
+                            children: [
+                              Expanded(
+                                child: _buildMetricCard(
+                                  'assets/ghm/icon3.svg',
+                                  'Calories',
+                                  '${(runState.stepCount * 0.04).toInt()}',
+                                ),
+                              ),
+                              Expanded(
+                                child: _buildMetricCard(
+                                  'assets/ghm/icon4.svg',
+                                  'Time',
+                                  timeFormatted,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const Spacer(),
+
+                    // ── Action Buttons ───────────────────────────────────
+                    if (isRunning) ...[
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildActionButton(
+                              onPressed: () => runState.isPaused
+                                  ? ref
+                                  .read(liveRunProvider.notifier)
+                                  .resumeRun()
+                                  : ref
+                                  .read(liveRunProvider.notifier)
+                                  .pauseRun(),
+                              label: runState.isPaused ? 'RESUME' : 'PAUSE',
+                              color: const Color(0xFF1E56C5),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: _buildActionButton(
+                              onPressed: () =>
+                                  ref.read(liveRunProvider.notifier).stopRun(),
+                              label: 'STOP',
+                              color: Colors.redAccent,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ] else ...[
+                      _buildActionButton(
+                        onPressed: () =>
+                            ref.read(liveRunProvider.notifier).startRun(),
+                        label: 'START RUN',
+                        color: const Color(0xFF1E56C5),
+                      ),
+                    ],
+                    const SizedBox(height: 27),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Builds a left+right digit pair (e.g. "2" and "1")
+  Widget _buildDigitPair(String left, String right) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 75,
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          decoration: ShapeDecoration(
+            color: const Color(0xFF266EF1),
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(8),
+                bottomLeft: Radius.circular(8),
+              ),
+            ),
+          ),
+          child: Text(
+            left,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 64,
+              fontFamily: 'TT Interphases Pro Mono Trl',
+              fontWeight: FontWeight.w700,
+              height: 1.30,
+            ),
+          ),
+        ),
+        Container(
+          width: 75,
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          decoration: ShapeDecoration(
+            color: const Color(0xFF266EF1),
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.only(
+                topRight: Radius.circular(8),
+                bottomRight: Radius.circular(8),
+              ),
+            ),
+          ),
+          child: Text(
+            right,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 64,
+              fontFamily: 'TT Interphases Pro Mono Trl',
+              fontWeight: FontWeight.w700,
+              height: 1.30,
+            ),
           ),
         ),
       ],
     );
   }
 
-  void _showPermissionDialog(BuildContext context, WidgetRef ref) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppTheme.cardColor,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Background Tracking',
-            style: TextStyle(
-                color: Colors.white,
-                fontFamily: AppTheme.fontFamily,
-                fontWeight: FontWeight.bold)),
-        content: const Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'To accurately track your run even when the screen is off or the app is in the background, we need two things:',
-              style: TextStyle(color: Colors.white70, fontSize: 14),
+  Widget _buildColon() {
+    return SizedBox(
+      width: 16,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
+        spacing: 12,
+        children: [
+          Container(
+            width: 16, height: 16,
+            decoration: ShapeDecoration(
+              color: const Color(0xFF266EF1),
+              shape: OvalBorder(
+                side: BorderSide(width: 3, color: const Color(0xFFFEFEFE)),
+              ),
             ),
-            SizedBox(height: 16),
-            Text('1. Notification Permission',
-                style: TextStyle(
-                    color: AppTheme.primaryColor, fontWeight: FontWeight.bold)),
-            Text('To show persistent live stats in your tray.',
-                style: TextStyle(color: Colors.white60, fontSize: 12)),
-            SizedBox(height: 12),
-            Text('2. Battery Optimization Exemption',
-                style: TextStyle(
-                    color: AppTheme.primaryColor, fontWeight: FontWeight.bold)),
-            Text('To prevent the system from stopping the tracker mid-run.',
-                style: TextStyle(color: Colors.white60, fontSize: 12)),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('CANCEL', style: TextStyle(color: Colors.grey)),
           ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              ref.read(liveRunProvider.notifier).startRun();
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.primaryColor,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10)),
+          Container(
+            width: 16, height: 16,
+            decoration: ShapeDecoration(
+              color: const Color(0xFF266EF1),
+              shape: OvalBorder(
+                side: BorderSide(width: 3, color: const Color(0xFFFEFEFE)),
+              ),
             ),
-            child: const Text('CONTINUE',
-                style: TextStyle(
-                    color: Colors.black, fontWeight: FontWeight.bold)),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildMetricBox(IconData icon, String title, String val) {
+  Widget _buildMetricCard(String svgPath, String label, String value) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 16),
-      decoration: BoxDecoration(
-        color: AppTheme.cardColor,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-            color: AppTheme.primaryColor.withOpacity(0.18), width: 1.5),
-        boxShadow: [
-          BoxShadow(
-            color: AppTheme.primaryColor.withOpacity(0.1),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
+      padding: const EdgeInsets.all(8),
+      decoration: ShapeDecoration(
+        color: const Color(0xFFDEE9FE),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        spacing: 12,
+        children: [
+          // Icon row (wire up your SVG assets here)
+          SvgPicture.asset(svgPath, width: 20, height: 20),
+
+          // Label — General Sans 20 / w500
+          Text(
+            label,
+            style: const TextStyle(
+              color: Color(0xFF002661),
+              fontSize: 20,
+              fontFamily: 'General Sans',
+              fontWeight: FontWeight.w500,
+              height: 1.30,
+            ),
+          ),
+
+          // Value chip
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(8),
+            decoration: ShapeDecoration(
+              color: const Color(0xFF002661),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8)),
+            ),
+            child: Text(
+              value,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: Color(0xFFDFE8F4),
+                fontSize: 20,
+                fontFamily: 'TT Interphases Pro Mono Trl',
+                fontWeight: FontWeight.w400,
+                height: 1.30,
+              ),
+            ),
           ),
         ],
       ),
-      child: Column(
-        children: [
-          Icon(icon, color: AppTheme.primaryColor, size: 20),
-          const SizedBox(height: 8),
-          Text(title,
-              style: TextStyle(
-                  color: Colors.grey[400],
-                  fontFamily: AppTheme.fontFamily,
-                  fontSize: 10,
-                  letterSpacing: 1)),
-          const SizedBox(height: 4),
-          Text(val,
-              style: const TextStyle(
-                  color: Colors.white,
-                  fontFamily: AppTheme.fontFamily,
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold)),
-        ],
+    );
+  }
+
+  Widget _buildActionButton({
+    required VoidCallback onPressed,
+    required String label,
+    required Color color,
+  }) {
+    return SizedBox(
+      width: double.infinity,
+      height: 55,
+      child: ElevatedButton(
+        onPressed: onPressed,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: color,
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12)),
+          elevation: 0,
+        ),
+        child: Text(
+          label,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       ),
     );
   }
