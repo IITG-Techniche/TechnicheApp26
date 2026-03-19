@@ -3,352 +3,397 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../providers/marathon_provider.dart';
 
+// ── Colour tokens ─────────────────────────────────────────────────────────────
+const _digitOuter  = Color(0xFF6DAAFB);
+const _digitInner  = Color(0xFF266EF1);
+const _metricOuter = Color(0xFFEEF1FA);
+const _metricCard  = Color(0xFFDEE9FE);
+const _chipBg      = Color(0xFF002661);
+const _chipText    = Color(0xFFDFE8F4);
+const _labelColor  = Color(0xFF002661);
+const _btnColor    = Color(0xFF1E56C5);
+
+// Height of the SVG header section
+const double _headerH = 200.0;
+
+// ─────────────────────────────────────────────────────────────────────────────
 class MarathonRunTab extends ConsumerWidget {
   const MarathonRunTab({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final runState = ref.watch(liveRunProvider);
+    final runState  = ref.watch(liveRunProvider);
     final isRunning = runState.isRunning;
 
-    int m = runState.elapsedSeconds ~/ 60;
-    int s = runState.elapsedSeconds % 60;
-    String timeFormatted =
+    final int m = runState.elapsedSeconds ~/ 60;
+    final int s = runState.elapsedSeconds % 60;
+    final String timeFormatted =
         '${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
 
-    String distStr =
+    final String distStr =
     runState.distanceKm.toStringAsFixed(2).replaceAll('.', '');
-    List<String> digits = distStr.padLeft(4, '0').split('');
+    final List<String> digits = distStr.padLeft(4, '0').split('');
 
+    // ── The trick: wrap everything in a Stack.
+    //    Layer 0 (bottom): ScrollView with enough top padding so content
+    //                      starts BELOW the header.
+    //    Layer 1 (top):    The SVG header + back button, Positioned at top.
+    //                      It floats above the scroll and NEVER moves.
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Column(
-        children: [
-          // ── Header ──────────────────────────────────────────────────────
-          SizedBox(
-            height: 144,
-            width: double.infinity,
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
-                SvgPicture.asset('assets/ghm/frame03.svg', fit: BoxFit.cover),
-                SafeArea(
-                  child: Align(
-                    alignment: Alignment.topLeft,
-                    child: Padding(
-                      padding: const EdgeInsets.only(left: 12, top: 10),
-                      child: GestureDetector(
-                        onTap: () => Navigator.of(context).pop(),
-                        child: Container(
-                          width: 47, height: 47,
-                          padding: const EdgeInsets.all(12),
-                          decoration: ShapeDecoration(
-                            color: Colors.white,
-                            shape: RoundedRectangleBorder(
-                              side: const BorderSide(
-                                  width: 1, color: Color(0xFFB2B8BF)),
-                              borderRadius: BorderRadius.circular(24),
+      body: SingleChildScrollView(
+        physics: const ClampingScrollPhysics(),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+
+            // ── Header — scrolls with the page ──────────────────────────
+            SizedBox(
+              height: _headerH,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  SvgPicture.asset(
+                    'assets/ghm/frame03.svg',
+                    fit: BoxFit.cover,
+                  ),
+                  SafeArea(
+                    child: Align(
+                      alignment: Alignment.topLeft,
+                      child: Padding(
+                        padding: const EdgeInsets.only(left: 16, top: 10),
+                        child: GestureDetector(
+                          onTap: () => Navigator.of(context).pop(),
+                          child: Container(
+                            width: 44,
+                            height: 44,
+                            alignment: Alignment.center,
+                            decoration: const BoxDecoration(
+                              color: Colors.white,
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.chevron_left,
+                              color: Color(0xFF1C2340),
+                              size: 26,
                             ),
                           ),
-                          child: SvgPicture.asset('assets/ghm/iconback.svg'),
                         ),
                       ),
                     ),
                   ),
-                ),
-              ],
-            ),
-          ),
-          SizedBox(height:48),
-
-          // ── Content ─────────────────────────────────────────────────────
-          Expanded(
-            child: Transform.translate(
-              offset: const Offset(0, -20),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Column(
-                  children: [
-                    // Distance label
-                    SizedBox(
-                      width: double.infinity,
-                      child: Text(
-                        'DISTANCE : KM',
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          color: Colors.black,
-                          fontSize: 24,
-                          fontFamily: 'Univers',
-                          fontWeight: FontWeight.w700,
-                          height: 1.30,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 32),
-
-                    // ── Digit Block ─────────────────────────────────────
-                    Container(
-                      width: double.infinity,
-                      height: 107,
-                      padding: const EdgeInsets.all(8),
-                      decoration: ShapeDecoration(
-                        color: const Color(0xFF6DAAFB),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(13),
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          _buildDigitPair(digits[0], digits[1]),
-                          _buildColon(),
-                          _buildDigitPair(digits[2], digits[3]),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-
-                    // ── Metric Grid ─────────────────────────────────────
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(13),
-                      decoration: ShapeDecoration(
-                        color: const Color(0xFFF3F3F3),
-                        shape: RoundedRectangleBorder(
-                          side: const BorderSide(
-                              width: 1, color: Color(0xFFE8E8E8)),
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                      ),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        spacing: 16,
-                        children: [
-                          Row(
-                            spacing: 16,
-                            children: [
-                              Expanded(
-                                child: _buildMetricCard(
-                                  'assets/ghm/icon1.svg',
-                                  'Current Pace',
-                                  '${runState.currentPace.toStringAsFixed(0)} /KM',
-                                ),
-                              ),
-                              Expanded(
-                                child: _buildMetricCard(
-                                  'assets/ghm/icon2.svg',
-                                  'Total Steps',
-                                  '${runState.stepCount}',
-                                ),
-                              ),
-                            ],
-                          ),
-                          Row(
-                            spacing: 16,
-                            children: [
-                              Expanded(
-                                child: _buildMetricCard(
-                                  'assets/ghm/icon3.svg',
-                                  'Calories',
-                                  '${(runState.stepCount * 0.04).toInt()}',
-                                ),
-                              ),
-                              Expanded(
-                                child: _buildMetricCard(
-                                  'assets/ghm/icon4.svg',
-                                  'Time',
-                                  timeFormatted,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    const Spacer(),
-
-                    // ── Action Buttons ───────────────────────────────────
-                    if (isRunning) ...[
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _buildActionButton(
-                              onPressed: () => runState.isPaused
-                                  ? ref
-                                  .read(liveRunProvider.notifier)
-                                  .resumeRun()
-                                  : ref
-                                  .read(liveRunProvider.notifier)
-                                  .pauseRun(),
-                              label: runState.isPaused ? 'RESUME' : 'PAUSE',
-                              color: const Color(0xFF1E56C5),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: _buildActionButton(
-                              onPressed: () =>
-                                  ref.read(liveRunProvider.notifier).stopRun(),
-                              label: 'STOP',
-                              color: Colors.redAccent,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ] else ...[
-                      _buildActionButton(
-                        onPressed: () =>
-                            ref.read(liveRunProvider.notifier).startRun(),
-                        label: 'START RUN',
-                        color: const Color(0xFF1E56C5),
-                      ),
-                    ],
-                    const SizedBox(height: 27),
-                  ],
-                ),
+                ],
               ),
             ),
-          ),
-        ],
+
+            // ── Rest of content ──────────────────────────────────────────
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 24, 16, 24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+
+                  // ── "DISTANCE : KM" ───────────────────────────────────
+                  const Text(
+                    'DISTANCE : KM',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 22,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 1.0,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+
+                  // ── Digit block ────────────────────────────────────────
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      // 8px padding each side + 6px gap within each pair + 28px colon zone
+                      final double available = constraints.maxWidth - 16 - 12 - 28;
+                      final double digitW = (available / 4).floorToDouble();
+                      final double digitH = (digitW * 1.28).floorToDouble();
+
+                      return Container(
+                        width: double.infinity,
+                        height: digitH + 16,
+                        padding: const EdgeInsets.all(8),
+                        decoration: ShapeDecoration(
+                          color: _digitOuter,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            _DigitPair(
+                              left: digits[0], right: digits[1],
+                              digitW: digitW,  digitH: digitH,
+                            ),
+                            _ColonSeparator(height: digitH),
+                            _DigitPair(
+                              left: digits[2], right: digits[3],
+                              digitW: digitW,  digitH: digitH,
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 24),
+
+                  // ── Metric grid ────────────────────────────────────────
+                  Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: _metricOuter,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IntrinsicHeight(
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              Expanded(
+                                child: _MetricCard(
+                                  svgPath: 'assets/ghm/icon1.svg',
+                                  label: 'Current Pace',
+                                  value: '${runState.currentPace.toStringAsFixed(2)} /KM',
+                                ),
+                              ),
+                              const SizedBox(width: 14),
+                              Expanded(
+                                child: _MetricCard(
+                                  svgPath: 'assets/ghm/icon2.svg',
+                                  label: 'Total Steps',
+                                  value: '${runState.stepCount}',
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 14),
+                        IntrinsicHeight(
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              Expanded(
+                                child: _MetricCard(
+                                  svgPath: 'assets/ghm/icon3.svg',
+                                  label: 'Calories',
+                                  value: '${(runState.stepCount * 0.04).toInt()}',
+                                ),
+                              ),
+                              const SizedBox(width: 14),
+                              Expanded(
+                                child: _MetricCard(
+                                  svgPath: 'assets/ghm/icon4.svg',
+                                  label: 'Time',
+                                  value: timeFormatted,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 28),
+
+                  // ── Action buttons ─────────────────────────────────────
+                  if (isRunning) ...[
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _ActionButton(
+                            onPressed: () => runState.isPaused
+                                ? ref.read(liveRunProvider.notifier).resumeRun()
+                                : ref.read(liveRunProvider.notifier).pauseRun(),
+                            label: runState.isPaused ? 'RESUME' : 'STOP RUN',
+                            color: _btnColor,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: _ActionButton(
+                            onPressed: () =>
+                                ref.read(liveRunProvider.notifier).stopRun(),
+                            label: 'STOP',
+                            color: Colors.redAccent,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ] else ...[
+                    _ActionButton(
+                      onPressed: () =>
+                          ref.read(liveRunProvider.notifier).startRun(),
+                      label: 'START RUN',
+                      color: _btnColor,
+
+
+                    ),
+                  ],
+
+                ],
+              ),
+            ),
+
+          ],
+        ),
       ),
     );
   }
+}
 
-  // Builds a left+right digit pair (e.g. "2" and "1")
-  Widget _buildDigitPair(String left, String right) {
+// ─────────────────────────────────────────────────────────────────────────────
+// DIGIT PAIR
+// ─────────────────────────────────────────────────────────────────────────────
+class _DigitPair extends StatelessWidget {
+  final String left, right;
+  final double digitW, digitH;
+  const _DigitPair({
+    required this.left, required this.right,
+    required this.digitW, required this.digitH,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Container(
-          width: 75,
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-          decoration: ShapeDecoration(
-            color: const Color(0xFF266EF1),
-            shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(8),
-                bottomLeft: Radius.circular(8),
-              ),
-            ),
-          ),
-          child: Text(
-            left,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 64,
-              fontFamily: 'TT Interphases Pro Mono Trl',
-              fontWeight: FontWeight.w700,
-              height: 1.30,
-            ),
-          ),
-        ),
-        Container(
-          width: 75,
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-          decoration: ShapeDecoration(
-            color: const Color(0xFF266EF1),
-            shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.only(
-                topRight: Radius.circular(8),
-                bottomRight: Radius.circular(8),
-              ),
-            ),
-          ),
-          child: Text(
-            right,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 64,
-              fontFamily: 'TT Interphases Pro Mono Trl',
-              fontWeight: FontWeight.w700,
-              height: 1.30,
-            ),
-          ),
-        ),
+        _tile(left),
+        const SizedBox(width: 6),
+        _tile(right),
       ],
     );
   }
 
-  Widget _buildColon() {
+  Widget _tile(String digit) {
+    final double fontSize = (digitW * 0.70).clamp(24.0, 72.0);
+    return Container(
+      width: digitW,
+      height: digitH,
+      decoration: ShapeDecoration(
+        color: _digitInner,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
+      ),
+      alignment: Alignment.center,
+      child: Text(
+        digit,
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: fontSize,
+          fontFamily: 'TT Interphases Pro Mono Trl',
+          fontWeight: FontWeight.w800,
+          height: 1.0,
+        ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// COLON SEPARATOR
+// ─────────────────────────────────────────────────────────────────────────────
+class _ColonSeparator extends StatelessWidget {
+  final double height;
+  const _ColonSeparator({required this.height});
+
+  @override
+  Widget build(BuildContext context) {
     return SizedBox(
-      width: 16,
+      width: 28,
+      height: height,
       child: Column(
-        mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.center,
-        spacing: 12,
-        children: [
-          Container(
-            width: 16, height: 16,
-            decoration: ShapeDecoration(
-              color: const Color(0xFF266EF1),
-              shape: OvalBorder(
-                side: BorderSide(width: 3, color: const Color(0xFFFEFEFE)),
-              ),
-            ),
-          ),
-          Container(
-            width: 16, height: 16,
-            decoration: ShapeDecoration(
-              color: const Color(0xFF266EF1),
-              shape: OvalBorder(
-                side: BorderSide(width: 3, color: const Color(0xFFFEFEFE)),
-              ),
-            ),
-          ),
-        ],
+        children: [_dot(), const SizedBox(height: 10), _dot()],
       ),
     );
   }
 
-  Widget _buildMetricCard(String svgPath, String label, String value) {
+  Widget _dot() => Container(
+    width: 12,
+    height: 12,
+    decoration: const BoxDecoration(
+      color: Colors.white,
+      shape: BoxShape.circle,
+    ),
+    alignment: Alignment.center,
+    child: Container(
+      width: 5,
+      height: 5,
+      decoration: const BoxDecoration(
+        color: _digitInner,
+        shape: BoxShape.circle,
+      ),
+    ),
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// METRIC CARD
+// ─────────────────────────────────────────────────────────────────────────────
+class _MetricCard extends StatelessWidget {
+  final String svgPath, label, value;
+  const _MetricCard({
+    required this.svgPath,
+    required this.label,
+    required this.value,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(8),
-      decoration: ShapeDecoration(
-        color: const Color(0xFFDEE9FE),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: _metricCard,
+        borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
-        mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
-        spacing: 12,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // Icon row (wire up your SVG assets here)
-          SvgPicture.asset(svgPath, width: 20, height: 20),
-
-          // Label — General Sans 20 / w500
-          Text(
-            label,
-            style: const TextStyle(
-              color: Color(0xFF002661),
-              fontSize: 20,
-              fontFamily: 'General Sans',
-              fontWeight: FontWeight.w500,
-              height: 1.30,
-            ),
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SvgPicture.asset(svgPath, width: 22, height: 22),
+              const SizedBox(height: 8),
+              Text(
+                label,
+                style: const TextStyle(
+                  color: _labelColor,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  height: 1.25,
+                ),
+              ),
+            ],
           ),
-
-          // Value chip
+          const SizedBox(height: 10),
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.all(8),
-            decoration: ShapeDecoration(
-              color: const Color(0xFF002661),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8)),
+            padding: const EdgeInsets.symmetric(vertical: 10),
+            decoration: BoxDecoration(
+              color: _chipBg,
+              borderRadius: BorderRadius.circular(8),
             ),
             child: Text(
               value,
               textAlign: TextAlign.center,
               style: const TextStyle(
-                color: Color(0xFFDFE8F4),
-                fontSize: 20,
+                color: _chipText,
+                fontSize: 17,
                 fontFamily: 'TT Interphases Pro Mono Trl',
-                fontWeight: FontWeight.w400,
-                height: 1.30,
+                fontWeight: FontWeight.w600,
+                height: 1.0,
               ),
             ),
           ),
@@ -356,29 +401,42 @@ class MarathonRunTab extends ConsumerWidget {
       ),
     );
   }
+}
 
-  Widget _buildActionButton({
-    required VoidCallback onPressed,
-    required String label,
-    required Color color,
-  }) {
+// ─────────────────────────────────────────────────────────────────────────────
+// ACTION BUTTON
+// ─────────────────────────────────────────────────────────────────────────────
+class _ActionButton extends StatelessWidget {
+  final VoidCallback onPressed;
+  final String label;
+  final Color color;
+  const _ActionButton({
+    required this.onPressed,
+    required this.label,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return SizedBox(
       width: double.infinity,
-      height: 55,
+      height: 58,
       child: ElevatedButton(
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
           backgroundColor: color,
           shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12)),
+            borderRadius: BorderRadius.circular(14),
+          ),
           elevation: 0,
         ),
         child: Text(
           label,
           style: const TextStyle(
             color: Colors.white,
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
+            fontSize: 17,
+            fontWeight: FontWeight.w800,
+            letterSpacing: 1.5,
           ),
         ),
       ),

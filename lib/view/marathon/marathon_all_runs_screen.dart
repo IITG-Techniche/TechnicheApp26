@@ -131,7 +131,7 @@ class MarathonAllRunsScreen extends ConsumerWidget {
               },
               loading: () => const Center(
                   child:
-                      CircularProgressIndicator(color: AppTheme.primaryColor)),
+                  CircularProgressIndicator(color: AppTheme.primaryColor)),
               error: (e, st) => Center(
                   child: Text('Error loading history: $e',
                       style: const TextStyle(

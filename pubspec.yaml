@@ -44,9 +44,7 @@ dependencies:
   flutter_staggered_animations: ^1.1.1
   carousel_slider: ^5.0.0
   webview_flutter: ^4.13.0
-  flutter_foreground_task: ^6.3.1
-
-  
+  flutter_foreground_task: ^8.14.0   # ← upgraded from ^6.3.1
 
 dev_dependencies:
   flutter_test:
@@ -54,26 +52,20 @@ dev_dependencies:
   flutter_launcher_icons: ^0.14.2
   flutter_html: ^3.0.0
   flutter_lints: ^5.0.0
-  
+
 flutter_icons:
   image_path: "icons/playstore-icon.png"
   android: true
   ios: true
 
-# The following section is specific to Flutter packages.
 flutter:
   uses-material-design: true
-  assets: 
+
+  assets:
     - assets/
     - assets/onboarding/
     - assets/ghm/
-  
 
-  # To add custom fonts to your application, add a fonts section here,
-  # in this "flutter" section. Each entry in this list should have a
-  # "family" key with the font family name, and a "fonts" key with a
-  # list giving the asset and other descriptors for the font. For
-  # example:
   fonts:
     - family: Orbitron
       fonts:
@@ -81,23 +73,15 @@ flutter:
         - asset: fonts/Orbitron-Bold.ttf
           weight: 700
 
-    # - family: Interceptor
-    #   fonts:
-    #     - asset: fonts/Interceptor.otf
-    #     - asset: fonts/Interceptor Bold.otf
-    #     - asset: fonts/Interceptor Italic.otf
-    #     - asset: fonts/Interceptor Bold Italic.otf
-    #       weight: 400
-  #   - family: Schyler
-  #     fonts:
-  #       - asset: fonts/Schyler-Regular.ttf
-  #       - asset: fonts/Schyler-Italic.ttf
-  #         style: italic
-  #   - family: Trajan Pro
-  #     fonts:
-  #       - asset: fonts/TrajanPro.ttf
-  #       - asset: fonts/TrajanPro_Bold.ttf
-  #         weight: 700
-  #
-  # For details regarding fonts from package dependencies,
-  # see https://flutter.dev/to/font-from-package
+    - family: General Sans
+      fonts:
+        - asset: fonts/GeneralSans-Regular.otf
+        - asset: fonts/GeneralSans-Medium.otf
+          weight: 500
+        - asset: fonts/GeneralSans-Semibold.otf
+          weight: 600
+
+    - family: Univers
+      fonts:
+        - asset: fonts/UniversCnBold.ttf
+          weight: 700

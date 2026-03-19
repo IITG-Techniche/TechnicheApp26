@@ -26,14 +26,9 @@ class GlowingBottomNavBar extends StatelessWidget {
       //margin: const EdgeInsets.only(bottom: 16), // Push navbar up from bottom
       padding: const EdgeInsets.symmetric(horizontal: 10),
       decoration: BoxDecoration(
-        color: const Color(0xFF181A20),
+        color: const Color(0xFFE8E8E8),
         boxShadow: [
-          BoxShadow(
-            color: Colors.blueAccent.withOpacity(0.4),
-            blurRadius: 15,
-            spreadRadius: -5,
-            offset: const Offset(0, -10),
-          ),
+
         ],
       ),
       child: Row(
@@ -43,13 +38,13 @@ class GlowingBottomNavBar extends StatelessWidget {
           final isSelected = index == currentIndex;
 
           // Make selected item larger, unselected smaller
-          final double iconSize = isSelected ? 30 : 22;
-          final double fontSize = isSelected ? 12 : 10;
-          final double verticalPadding = isSelected ? 10 : 6;
-          final double horizontalPadding = isSelected ? 20 : 8;
+          final double iconSize = isSelected ? 22 : 22;
+          final double fontSize = isSelected ? 10: 10;
+          final double verticalPadding = isSelected ? 6 : 6;
+          final double horizontalPadding = isSelected ? 6 : 8;
 
           return Expanded(
-            flex: isSelected ? 2 : 1,
+            flex: isSelected ? 1 : 1,
             child: GestureDetector(
               onTap: () => onTap(index),
               child: AnimatedContainer(
@@ -58,12 +53,7 @@ class GlowingBottomNavBar extends StatelessWidget {
                   vertical: verticalPadding,
                   horizontal: horizontalPadding,
                 ),
-                decoration: BoxDecoration(
-                  color: isSelected
-                      ? Colors.blueAccent.withOpacity(0.15)
-                      : Colors.transparent,
-                  borderRadius: BorderRadius.circular(20),
-                ),
+
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -71,21 +61,25 @@ class GlowingBottomNavBar extends StatelessWidget {
                       item.icon,
                       size: iconSize,
                       color: isSelected
-                          ? const Color(0xFF00FFF7)
-                          : Colors.grey[400],
+                          ? const Color(0xFF000000)
+                          : Color(0XFF5E5E5E),
                     ),
-                    if (isSelected) ...[
-                      const SizedBox(height: 4),
+
+                      const SizedBox(height: 2),
                       Text(
                         item.label,
                         style: TextStyle(
-                          color: const Color(0xFF00FFF7),
-                          fontWeight: FontWeight.bold,
-                          fontSize: fontSize,
+                          color: isSelected
+                              ? const Color(0xFF000000)
+                              : Color(0XFF5E5E5E),
+                          fontWeight: FontWeight.w500,
+                          fontSize: 12,
+                          fontFamily: 'General Sans',
+                          height: 1.33,
                         ),
                       ),
                     ],
-                  ],
+
                 ),
               ),
             ),
