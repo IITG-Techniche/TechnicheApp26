@@ -293,18 +293,23 @@ class _LandingScreenState extends ConsumerState<LandingScreen> {
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             // Hamburger Menu Icon (Inside the 24x24 constraint)
-                            GestureDetector(
-                              onTap: () => Scaffold.of(context).openDrawer(),
-                              child: SizedBox(
-                                width: 24,
-                                height: 24,
-                                child: Image.asset(
-                                  'assets/ghm/menu.png',
-                                  color: Colors.grey[600],
-                                ),
-                              ),
+                            Builder(
+                              builder: (BuildContext innerContext) {
+                                return GestureDetector(
+                                  onTap: () {
+                                    Scaffold.of(innerContext).openDrawer();
+                                  },
+                                  child: SizedBox(
+                                    width: 24,
+                                    height: 24,
+                                    child: Image.asset(
+                                      'assets/ghm/menu.png',
+                                      color: Colors.grey[600],
+                                    ),
+                                  ),
+                                );
+                              },
                             ),
-
                             // Techniche Logo (Inside the 118x20 constraint)
                             SizedBox(
                               width: 118.06,
@@ -394,7 +399,7 @@ class _LandingScreenState extends ConsumerState<LandingScreen> {
                           logo_color: const Color(0xFF23242B),
                           logo_name: 'Check Out',
                         ),
-                        SizedBox(height: 10),
+                        SizedBox(height: 20),
                       ],
                     ),
                   ),
