@@ -13,7 +13,7 @@ void main() async {
 
   await Firebase.initializeApp();
   await Supabase.initialize(
-    url: 'https://ejnxgufotlkhnmjqpdvs.supabase.co',
+    url: 'https://app-api.techniche.org.in',
     anonKey: 'sb_publishable_ciFSMUfqc4ynJ7eFvHC0Ug_4js-PR63',
   );
 

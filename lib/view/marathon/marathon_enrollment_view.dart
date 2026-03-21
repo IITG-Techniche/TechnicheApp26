@@ -370,13 +370,13 @@ class _MarathonEnrollmentViewState
                         ),
                       ],
                     ),
-                  ), // closes Padding
-                ], // closes outer Column children
-              ), // closes outer Column
-            ), // closes SingleChildScrollView
-          ), // closes SafeArea
-        ], // closes Stack children
-      ), // closes Stack
-    ); // closes Scaffold
+                  ), 
+                ], 
+              ), 
+            ), 
+          ), 
+        ], 
+    ), 
+    );
   }
 }

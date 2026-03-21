@@ -1,17 +1,13 @@
 import 'dart:isolate';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 import '../model/marathon_models.dart';
-
 import '../services/marathon_service.dart';
 import '../services/foreground_task_handler.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter/foundation.dart';
-
 import 'package:shared_preferences/shared_preferences.dart';
 
-// --- Services & Config ---
 final marathonServiceProvider = Provider((ref) => MarathonService());
 
 // We store the logged in username and category here. Empty means not enrolled.
@@ -22,21 +18,18 @@ final marathonCategoryProvider = StateProvider<String>((ref) => '6KM');
 const String _kMarathonUsername = 'marathon_username';
 const String _kMarathonCategory = 'marathon_category';
 
-/// Helper to save marathon enrollment data
 Future<void> saveMarathonEnrollment(String username, String category) async {
   final prefs = await SharedPreferences.getInstance();
   await prefs.setString(_kMarathonUsername, username);
   await prefs.setString(_kMarathonCategory, category);
 }
 
-/// Helper to clear marathon enrollment data
 Future<void> clearMarathonEnrollment() async {
   final prefs = await SharedPreferences.getInstance();
   await prefs.remove(_kMarathonUsername);
   await prefs.remove(_kMarathonCategory);
 }
 
-/// Helper to load marathon enrollment data and update providers
 Future<void> loadMarathonEnrollment(WidgetRef ref) async {
   final prefs = await SharedPreferences.getInstance();
   final username = prefs.getString(_kMarathonUsername);
@@ -50,7 +43,6 @@ Future<void> loadMarathonEnrollment(WidgetRef ref) async {
   }
 }
 
-// --- Future Providers for Data Fetching ---
 final distanceLeaderboardProvider =
     FutureProvider.autoDispose<List<DistanceLeaderboardEntry>>((ref) async {
   final service = ref.watch(marathonServiceProvider);
@@ -82,16 +74,14 @@ final allRunsProvider =
   return service.getAllRuns(username);
 });
 
-// --- Live Run Tracking State ---
 class LiveRunState {
   final bool isRunning;
   final bool isPaused;
   final int stepCount;
   final double distanceKm;
   final int elapsedSeconds;
-  final double currentPace; // Windowed pace (min/km)
+  final double currentPace;
 
-  // Calculate overall average pace in min/km
   double get avgPace {
     if (distanceKm < 0.005) return 0.0;
     double minutes = elapsedSeconds / 60;
@@ -197,8 +187,6 @@ class LiveRunNotifier extends StateNotifier<LiveRunState> {
     }
   }
 
-  // Average stride length roughly 0.762 meters
-  // final double _strideLengthKm = 0.000762; (now in handler)
 
   void startRun() async {
     // Check permissions
@@ -210,7 +198,6 @@ class LiveRunNotifier extends StateNotifier<LiveRunState> {
       }
 
       // 2. Battery Optimization
-      // In release mode, requestIgnoreBatteryOptimization can sometimes cause issues if not handled carefully
       if (!await FlutterForegroundTask.isIgnoringBatteryOptimizations) {
         await FlutterForegroundTask.requestIgnoreBatteryOptimization();
       }
@@ -223,7 +210,6 @@ class LiveRunNotifier extends StateNotifier<LiveRunState> {
       }
     } catch (e) {
       debugPrint('Error requesting permissions: $e');
-      // We continue anyway as some permissions might be optional or already granted
     }
 
     state = LiveRunState.initial().copyWith(isRunning: true);

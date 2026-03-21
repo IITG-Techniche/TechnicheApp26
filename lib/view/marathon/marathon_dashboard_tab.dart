@@ -81,8 +81,10 @@ class MarathonDashboardTab extends ConsumerWidget {
                             const SizedBox(width: 12),
                             Expanded(
                                 child: _buildStatCard(
-                                    ' IMPROVEMENT',
-                                    '+${stats.improvement}%',
+                                    'DAILY IMPR.',
+                                    stats.improvement > 0
+                                        ? '+${stats.improvement}%'
+                                        : '${stats.improvement}%',
                                     AppTheme.primaryColor)),
                           ],
                         ),
