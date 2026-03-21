@@ -1,31 +1,28 @@
-import 'package:techniche26/utils/animate_gradient_background.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'dart:convert';
 import 'package:intl/intl.dart';
 import 'package:techniche26/view/landing_screen.dart';
+import 'package:techniche26/utils/app_drawer.dart';
 
 const Map<String, Map<String, dynamic>> categoryStyles = {
-  'Robotics': {'icon': Icons.smart_toy_outlined, 'color': Color(0xff00ffdd)},
-  'Hackathons': {'icon': Icons.code, 'color': Color(0xff7f00ff)},
-  'Workshops': {'icon': Icons.build_outlined, 'color': Color(0xfff9ff00)},
-  'Techno': {'icon': Icons.lightbulb_outline, 'color': Color(0xff00e5ff)},
-  'Tech-Expo': {'icon': Icons.camera_alt_outlined, 'color': Color(0xff00ff87)},
+  'Robotics': {'icon': Icons.smart_toy_outlined, 'color': Color(0xFF7C3EC3)},
+  'Hackathons': {'icon': Icons.code, 'color': Color(0xFF175BCC)},
+  'Workshops': {'icon': Icons.build_outlined, 'color': Color(0xFFE56B1F)},
+  'Techno': {'icon': Icons.lightbulb_outline, 'color': Color(0xFF23242B)},
+  'Tech-Expo': {'icon': Icons.camera_alt_outlined, 'color': Color(0xFF008E6B)},
   'Lecture Series': {
     'icon': Icons.mic_external_on_outlined,
-    'color': Color(0xffff4081)
+    'color': Color(0xFFD81B60)
   },
   'Entertainment': {
     'icon': Icons.music_note_outlined,
-    'color': Color(0xffff9100)
+    'color': Color(0xFFF4511E)
   },
-  'Nexus': {'icon': Icons.people_outline, 'color': Color(0xff00b0ff)},
-  'Funniche': {'icon': Icons.gamepad_outlined, 'color': Color(0xffd500f9)},
-  // 'Corporate': {'icon': Icons.business, 'color': Color(0xfff50057)},
-  'Default': {'icon': Icons.event, 'color': Colors.grey},
+  'Nexus': {'icon': Icons.people_outline, 'color': Color(0xFF00796B)},
+  'Funniche': {'icon': Icons.gamepad_outlined, 'color': Color(0xFF8E24AA)},
+  'Default': {'icon': Icons.event, 'color': Color(0xFF607D8B)},
 };
 
 class SchedulePage extends StatefulWidget {
@@ -43,7 +40,6 @@ class _SchedulePageState extends State<SchedulePage>
   Map<String, dynamic> _scheduleData = {};
   String _selectedCategory = 'All';
   List<String> _categories = ['All'];
-  final Color neonCyan = const Color(0xFF00FFFF);
 
   @override
   void initState() {
@@ -74,7 +70,7 @@ class _SchedulePageState extends State<SchedulePage>
         _populateCategories();
       }
     } catch (e) {
-      print("Error fetching remote config: $e");
+      debugPrint("Error fetching remote config: $e");
       _isScheduleLive = false;
     } finally {
       if (mounted) {
@@ -102,43 +98,45 @@ class _SchedulePageState extends State<SchedulePage>
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return Scaffold(
-        backgroundColor: Colors.transparent,
-        extendBodyBehindAppBar: true,
-        appBar: AppBar(title: const Text("Loading Schedule...")),
-        body: Stack(
-          children: [
-            const AnimatedGradientBackground(),
-            Center(
-              child: CircularProgressIndicator(),
-            )
-          ],
+      return const Scaffold(
+        backgroundColor: Color(0xFFF5F5F5),
+        body: Center(
+          child: CircularProgressIndicator(color: Color(0xFF002B5B)),
         ),
       );
     }
 
     if (!_isScheduleLive) {
       return Scaffold(
-        backgroundColor: Colors.transparent,
-        body: Stack(
+        backgroundColor: const Color(0xFFF5F5F5),
+        drawer: const AppDrawer(),
+        body: Column(
           children: [
-            const AnimatedGradientBackground(),
-            Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.timelapse_outlined,
-                      size: 80, color: Colors.grey.shade400),
-                  const SizedBox(height: 20),
-                  const Text("Coming Soon",
-                      style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white)),
-                  const Text("The future is not yet written.",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.white70)),
-                ],
+            _buildHeader(context),
+            Expanded(
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.timelapse_outlined,
+                        size: 80, color: Colors.grey.shade300),
+                    const SizedBox(height: 20),
+                    const Text("Coming Soon",
+                        style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.w700,
+                            fontFamily: 'Univers',
+                            height: 1.07,
+                            color: Color(0XFF232930))),
+                    const SizedBox(height: 8),
+                    const Text("The future is not yet written.",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Color(0xFF6D7985),
+                          fontFamily: 'General Sans'
+                        )),
+                  ],
+                ),
               ),
             ),
           ],
@@ -147,101 +145,166 @@ class _SchedulePageState extends State<SchedulePage>
     }
 
     final List<dynamic> days = _scheduleData['days'] ?? [];
-    return Stack(
-      children: [
-        const AnimatedGradientBackground(),
-        DefaultTabController(
-          length: days.length,
-          child: Scaffold(
-            backgroundColor: Colors.transparent,
-            body: SafeArea(
-              child: Column(
-                children: [
-                  const SizedBox(height: 16),
-                  AnimatedTextKit(
-                    animatedTexts: [
-                      TypewriterAnimatedText(
-                        'Events Timeline',
-                        textStyle: GoogleFonts.orbitron(
-                          color: neonCyan,
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        speed: const Duration(milliseconds: 80),
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
+    return DefaultTabController(
+      length: days.length,
+      child: Scaffold(
+        backgroundColor: const Color(0xFFF5F5F5),
+        drawer: const AppDrawer(),
+        body: Column(
+          children: [
+            _buildHeader(context),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+              child: DropdownButtonFormField<String>(
+                value: _selectedCategory,
+                decoration: InputDecoration(
+                  labelText: 'Filter by Category',
+                  labelStyle: const TextStyle(color: Color(0xFF6D7985), fontSize: 14),
+                  filled: true,
+                  fillColor: const Color(0xFFF5F5F5),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: Color(0xFFE8E8E8)),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: DropdownButtonFormField<String>(
-                      value: _selectedCategory,
-                      decoration: InputDecoration(
-                        labelText: 'Filter by Category',
-                        labelStyle: const TextStyle(color: Colors.white70),
-                        filled: true,
-                        fillColor: Colors.white.withOpacity(0.1),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide:
-                              BorderSide(color: Colors.white.withOpacity(0.2)),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(
-                              color: Theme.of(context).colorScheme.secondary),
-                        ),
-                      ),
-                      dropdownColor: const Color(0xFF16213e),
-                      style: const TextStyle(color: Colors.white),
-                      items: _categories.map((String category) {
-                        return DropdownMenuItem<String>(
-                            value: category, child: Text(category));
-                      }).toList(),
-                      onChanged: (newValue) =>
-                          setState(() => _selectedCategory = newValue!),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: Color(0xFF002B5B), width: 1.5),
+                  ),
+                ),
+                dropdownColor: Colors.white,
+                style: const TextStyle(color: Color(0XFF232930), fontWeight: FontWeight.w600),
+                items: _categories.map((String category) {
+                  return DropdownMenuItem<String>(
+                      value: category, child: Text(category));
+                }).toList(),
+                onChanged: (newValue) =>
+                    setState(() => _selectedCategory = newValue!),
+              ),
+            ),
+            TabBar(
+              isScrollable: true,
+              tabAlignment: TabAlignment.start,
+              labelColor: const Color(0xFF002B5B),
+              unselectedLabelColor: const Color(0xFF6D7985),
+              indicatorColor: const Color(0xFF002B5B),
+              indicatorSize: TabBarIndicatorSize.label,
+              labelStyle: const TextStyle(fontWeight: FontWeight.w700, fontFamily: 'Univers'),
+              unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontFamily: 'Univers'),
+              tabs: days.map((day) => Tab(text: day['title'])).toList(),
+            ),
+            Expanded(
+              child: TabBarView(
+                children: days.map((day) {
+                  final List<dynamic> allEvents =
+                      List.from(day['events'] ?? [])
+                        ..sort((a, b) =>
+                            a['startTime'].compareTo(b['startTime']));
+                  final List<dynamic> filteredEvents =
+                      _selectedCategory == 'All'
+                          ? allEvents
+                          : allEvents
+                              .where((event) =>
+                                  event['category'] == _selectedCategory)
+                              .toList();
+
+                  if (filteredEvents.isEmpty) {
+                    return Center(
+                        child: Text(
+                            'No events for this category on ${day['title']}.',
+                            style: const TextStyle(color: Color(0xFF6D7985))));
+                  }
+
+                  return ListView.builder(
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 40),
+                    itemCount: filteredEvents.length,
+                    itemBuilder: (context, index) => EventTimelineTile(
+                      event: filteredEvents[index],
+                      animation: AnimationController(
+                        vsync: this,
+                        duration: const Duration(milliseconds: 600),
+                      )..forward(),
                     ),
+                  );
+                }).toList(),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeader(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      decoration: const BoxDecoration(
+        color: Color(0xFF002B5B),
+        image: DecorationImage(
+          image: AssetImage('assets/ghm/frame3.png'),
+          fit: BoxFit.cover,
+        ),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 25),
+      child: SafeArea(
+        bottom: false,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              decoration: ShapeDecoration(
+                color: Colors.white,
+                shape: RoundedRectangleBorder(
+                  side: const BorderSide(
+                    width: 1,
+                    color: Color(0xFFAFAFAF),
                   ),
-                  Expanded(
-                    child: TabBarView(
-                      children: days.map((day) {
-                        final List<dynamic> allEvents =
-                            List.from(day['events'] ?? [])
-                              ..sort((a, b) =>
-                                  a['startTime'].compareTo(b['startTime']));
-                        final List<dynamic> filteredEvents =
-                            _selectedCategory == 'All'
-                                ? allEvents
-                                : allEvents
-                                    .where((event) =>
-                                        event['category'] == _selectedCategory)
-                                    .toList();
-                        if (filteredEvents.isEmpty)
-                          return Center(
-                              child: Text(
-                                  'No events for this category on ${day['title']}.',
-                                  style:
-                                      const TextStyle(color: Colors.white70)));
-                        return ListView.builder(
-                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                          itemCount: filteredEvents.length,
-                          itemBuilder: (context, index) => EventTimelineTile(
-                            event: filteredEvents[index],
-                            animation: AnimationController(
-                              vsync: this,
-                              duration: const Duration(milliseconds: 600),
-                            )..forward(),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                shadows: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Builder(
+                    builder: (BuildContext innerContext) {
+                      return GestureDetector(
+                        onTap: () {
+                          Scaffold.of(innerContext).openDrawer();
+                        },
+                        child: SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: Image.asset(
+                            'assets/ghm/menu.png',
+                            color: Colors.grey[600],
                           ),
-                        );
-                      }).toList(),
+                        ),
+                      );
+                    },
+                  ),
+                  SizedBox(
+                    height: 24.0,
+                    child: Image.asset(
+                      'assets/ghm/logo3.png',
+                      fit: BoxFit.contain,
                     ),
                   ),
                 ],
               ),
             ),
-          ),
+          ],
         ),
-      ],
+      ),
     );
   }
 }
@@ -266,23 +329,19 @@ class EventTimelineTile extends StatelessWidget {
     final String category = event['category'] ?? 'Default';
     final IconData icon = categoryStyles[category]?['icon'] ?? Icons.event;
     final Color color = categoryStyles[category]?['color'] ?? Colors.grey;
-    final bool isDark = Theme.of(context).brightness == Brightness.dark;
-    final Color textColor = isDark ? Colors.white : Colors.black;
-    final Color subTextColor =
-        isDark ? Colors.grey.shade400 : Colors.grey.shade700;
-    final Color timelineColor =
-        isDark ? Colors.grey.shade800 : Colors.grey.shade300;
-    final Color cardColor =
-        isDark ? Colors.white.withOpacity(0.05) : Colors.white;
-    final Color iconBgColor = color.withOpacity(0.15);
+    const Color textColor = Color(0XFF232930);
+    const Color subTextColor = Color(0xFF6D7985);
+    final Color timelineColor = Colors.grey.shade300;
+    const Color cardColor = Color(0xFFF8F9FA);
+    final Color iconBgColor = color.withOpacity(0.1);
     final Color iconFgColor = color;
 
     return AnimatedBuilder(
       animation: animation,
       builder: (context, child) {
-        final t = Curves.easeInOut.transform(animation.value);
-        final scale = 0.9 + 0.1 * t;
-        final offset = Offset(0, (1 - t) * 30);
+        final t = Curves.easeOutCubic.transform(animation.value);
+        final scale = 0.95 + 0.05 * t;
+        final offset = Offset(0, (1 - t) * 20);
 
         return Opacity(
           opacity: t,
@@ -298,7 +357,6 @@ class EventTimelineTile extends StatelessWidget {
       child: InkWell(
         onTap: () {
           final String venueName = event['venue'];
-          // Replace direct MapScreen navigation with landing screen navigation
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
@@ -311,94 +369,90 @@ class EventTimelineTile extends StatelessWidget {
           child: Row(
             children: [
               SizedBox(
-                width: 70,
+                width: 75,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(_formatTime(event['startTime']),
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold, color: textColor)),
+                        style: const TextStyle(
+                            fontWeight: FontWeight.w700,
+                            fontFamily: 'General Sans',
+                            height: 1.2,
+                            color: textColor,
+                            fontSize: 14)),
+                    const SizedBox(height: 2),
                     Text(_formatTime(event['endTime']),
-                        style: TextStyle(color: subTextColor, fontSize: 12)),
+                        style: const TextStyle(color: subTextColor, fontSize: 11)),
                   ],
                 ),
               ),
-              const SizedBox(width: 10),
+              const SizedBox(width: 12),
               SizedBox(
-                width: 30,
+                width: 24,
                 child: Column(
                   children: [
                     Container(width: 2, height: 20, color: timelineColor),
                     Container(
-                      width: 30,
-                      height: 30,
+                      width: 24,
+                      height: 24,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: color,
-                        boxShadow: [
-                          BoxShadow(
-                              color: color.withOpacity(0.5),
-                              blurRadius: 8,
-                              spreadRadius: 2)
-                        ],
+                        color: Colors.white,
+                        border: Border.all(color: color, width: 2),
                       ),
-                      child: Icon(icon, size: 16, color: Colors.black),
+                      child: Icon(icon, size: 12, color: color),
                     ),
                     Expanded(child: Container(width: 2, color: timelineColor)),
                   ],
                 ),
               ),
-              const SizedBox(width: 10),
+              const SizedBox(width: 12),
               Expanded(
                 child: Container(
-                  margin: const EdgeInsets.only(bottom: 24.0, top: 10.0),
+                  margin: const EdgeInsets.only(bottom: 20.0, top: 4.0),
                   padding: const EdgeInsets.all(16.0),
                   decoration: BoxDecoration(
                     color: cardColor,
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: timelineColor),
-                    boxShadow: [
-                      BoxShadow(
-                          color: color.withOpacity(0.1),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4))
-                    ],
+                    border: Border.all(color: const Color(0xFFE8E8E8)),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(event['name'],
-                          style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
+                          style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              fontFamily: 'Univers',
+                              height: 1.2,
                               color: textColor)),
                       const SizedBox(height: 8),
                       Row(
                         children: [
-                          Icon(Icons.location_on_outlined,
-                              size: 16, color: subTextColor),
+                          const Icon(Icons.location_on_outlined,
+                              size: 14, color: subTextColor),
                           const SizedBox(width: 4),
                           Expanded(
                               child: Text(event['venue'],
-                                  style: TextStyle(
-                                      fontSize: 14, color: subTextColor))),
+                                  style: const TextStyle(
+                                      fontSize: 13, color: subTextColor))),
                         ],
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 10),
                       Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 4),
+                            horizontal: 10, vertical: 4),
                         decoration: BoxDecoration(
                           color: iconBgColor,
                           borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: color.withOpacity(0.5)),
                         ),
                         child: Text(category,
                             style: TextStyle(
-                                fontSize: 12,
+                                fontSize: 11,
+                                fontFamily: 'General Sans',
                                 color: iconFgColor,
-                                fontWeight: FontWeight.bold)),
+                                fontWeight: FontWeight.w700)),
                       ),
                     ],
                   ),

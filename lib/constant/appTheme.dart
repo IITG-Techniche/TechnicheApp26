@@ -2,124 +2,138 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 class AppTheme {
-  // Colors
-  static const Color primaryColor = Color(0xFF00FFF7); // Neon Cyan
-  static const Color secondaryColor = Color(0xFFFF00F7); // Neon Magenta
-  static const Color scaffoldBackgroundColor = Color(0xFF18122B); // Deep Purple
-  static const Color surfaceColor = Color(0xFF232946); // Dark Blue
-  static const Color errorColor = Color(0xFFFF1744);
+  // ── Colors ───────────────────────────────────────────────────
+  static const Color primaryBlue = Color(0xFF002B5B);
+  static const Color accentBlue = Color(0xFF175BCC);
+  static const Color backgroundGray = Color(0xFFF5F5F5); 
+  static const Color textMain = Color(0XFF232930);
+  static const Color textSecondary = Color(0xFF6D7985);
+  static const Color textMuted = Color(0xFFAFAFAF);
 
-  // Specific UI Colors
-  static const Color darkBackground = Color(0xFF0A0A0A);
-  static const Color cardColor = Color(0xFF23242B);
-  static const Color textColorSecondary = Color(0xFFB8C1EC);
+  // Still keeping the old neon colors
+  static const Color neonCyan = Color(0xFF00FFF7);
+  static const Color neonMagenta = Color(0xFFFF00F7);
+  static const Color darkBackground = Color(0xFF18122B);
 
-  // Font
-  static const String fontFamily = 'Orbitron';
+  // ── Legacy Getters for Backward Compatibility ────────────────
+  static const Color primaryColor = primaryBlue;
+  static const Color secondaryColor = accentBlue;
+  static const Color scaffoldBackgroundColor = backgroundGray;
+  static const String fontFamily = 'General Sans'; // Default for the app now
 
-  static ThemeData get darkTheme {
+  // ── Font Families ──────────────────────────────────────────
+  static const String fontUnivers = 'Univers';
+  static const String fontGeneralSans = 'General Sans';
+
+  static ThemeData get lightTheme {
     return ThemeData(
-      brightness: Brightness.dark,
-      fontFamily: fontFamily,
-      scaffoldBackgroundColor: scaffoldBackgroundColor,
-      colorScheme: const ColorScheme.dark(
-        primary: primaryColor,
-        onPrimary: Colors.black,
-        secondary: primaryColor,
-        onSecondary: Colors.black,
-        error: errorColor,
-        onError: Colors.white,
-        surface: surfaceColor,
-        onSurface: primaryColor,
+      brightness: Brightness.light,
+      primaryColor: primaryBlue,
+      scaffoldBackgroundColor: backgroundGray,
+      fontFamily: fontGeneralSans, // Default font for body
+      colorScheme: const ColorScheme.light(
+        primary: primaryBlue,
+        secondary: accentBlue,
+        surface: Colors.white,
+        onSurface: textMain,
+        background: backgroundGray,
       ),
       appBarTheme: const AppBarTheme(
-        backgroundColor: surfaceColor,
-        elevation: 8,
+        backgroundColor: Colors.white,
+        elevation: 0,
+        centerTitle: true,
+        iconTheme: IconThemeData(color: textMain),
         titleTextStyle: TextStyle(
-          fontFamily: fontFamily,
-          fontWeight: FontWeight.bold,
-          fontSize: 22,
-          color: primaryColor,
-          shadows: [
-            Shadow(blurRadius: 7.5, color: primaryColor, offset: Offset(0, 0)),
-          ],
+          fontFamily: fontUnivers,
+          fontWeight: FontWeight.w700,
+          fontSize: 18,
+          color: textMain,
+          height: 1.2,
         ),
-        iconTheme: IconThemeData(color: primaryColor),
         systemOverlayStyle: SystemUiOverlayStyle(
-          statusBarColor: scaffoldBackgroundColor,
-          statusBarBrightness: Brightness.dark,
-          statusBarIconBrightness: Brightness.light,
-        ),
-      ),
-      elevatedButtonTheme: ElevatedButtonThemeData(
-        style: ButtonStyle(
-          backgroundColor: WidgetStateProperty.all(primaryColor),
-          foregroundColor: WidgetStateProperty.all(scaffoldBackgroundColor),
-          shape: WidgetStateProperty.all(RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-            side: const BorderSide(color: primaryColor, width: 2),
-          )),
-          shadowColor: WidgetStateProperty.all(primaryColor),
-          elevation: WidgetStateProperty.all(12),
-          textStyle: WidgetStateProperty.all(const TextStyle(
-            fontFamily: fontFamily,
-            fontWeight: FontWeight.bold,
-            fontSize: 18,
-            letterSpacing: 2,
-            shadows: [
-              Shadow(blurRadius: 5, color: primaryColor, offset: Offset(0, 0)),
-            ],
-          )),
-        ),
-      ),
-      inputDecorationTheme: InputDecorationTheme(
-        filled: true,
-        fillColor: surfaceColor,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: primaryColor, width: 2),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: primaryColor, width: 2),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: primaryColor, width: 2),
-        ),
-        labelStyle: const TextStyle(
-          color: primaryColor,
-          fontFamily: fontFamily,
-          fontWeight: FontWeight.bold,
-          shadows: [
-            Shadow(blurRadius: 6, color: primaryColor, offset: Offset(0, 0)),
-          ],
+          statusBarColor: Colors.transparent,
+          statusBarIconBrightness: Brightness.dark,
         ),
       ),
       textTheme: const TextTheme(
         headlineLarge: TextStyle(
-          fontFamily: fontFamily,
-          fontWeight: FontWeight.bold,
+          fontFamily: fontUnivers,
+          fontWeight: FontWeight.w700,
           fontSize: 32,
-          color: primaryColor,
-          shadows: [
-            Shadow(blurRadius: 9, color: primaryColor, offset: Offset(0, 0)),
-          ],
+          color: textMain,
+          height: 1.2,
+        ),
+        headlineMedium: TextStyle(
+          fontFamily: fontUnivers,
+          fontWeight: FontWeight.w700,
+          fontSize: 24,
+          color: textMain,
+          height: 1.2,
+        ),
+        titleLarge: TextStyle(
+          fontFamily: fontUnivers,
+          fontWeight: FontWeight.w700,
+          fontSize: 20,
+          color: textMain,
+          height: 1.2,
         ),
         bodyLarge: TextStyle(
-          fontFamily: fontFamily,
-          fontSize: 18,
-          color: primaryColor,
-          shadows: [
-            Shadow(blurRadius: 6, color: primaryColor, offset: Offset(0, 0)),
-          ],
+          fontFamily: fontGeneralSans,
+          fontSize: 16,
+          color: textMain,
+          height: 1.3,
         ),
         bodyMedium: TextStyle(
-          fontFamily: fontFamily,
-          fontSize: 16,
-          color: textColorSecondary,
+          fontFamily: fontGeneralSans,
+          fontSize: 14,
+          color: textMain,
+          height: 1.3,
+        ),
+        labelLarge: TextStyle(
+          fontFamily: fontGeneralSans,
+          fontWeight: FontWeight.w600,
+          fontSize: 14,
+          color: textMain,
+        ),
+      ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: primaryBlue,
+          foregroundColor: Colors.white,
+          elevation: 0,
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          textStyle: const TextStyle(
+            fontFamily: fontGeneralSans,
+            fontWeight: FontWeight.w600,
+            fontSize: 16,
+          ),
+        ),
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: Colors.white,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFFE8E8E8)),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFFE8E8E8)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: primaryBlue, width: 1.5),
+        ),
+        hintStyle: const TextStyle(
+          fontFamily: fontGeneralSans,
+          color: textSecondary,
+          fontSize: 14,
         ),
       ),
     );
   }
+
+  static ThemeData get darkTheme => lightTheme; 
 }

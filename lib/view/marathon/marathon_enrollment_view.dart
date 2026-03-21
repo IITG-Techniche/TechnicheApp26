@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../../providers/marathon_provider.dart';
-import '../../utils/animate_gradient_background.dart';
+import '../../constant/appTheme.dart';
 
 class MarathonEnrollmentView extends ConsumerStatefulWidget {
   const MarathonEnrollmentView({super.key});
@@ -16,8 +17,9 @@ class _MarathonEnrollmentViewState
   final _usernameController = TextEditingController();
   final _pinController = TextEditingController();
   bool _isLoading = false;
-  String _selectedDistance = '6KM'; // Default
+  String _selectedDistance = '6KM';
 
+  // ── Backend logic (unchanged) ─────────────────────────────────
   Future<void> _enroll() async {
     final username = _usernameController.text.trim();
     final pin = _pinController.text.trim();
@@ -40,23 +42,18 @@ class _MarathonEnrollmentViewState
     setState(() => _isLoading = true);
     try {
       final marathonService = ref.read(marathonServiceProvider);
-      // Check if enrolled, if not insert, then update provider
       final participant = await marathonService.getParticipant(username);
 
       if (participant == null) {
-        // New user
         await marathonService.enrollUser(username, _selectedDistance, pin);
         ref.read(marathonCategoryProvider.notifier).state = _selectedDistance;
         ref.read(marathonUsernameProvider.notifier).state = username;
-        // Persist enrollment
         await saveMarathonEnrollment(username, _selectedDistance);
       } else {
-        // Existing user check pin
         if (participant.pin == pin) {
           ref.read(marathonCategoryProvider.notifier).state =
               participant.category;
           ref.read(marathonUsernameProvider.notifier).state = username;
-          // Persist enrollment
           await saveMarathonEnrollment(username, participant.category);
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -78,305 +75,318 @@ class _MarathonEnrollmentViewState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.transparent,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-      ),
-      extendBodyBehindAppBar: true,
-      body: Stack(
+      backgroundColor: AppTheme.backgroundGray,
+      body: Column(
         children: [
-          const AnimatedGradientBackground(),
-          SafeArea(
+          // ── 1. Hero Image ─────────────────────────────────────
+          SizedBox(
+            height: 201,
+            width: double.infinity,
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                SvgPicture.asset(
+                  'assets/ghm/theme02.svg',
+                  fit: BoxFit.cover,
+                ),
+
+                // Back button
+                SafeArea(
+                  child: Align(
+                    alignment: Alignment.topLeft,
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 12, top: 10),
+                      child: GestureDetector(
+                        onTap: () => Navigator.of(context).pop(),
+                        child: Container(
+                          width: 47,
+                          height: 47,
+
+                          clipBehavior: Clip.antiAlias,
+                          decoration: ShapeDecoration(
+                            color: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              side: const BorderSide(
+                                width: 1,
+                                color: Color(0xFFB2B8BF),
+                              ),
+                              borderRadius: BorderRadius.circular(24),
+                            ),
+                          ),
+                          child: SvgPicture.asset(
+                            'assets/ghm/iconback.svg', // Path to your SVG
+                            width: 16,
+                            height: 16,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // ── 2. White body ─────────────────────────────────────
+          Expanded(
             child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Headline
+                  const Text(
+                    'Join Guwahati Half Marathon\nLeaderboard',
+                    style: TextStyle(
+                      fontFamily: AppTheme.fontUnivers,
+                      fontSize: 24,
+                      fontWeight: FontWeight.w700,
+                      color: AppTheme.textMain,
+                      height: 1.2,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+
+                  // Subtitle
+                  const Text(
+                    'Ready to leave your mark on the track?',
+                    style: TextStyle(
+                      fontFamily: AppTheme.fontGeneralSans,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w400,
+                      color: AppTheme.textSecondary,
+                      height: 1.25,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // ── Input card ────────────────────────────────
                   Container(
-                    height: 250,
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          Colors.black.withOpacity(0.0),
-                          Colors.transparent,
-                        ],
+                    padding: const EdgeInsets.all(8),
+                    decoration: ShapeDecoration(
+                      color: const Color(0xFFF3F3F3),
+                      shape: RoundedRectangleBorder(
+                        side: const BorderSide(
+                          width: 1,
+                          color: Color(0xFFE8E8E8),
+                        ),
+                        borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    padding:
-                        const EdgeInsets.only(left: 20, right: 20, bottom: 20),
-                    alignment: Alignment.bottomLeft,
                     child: Column(
-                      mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          'JOIN GUWAHATI HALF MARATHON',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 1.2,
-                          ),
+                        // Username
+                        _fieldLabel('Claim your racer name'),
+                        const SizedBox(height: 6),
+                        _inputField(
+                          controller: _usernameController,
+                          hint: 'sanjay@123',
                         ),
-                        const Text(
-                          'LEADERBOARD',
-                          style: TextStyle(
-                            color: Color(0xFF00E5FF),
-                            fontSize: 28,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 1.2,
-                          ),
+                        const SizedBox(height: 16),
+
+                        // PIN
+                        _fieldLabel('Enter 4 digit pin'),
+                        const SizedBox(height: 6),
+                        _inputField(
+                          controller: _pinController,
+                          hint: '. . . .',
+                          keyboardType: TextInputType.number,
+                          obscureText: true,
+                          maxLength: 4,
                         ),
+                        const SizedBox(height: 20),
+
+                        // Category
+                        _fieldLabel('Choose your category'),
                         const SizedBox(height: 8),
-                        Text(
-                          'Ready to leave your mark on the track?',
-                          style: TextStyle(
-                            color: Colors.grey[400],
-                            fontSize: 16,
-                          ),
+                        Row(
+                          children: [
+                            Expanded(child: _categoryCard('6 KM', '6KM')),
+                            const SizedBox(width: 12),
+                            Expanded(child: _categoryCard('21 KM', '21KM')),
+                          ],
                         ),
                       ],
                     ),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.all(20.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Text(
-                              'Claim your racer name',
-                              style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        // Text Field Username
-                        Container(
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF161B22),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                                color: Colors.white.withOpacity(0.1)),
-                          ),
-                          child: TextField(
-                            controller: _usernameController,
-                            style: const TextStyle(color: Colors.white),
-                            decoration: InputDecoration(
-                              hintText: 'e.g., RunnerPro99',
-                              hintStyle: TextStyle(color: Colors.grey[600]),
-                              contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 20, vertical: 16),
-                              border: InputBorder.none,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 16),
+                  const SizedBox(height: 24),
 
-                        // Text Field PIN
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Text(
-                              'Enter 4-Digit PIN',
-                              style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        Container(
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF161B22),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                                color: Colors.white.withOpacity(0.1)),
-                          ),
-                          child: TextField(
-                            controller: _pinController,
-                            keyboardType: TextInputType.number,
-                            obscureText: true,
-                            maxLength: 4,
-                            style: const TextStyle(
-                                color: Colors.white,
-                                letterSpacing: 8,
-                                fontSize: 18),
-                            decoration: InputDecoration(
-                              hintText: '••••',
-                              counterText: '',
-                              hintStyle: TextStyle(
-                                  color: Colors.grey[600], letterSpacing: 8),
-                              contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 20, vertical: 16),
-                              border: InputBorder.none,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 32),
-                        const Text(
-                          'Choose your category',
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold),
-                        ),
-                        const SizedBox(height: 16),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: GestureDetector(
-                                onTap: () =>
-                                    setState(() => _selectedDistance = '6KM'),
-                                child: Container(
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 20),
-                                  decoration: BoxDecoration(
-                                    color: _selectedDistance == '6KM'
-                                        ? const Color(0xFF0D2530)
-                                        : const Color(0xFF23242B),
-                                    borderRadius: BorderRadius.circular(16),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color:
-                                            Colors.blueAccent.withOpacity(0.10),
-                                        blurRadius: 24,
-                                      ),
-                                    ],
-                                    border: Border.all(
-                                      color: _selectedDistance == '6KM'
-                                          ? const Color(0xFF00E5FF)
-                                          : Colors.blueAccent.withOpacity(0.18),
-                                      width: 1.5,
+                  // ── Register button ───────────────────────────
+                  SizedBox(
+                    width: double.infinity,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: AppTheme.primaryBlue,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Material(
+                        color: Colors.transparent,
+                        borderRadius: BorderRadius.circular(8),
+                        child: InkWell(
+                          onTap: _isLoading ? null : _enroll,
+                          borderRadius: BorderRadius.circular(8),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                if (_isLoading) ...[
+                                  const SizedBox(
+                                    width: 21,
+                                    height: 21,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Colors.white,
                                     ),
                                   ),
-                                  child: const Column(
-                                    children: [
-                                      Text('6KM',
-                                          style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 24,
-                                              fontWeight: FontWeight.bold)),
-                                    ],
+                                ] else ...[
+                                  const Icon(
+                                    Icons.person_add_alt_1_rounded,
+                                    size: 21,
+                                    color: Color(0xFFEDEFF0),
                                   ),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: GestureDetector(
-                                onTap: () =>
-                                    setState(() => _selectedDistance = '21KM'),
-                                child: Container(
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 20),
-                                  decoration: BoxDecoration(
-                                    color: _selectedDistance == '21KM'
-                                        ? const Color(0xFF0D2530)
-                                        : const Color(0xFF23242B),
-                                    borderRadius: BorderRadius.circular(16),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color:
-                                            Colors.blueAccent.withOpacity(0.10),
-                                        blurRadius: 24,
-                                      ),
-                                    ],
-                                    border: Border.all(
-                                      color: _selectedDistance == '21KM'
-                                          ? const Color(0xFF00E5FF)
-                                          : Colors.blueAccent.withOpacity(0.18),
-                                      width: 1.5,
-                                    ),
-                                  ),
-                                  child: const Column(
-                                    children: [
-                                      Text('21KM',
-                                          style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 24,
-                                              fontWeight: FontWeight.bold)),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 48),
-
-                        // Enroll Button
-                        SizedBox(
-                          width: double.infinity,
-                          height: 56,
-                          child: ElevatedButton(
-                            onPressed: _isLoading ? null : _enroll,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF00E5FF),
-                              foregroundColor: Colors.black,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(30),
-                              ),
-                              elevation: 10,
-                              shadowColor:
-                                  const Color(0xFF00E5FF).withOpacity(0.5),
-                            ),
-                            child: _isLoading
-                                ? const CircularProgressIndicator(
-                                    color: Colors.black)
-                                : const Text(
-                                    'ENROLL NOW',
+                                  const SizedBox(width: 8),
+                                  const Text(
+                                    'Register',
                                     style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold),
+                                      fontFamily: AppTheme.fontGeneralSans,
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.white,
+                                      height: 1.2,
+                                    ),
                                   ),
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        const SizedBox(height: 16),
-                        Center(
-                          child: TextButton(
-                            onPressed: () => Navigator.pushNamed(
-                                context, '/ghm-registration'),
-                            child: const Text(
-                              'Register for the official GHM event here 🏃‍♂️',
-                              style: TextStyle(
-                                  color: Color(0xFF00E5FF),
-                                  fontSize: 14,
-                                  decoration: TextDecoration.underline),
+                                ],
+                              ],
                             ),
                           ),
                         ),
-                        const SizedBox(height: 8),
-                        Center(
-                          child: Text(
-                            'Username will be visible on leaderboard.',
-                            style: TextStyle(
-                                color: Colors.grey[500], fontSize: 13),
-                          ),
-                        ),
-                      ],
+                      ),
                     ),
-                  ), 
-                ], 
-              ), 
-            ), 
-          ), 
-        ], 
-    ), 
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── Field label ───────────────────────────────────────────────
+  Widget _fieldLabel(String text) {
+    return Text(
+      text,
+      style: const TextStyle(
+        fontFamily: AppTheme.fontGeneralSans,
+        fontSize: 14,
+        fontWeight: FontWeight.w500,
+        color: Colors.black,
+        height: 1.14,
+      ),
+    );
+  }
+
+  // ── Input field ───────────────────────────────────────────────
+  Widget _inputField({
+    required TextEditingController controller,
+    required String hint,
+    TextInputType keyboardType = TextInputType.text,
+    bool obscureText = false,
+    int? maxLength,
+  }) {
+    return Theme(
+      data: ThemeData.light().copyWith(
+        textSelectionTheme: const TextSelectionThemeData(
+          cursorColor: AppTheme.primaryBlue,
+          selectionColor: Color(0x33002B5B),
+          selectionHandleColor: AppTheme.primaryBlue,
+        ),
+      ),
+      child: Container(
+
+        decoration: ShapeDecoration(
+          color: const Color(0xFFE8E8E8),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+        ),
+        child: TextField(
+          controller: controller,
+          keyboardType: keyboardType,
+          obscureText: obscureText,
+          maxLength: maxLength,
+          cursorColor: AppTheme.textSecondary,
+          style: const TextStyle(
+            fontFamily: AppTheme.fontGeneralSans,
+            fontSize: 14,
+            fontWeight: FontWeight.w400,
+            color: AppTheme.textMain,
+            height: 1.4,
+          ),
+          decoration: InputDecoration(
+            hintText: hint,
+            counterText: '',
+            hintStyle: const TextStyle(
+              fontFamily: AppTheme.fontGeneralSans,
+              fontSize: 14,
+              fontWeight: FontWeight.w400,
+              color: AppTheme.textSecondary,
+              height: 1.4,
+            ),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 12,
+              vertical: 8,
+            ),
+            border: InputBorder.none,
+            enabledBorder: InputBorder.none,
+            focusedBorder: InputBorder.none,
+            disabledBorder: InputBorder.none,
+            errorBorder: InputBorder.none,
+            focusedErrorBorder: InputBorder.none,
+            filled: true,
+            fillColor: Colors.transparent,
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ── Category card ─────────────────────────────────────────────
+  Widget _categoryCard(String label, String key) {
+    final isSelected = _selectedDistance == key;
+
+    return GestureDetector(
+      onTap: () => setState(() => _selectedDistance = key),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        curve: Curves.easeInOut,
+        height: 36,
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: ShapeDecoration(
+          color: isSelected ? AppTheme.primaryBlue : Colors.transparent,
+          shape: RoundedRectangleBorder(
+            side: isSelected
+                ? BorderSide.none
+                : const BorderSide(width: 1, color: Color(0xFFE8E8E8)),
+            borderRadius: BorderRadius.circular(8),
+          ),
+        ),
+        child: Center(
+          child: Text(
+            label,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontFamily: AppTheme.fontGeneralSans,
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: isSelected ? Colors.white : AppTheme.textSecondary,
+              height: 1.1,
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

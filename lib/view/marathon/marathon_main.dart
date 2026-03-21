@@ -4,6 +4,7 @@ import '../../providers/marathon_provider.dart';
 import 'marathon_dashboard_tab.dart';
 import 'marathon_enrollment_view.dart';
 import 'marathon_run_tab.dart';
+ // Fixed typo if needed, ensure path is correct
 import 'marathon_leaderboard_tab.dart';
 import '../../constant/appTheme.dart';
 
@@ -22,66 +23,102 @@ class _MarathonMainScreenState extends ConsumerState<MarathonMainScreen> {
   Widget build(BuildContext context) {
     final username = ref.watch(marathonUsernameProvider);
 
-    // If not enrolled, force them to Home tab but show Enrollment View
+    // Tab Logic
     Widget currentTab;
-    if (_currentIndex == 0) {
-      currentTab = username.isEmpty
-          ? const MarathonEnrollmentView()
-          : const MarathonDashboardTab();
-    } else if (_currentIndex == 1) {
-      currentTab = username.isEmpty
-          ? const MarathonEnrollmentView()
-          : const MarathonRunTab();
+    if (username.isEmpty) {
+      currentTab = const MarathonEnrollmentView();
     } else {
-      currentTab = username.isEmpty
-          ? const MarathonEnrollmentView()
-          : const MarathonLeaderboardTab();
+      switch (_currentIndex) {
+        case 0:
+          currentTab = const MarathonDashboardTab();
+          break;
+        case 1:
+          currentTab = const MarathonRunTab();
+          break;
+        case 2:
+          currentTab = const MarathonLeaderboardTab();
+          break;
+        default:
+          currentTab = const MarathonDashboardTab();
+      }
     }
 
     return Scaffold(
-      backgroundColor: AppTheme.scaffoldBackgroundColor,
+      backgroundColor: AppTheme.backgroundGray,
       body: currentTab,
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          border: Border(
-              top: BorderSide(color: Colors.white.withOpacity(0.1), width: 1)),
+      bottomNavigationBar: _buildBottomBar(),
+    );
+  }
+
+  Widget _buildBottomBar() {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border(
+          top: BorderSide(
+            color: Colors.black.withOpacity(0.05),
+            width: 1,
+          ),
         ),
-        child: BottomNavigationBar(
-          backgroundColor: AppTheme.scaffoldBackgroundColor,
-          selectedItemColor: AppTheme.primaryColor,
-          unselectedItemColor: Colors.grey,
-          selectedLabelStyle: TextStyle(
-            fontFamily: AppTheme.fontFamily,
-            fontWeight: FontWeight.bold,
-            letterSpacing: 1.2,
-          ),
-          unselectedLabelStyle: TextStyle(
-            fontFamily: AppTheme.fontFamily,
-            letterSpacing: 1.2,
-          ),
-          currentIndex: _currentIndex,
-          onTap: (index) {
-            setState(() {
-              _currentIndex = index;
-            });
-          },
-          items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.home_outlined),
-              activeIcon: Icon(Icons.home),
-              label: 'HOME',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.directions_run_outlined),
-              activeIcon: Icon(Icons.directions_run),
-              label: 'RUN',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.leaderboard_outlined),
-              activeIcon: Icon(Icons.leaderboard),
-              label: 'LEADERBOARD',
-            ),
+      ),
+      child: SafeArea(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildNavItem(0, 'Home', Icons.home_filled, Icons.home_outlined),
+            _buildNavItem(1, 'Run', Icons.directions_run, Icons.directions_run_outlined),
+            _buildNavItem(2, 'Leaderboard', Icons.leaderboard, Icons.leaderboard_outlined),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNavItem(int index, String label, IconData activeIcon, IconData inactiveIcon) {
+    final bool isSelected = _currentIndex == index;
+
+    return Expanded(
+      child: GestureDetector(
+        onTap: () => setState(() => _currentIndex = index),
+        behavior: HitTestBehavior.opaque,
+        child: Container(
+          height: 62,
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // Icon - Fixed 20x20 per Figma
+              SizedBox(
+                width: 20,
+                height: 20,
+                child: Icon(
+                  isSelected ? activeIcon : inactiveIcon,
+                  size: 20,
+                  color: isSelected ? AppTheme.primaryBlue : AppTheme.textSecondary,
+                ),
+              ),
+              const SizedBox(height: 2), // Spacing from Figma
+              // Label Text
+              SizedBox(
+                width: 115,
+                child: Text(
+                  label,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: isSelected ? AppTheme.primaryBlue : AppTheme.textSecondary,
+                    fontSize: 12,
+                    fontFamily: AppTheme.fontGeneralSans,
+                    fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                    height: 1.33,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

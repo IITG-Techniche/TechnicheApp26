@@ -61,7 +61,7 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
   final MapController _mapController = MapController();
   Position? currentPosition;
   String? _selectedVenue;
-  bool isSatelliteView = true;
+  bool isSatelliteView = false;
   double rotation = 0.0;
   double _currentZoom = 16.0;
   bool _isLoadingLocation = false;

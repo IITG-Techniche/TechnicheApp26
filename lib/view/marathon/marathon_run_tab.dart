@@ -1,327 +1,446 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../../providers/marathon_provider.dart';
 import '../../constant/appTheme.dart';
-import '../../utils/animate_gradient_background.dart';
 
+// ── Colour tokens ─────────────────────────────────────────────────────────────
+const _digitOuter  = Color(0xFF6DAAFB);
+const _digitInner  = AppTheme.primaryBlue;
+const _metricOuter = Color(0xFFEEF1FA);
+const _metricCard  = Color(0xFFDEE9FE);
+const _chipBg      = Color(0xFF002661);
+const _chipText    = Color(0xFFDFE8F4);
+const _labelColor  = AppTheme.primaryBlue;
+const _btnColor    = AppTheme.primaryBlue;
+
+// Height of the SVG header section
+const double _headerH = 200.0;
+
+// ─────────────────────────────────────────────────────────────────────────────
 class MarathonRunTab extends ConsumerWidget {
   const MarathonRunTab({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final runState = ref.watch(liveRunProvider);
+    final runState  = ref.watch(liveRunProvider);
     final isRunning = runState.isRunning;
 
-    // Format timer
-    int m = runState.elapsedSeconds ~/ 60;
-    int s = runState.elapsedSeconds % 60;
-    String timeFormatted =
+    final int m = runState.elapsedSeconds ~/ 60;
+    final int s = runState.elapsedSeconds % 60;
+    final String timeFormatted =
         '${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
 
-    return Stack(
-      children: [
-        const AnimatedGradientBackground(),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              const SizedBox(height: 40),
-              Text('DISTANCE',
-                  style: TextStyle(
-                      color: AppTheme.primaryColor.withOpacity(0.8),
-                      fontFamily: AppTheme.fontFamily,
-                      fontSize: 16,
-                      letterSpacing: 2,
-                      shadows: [
-                        Shadow(
-                            blurRadius: 10,
-                            color: AppTheme.primaryColor,
-                            offset: Offset(0, 0)),
-                      ])),
-              const SizedBox(height: 10),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.baseline,
-                textBaseline: TextBaseline.alphabetic,
+    final String distStr =
+    runState.distanceKm.toStringAsFixed(2).replaceAll('.', '');
+    final List<String> digits = distStr.padLeft(4, '0').split('');
+
+    return Scaffold(
+      backgroundColor: AppTheme.backgroundGray,
+      body: SingleChildScrollView(
+        physics: const ClampingScrollPhysics(),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+
+            // ── Header — scrolls with the page ──────────────────────────
+            SizedBox(
+              height: _headerH,
+              child: Stack(
+                fit: StackFit.expand,
                 children: [
-                  Text(
-                    runState.distanceKm.toStringAsFixed(2),
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontFamily: AppTheme.fontFamily,
-                      fontSize: 72,
-                      fontWeight: FontWeight.w900,
-                      shadows: [
-                        Shadow(
-                            color: AppTheme.primaryColor,
-                            blurRadius: 25,
-                            offset: Offset(0, 0))
+                  SvgPicture.asset(
+                    'assets/ghm/frame03.svg',
+                    fit: BoxFit.cover,
+                  ),
+                  SafeArea(
+                    child: Align(
+                      alignment: Alignment.topLeft,
+                      child: Padding(
+                        padding: const EdgeInsets.only(left: 16, top: 10),
+                        child: GestureDetector(
+                          onTap: () => Navigator.of(context).pop(),
+                          child: Container(
+                            width: 44,
+                            height: 44,
+                            alignment: Alignment.center,
+                            decoration: const BoxDecoration(
+                              color: Colors.white,
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.chevron_left,
+                              color: Color(0xFF1C2340),
+                              size: 26,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // ── Rest of content ──────────────────────────────────────────
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 24, 16, 24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+
+                  // ── "DISTANCE : KM" ───────────────────────────────────
+                  const Text(
+                    'DISTANCE : KM',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: AppTheme.primaryBlue,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      fontFamily: AppTheme.fontUnivers,
+                      letterSpacing: 1.0,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+
+                  // ── Digit block ────────────────────────────────────────
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      // 8px padding each side + 6px gap within each pair + 28px colon zone
+                      final double available = constraints.maxWidth - 16 - 12 - 28;
+                      final double digitW = (available / 4).floorToDouble();
+                      final double digitH = (digitW * 1.28).floorToDouble();
+
+                      return Container(
+                        width: double.infinity,
+                        height: digitH + 16,
+                        padding: const EdgeInsets.all(8),
+                        decoration: ShapeDecoration(
+                          color: _digitOuter,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            _DigitPair(
+                              left: digits[0], right: digits[1],
+                              digitW: digitW,  digitH: digitH,
+                            ),
+                            _ColonSeparator(height: digitH),
+                            _DigitPair(
+                              left: digits[2], right: digits[3],
+                              digitW: digitW,  digitH: digitH,
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 24),
+
+                  // ── Metric grid ────────────────────────────────────────
+                  Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: _metricOuter,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IntrinsicHeight(
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              Expanded(
+                                child: _MetricCard(
+                                  svgPath: 'assets/ghm/icon1.svg',
+                                  label: 'Current Pace',
+                                  value: '${runState.currentPace.toStringAsFixed(2)} /KM',
+                                ),
+                              ),
+                              const SizedBox(width: 14),
+                              Expanded(
+                                child: _MetricCard(
+                                  svgPath: 'assets/ghm/icon2.svg',
+                                  label: 'Total Steps',
+                                  value: '${runState.stepCount}',
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 14),
+                        IntrinsicHeight(
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              Expanded(
+                                child: _MetricCard(
+                                  svgPath: 'assets/ghm/icon3.svg',
+                                  label: 'Calories',
+                                  value: '${(runState.stepCount * 0.04).toInt()}',
+                                ),
+                              ),
+                              const SizedBox(width: 14),
+                              Expanded(
+                                child: _MetricCard(
+                                  svgPath: 'assets/ghm/icon4.svg',
+                                  label: 'Time',
+                                  value: timeFormatted,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ],
                     ),
                   ),
-                  const SizedBox(width: 8),
-                  const Text('KM',
-                      style: TextStyle(
-                          color: Colors.white70,
-                          fontFamily: AppTheme.fontFamily,
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold)),
-                ],
-              ),
-              const Spacer(flex: 1),
+                  const SizedBox(height: 28),
 
-              // 4 Grid metrics
-              Row(
-                children: [
-                  Expanded(
-                      child: _buildMetricBox(
-                          Icons.timer_outlined, 'TIME', timeFormatted)),
-                  const SizedBox(width: 16),
-                  Expanded(
-                      child: _buildMetricBox(Icons.speed, 'CURRENT PACE',
-                          '${runState.currentPace.toStringAsFixed(2)} /km')),
-                ],
-              ),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  Expanded(
-                      child: _buildMetricBox(Icons.directions_walk,
-                          'TOTAL STEPS', '${runState.stepCount}')),
-                  const SizedBox(width: 16),
-                  Expanded(
-                      child: _buildMetricBox(
-                          Icons.local_fire_department_outlined,
-                          'CALORIES',
-                          '${(runState.stepCount * 0.04).toInt()}')),
-                ],
-              ),
-
-              const Spacer(flex: 2),
-
-              // Action Buttons
-              if (isRunning) ...[
-                Row(
-                  children: [
-                    Expanded(
-                      child: ElevatedButton.icon(
-                        onPressed: () {
-                          if (runState.isPaused) {
-                            ref.read(liveRunProvider.notifier).resumeRun();
-                          } else {
-                            ref.read(liveRunProvider.notifier).pauseRun();
-                          }
-                        },
-                        icon: Icon(
-                          runState.isPaused ? Icons.play_arrow : Icons.pause,
-                          color: Colors.black,
-                        ),
-                        label: Text(
-                          runState.isPaused ? 'RESUME' : 'PAUSE',
-                          style: const TextStyle(
-                            color: Colors.black,
-                            fontFamily: AppTheme.fontFamily,
-                            fontWeight: FontWeight.bold,
+                  // ── Action buttons ─────────────────────────────────────
+                  if (isRunning) ...[
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _ActionButton(
+                            onPressed: () => runState.isPaused
+                                ? ref.read(liveRunProvider.notifier).resumeRun()
+                                : ref.read(liveRunProvider.notifier).pauseRun(),
+                            label: runState.isPaused ? 'RESUME' : 'STOP RUN',
+                            color: _btnColor,
+                            fontFamily: AppTheme.fontUnivers,
                           ),
                         ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.primaryColor,
-                          padding: const EdgeInsets.symmetric(vertical: 20),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12)),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: _ActionButton(
+                            onPressed: () =>
+                                ref.read(liveRunProvider.notifier).stopRun(),
+                            label: 'STOP',
+                            color: Colors.redAccent,
+                            fontFamily: AppTheme.fontUnivers,
+                          ),
                         ),
-                      ),
+                      ],
                     ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: () async {
-                          final notifier = ref.read(liveRunProvider.notifier);
-                          final service = ref.read(marathonServiceProvider);
-                          final user = ref.read(marathonUsernameProvider);
-
-                          final double finalDist = runState.distanceKm;
-                          final int finalSeconds = runState.elapsedSeconds;
-
-                          notifier.stopRun();
-
-                          try {
-                            if (finalDist >= 0.001) {
-                              final double totalMinutes = finalSeconds / 60.0;
-                              final double finalAvgPace = finalDist > 0
-                                  ? (totalMinutes / finalDist)
-                                  : 0.0;
-
-                              await service.logRun(
-                                username: user,
-                                distanceKm: finalDist,
-                                durationMinutes: totalMinutes,
-                                avgPace: finalAvgPace,
-                              );
-
-                              if (context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                        content:
-                                            Text('Run saved to Leaderboard!')));
-                              }
-                            } else {
-                              if (context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                        content: Text(
-                                            'Run too short to save (<1m)')));
-                              }
-                            }
-                          } catch (e) {
-                            if (context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                      content: Text('Failed to save log: $e')));
-                            }
-                          } finally {
-                            notifier.resetRun();
-                            ref.invalidate(progressStatsProvider);
-                            ref.invalidate(distanceLeaderboardProvider);
-                            ref.invalidate(allRunsProvider);
-                            ref.invalidate(recentRunsProvider);
-                          }
-                        },
-                        icon: const Icon(Icons.stop_circle_outlined,
-                            color: Colors.redAccent),
-                        label: const Text('STOP',
-                            style: TextStyle(
-                                color: Colors.redAccent,
-                                letterSpacing: 1,
-                                fontFamily: AppTheme.fontFamily,
-                                fontWeight: FontWeight.bold)),
-                        style: OutlinedButton.styleFrom(
-                          side: const BorderSide(
-                              color: Colors.redAccent, width: 2),
-                          padding: const EdgeInsets.symmetric(vertical: 20),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12)),
-                        ),
-                      ),
+                  ] else ...[
+                    _ActionButton(
+                      onPressed: () =>
+                          ref.read(liveRunProvider.notifier).startRun(),
+                      label: 'START RUN',
+                      color: _btnColor,
+                      fontFamily: AppTheme.fontUnivers,
                     ),
                   ],
-                ),
-              ] else ...[
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      _showPermissionDialog(context, ref);
-                    },
-                    style:
-                        AppTheme.darkTheme.elevatedButtonTheme.style?.copyWith(
-                      padding: WidgetStateProperty.all(
-                          const EdgeInsets.symmetric(vertical: 20)),
-                    ),
-                    child: const Text('START RUN'),
-                  ),
-                ),
-              ],
-              const SizedBox(height: 20),
-            ],
-          ),
+
+                ],
+              ),
+            ),
+
+          ],
         ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// DIGIT PAIR
+// ─────────────────────────────────────────────────────────────────────────────
+class _DigitPair extends StatelessWidget {
+  final String left, right;
+  final double digitW, digitH;
+  const _DigitPair({
+    required this.left, required this.right,
+    required this.digitW, required this.digitH,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _tile(left),
+        const SizedBox(width: 6),
+        _tile(right),
       ],
     );
   }
 
-  void _showPermissionDialog(BuildContext context, WidgetRef ref) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppTheme.cardColor,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Background Tracking',
-            style: TextStyle(
-                color: Colors.white,
-                fontFamily: AppTheme.fontFamily,
-                fontWeight: FontWeight.bold)),
-        content: const Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'To accurately track your run even when the screen is off or the app is in the background, we need two things:',
-              style: TextStyle(color: Colors.white70, fontSize: 14),
-            ),
-            SizedBox(height: 16),
-            Text('1. Notification Permission',
-                style: TextStyle(
-                    color: AppTheme.primaryColor, fontWeight: FontWeight.bold)),
-            Text('To show persistent live stats in your tray.',
-                style: TextStyle(color: Colors.white60, fontSize: 12)),
-            SizedBox(height: 12),
-            Text('2. Battery Optimization Exemption',
-                style: TextStyle(
-                    color: AppTheme.primaryColor, fontWeight: FontWeight.bold)),
-            Text('To prevent the system from stopping the tracker mid-run.',
-                style: TextStyle(color: Colors.white60, fontSize: 12)),
-          ],
+  Widget _tile(String digit) {
+    final double fontSize = (digitW * 0.70).clamp(24.0, 72.0);
+    return Container(
+      width: digitW,
+      height: digitH,
+      decoration: ShapeDecoration(
+        color: _digitInner,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('CANCEL', style: TextStyle(color: Colors.grey)),
+      ),
+      alignment: Alignment.center,
+      child: Text(
+        digit,
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: fontSize,
+          fontFamily: AppTheme.fontGeneralSans,
+          fontWeight: FontWeight.w700,
+          height: 1.0,
+        ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// COLON SEPARATOR
+// ─────────────────────────────────────────────────────────────────────────────
+class _ColonSeparator extends StatelessWidget {
+  final double height;
+  const _ColonSeparator({required this.height});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 28,
+      height: height,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [_dot(), const SizedBox(height: 10), _dot()],
+      ),
+    );
+  }
+
+  Widget _dot() => Container(
+    width: 12,
+    height: 12,
+    decoration: const BoxDecoration(
+      color: Colors.white,
+      shape: BoxShape.circle,
+    ),
+    alignment: Alignment.center,
+    child: Container(
+      width: 5,
+      height: 5,
+      decoration: const BoxDecoration(
+        color: _digitInner,
+        shape: BoxShape.circle,
+      ),
+    ),
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// METRIC CARD
+// ─────────────────────────────────────────────────────────────────────────────
+class _MetricCard extends StatelessWidget {
+  final String svgPath, label, value;
+  const _MetricCard({
+    required this.svgPath,
+    required this.label,
+    required this.value,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: _metricCard,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SvgPicture.asset(svgPath, width: 22, height: 22),
+              const SizedBox(height: 8),
+              Text(
+                label,
+                style: const TextStyle(
+                  color: _labelColor,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  fontFamily: AppTheme.fontUnivers,
+                  height: 1.25,
+                ),
+              ),
+            ],
           ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              ref.read(liveRunProvider.notifier).startRun();
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.primaryColor,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10)),
+          const SizedBox(height: 10),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 10),
+            decoration: BoxDecoration(
+              color: _chipBg,
+              borderRadius: BorderRadius.circular(8),
             ),
-            child: const Text('CONTINUE',
-                style: TextStyle(
-                    color: Colors.black, fontWeight: FontWeight.bold)),
+            child: Text(
+              value,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: _chipText,
+                fontSize: 17,
+                fontFamily: AppTheme.fontGeneralSans,
+                fontWeight: FontWeight.w700,
+                height: 1.0,
+              ),
+            ),
           ),
         ],
       ),
     );
   }
+}
 
-  Widget _buildMetricBox(IconData icon, String title, String val) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 16),
-      decoration: BoxDecoration(
-        color: AppTheme.cardColor,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-            color: AppTheme.primaryColor.withOpacity(0.18), width: 1.5),
-        boxShadow: [
-          BoxShadow(
-            color: AppTheme.primaryColor.withOpacity(0.1),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
+// ─────────────────────────────────────────────────────────────────────────────
+// ACTION BUTTON
+// ─────────────────────────────────────────────────────────────────────────────
+class _ActionButton extends StatelessWidget {
+  final VoidCallback onPressed;
+  final String label;
+  final Color color;
+  final String fontFamily;
+  const _ActionButton({
+    required this.onPressed,
+    required this.label,
+    required this.color,
+    this.fontFamily = AppTheme.fontGeneralSans,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      height: 58,
+      child: ElevatedButton(
+        onPressed: onPressed,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: color,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
           ),
-        ],
-      ),
-      child: Column(
-        children: [
-          Icon(icon, color: AppTheme.primaryColor, size: 20),
-          const SizedBox(height: 8),
-          Text(title,
-              style: TextStyle(
-                  color: Colors.grey[400],
-                  fontFamily: AppTheme.fontFamily,
-                  fontSize: 10,
-                  letterSpacing: 1)),
-          const SizedBox(height: 4),
-          Text(val,
-              style: const TextStyle(
-                  color: Colors.white,
-                  fontFamily: AppTheme.fontFamily,
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold)),
-        ],
+          elevation: 0,
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 17,
+            fontWeight: FontWeight.w700,
+            fontFamily: fontFamily,
+            letterSpacing: 1.2,
+          ),
+        ),
       ),
     );
   }

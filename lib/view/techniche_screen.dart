@@ -1,10 +1,8 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import '../model/events_data.dart';
-import '../utils/animate_gradient_background.dart';
-import '../utils/glassmorphism_styles.dart';
 import 'event_detail_sheet.dart';
+import '../constant/appTheme.dart';
 
 class EventsScreen extends StatefulWidget {
   static const String routeName = '/events-screen';
@@ -37,53 +35,18 @@ class _EventsScreenState extends State<EventsScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.transparent,
-      extendBodyBehindAppBar: true,
-      body: Stack(
+      backgroundColor: AppTheme.backgroundGray,
+      body: Column(
         children: [
-          const AnimatedGradientBackground(),
-          SafeArea(
-            child: Column(
-              children: [
-                // Custom App Bar with Title
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-                  child: Row(
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.arrow_back_ios,
-                            color: Colors.white),
-                        onPressed: () => Navigator.of(context).pop(),
-                      ),
-                      const Expanded(
-                        child: Text(
-                          'EVENTS',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 3,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 48), // Balance the back button
-                    ],
-                  ),
-                ),
-                // Animated Tab Bar
-                _buildAnimatedTabBar(),
-                const SizedBox(height: 16),
-                // Tab Content
-                Expanded(
-                  child: TabBarView(
-                    controller: _tabController,
-                    children: eventData.map((category) {
-                      return _buildSubCategoryGrid(category.subCategories);
-                    }).toList(),
-                  ),
-                ),
-              ],
+          _buildHeader(context),
+          _buildTabBar(),
+          const SizedBox(height: 8),
+          Expanded(
+            child: TabBarView(
+              controller: _tabController,
+              children: eventData.map((category) {
+                return _buildSubCategoryGrid(category.subCategories);
+              }).toList(),
             ),
           ),
         ],
@@ -91,60 +54,103 @@ class _EventsScreenState extends State<EventsScreen>
     );
   }
 
-  Widget _buildAnimatedTabBar() {
+  Widget _buildHeader(BuildContext context) {
     return Container(
-      height: 50,
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(25),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(25),
-              border: Border.all(
-                color: Colors.white.withOpacity(0.2),
-                width: 1,
-              ),
-            ),
-            child: TabBar(
-              controller: _tabController,
-              isScrollable: true,
-              tabAlignment: TabAlignment.start,
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              labelPadding: const EdgeInsets.symmetric(horizontal: 16),
-              indicator: BoxDecoration(
-                borderRadius: BorderRadius.circular(20),
-                gradient: const LinearGradient(
-                  colors: [
-                    GlassmorphismStyles.accentCyan,
-                    GlassmorphismStyles.accentPurple,
-                  ],
-                ),
-                boxShadow: GlassmorphismStyles.neonGlow(
-                  GlassmorphismStyles.accentCyan,
-                  intensity: 0.3,
-                ),
-              ),
-              dividerColor: Colors.transparent,
-              indicatorSize: TabBarIndicatorSize.tab,
-              labelColor: Colors.black,
-              unselectedLabelColor: Colors.white70,
-              labelStyle: const TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 13,
-              ),
-              unselectedLabelStyle: const TextStyle(
-                fontWeight: FontWeight.w500,
-                fontSize: 13,
-              ),
-              tabs: eventData.map((category) {
-                return Tab(text: category.title);
-              }).toList(),
-            ),
-          ),
+      width: double.infinity,
+      decoration: const BoxDecoration(
+        color: Color(0xFF002B5B),
+        image: DecorationImage(
+          image: AssetImage('assets/ghm/frame3.png'),
+          fit: BoxFit.cover,
         ),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 25),
+      child: SafeArea(
+        bottom: false,
+        child: Column(
+          children: [
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              decoration: ShapeDecoration(
+                color: Colors.white,
+                shape: RoundedRectangleBorder(
+                  side: const BorderSide(width: 1, color: Color(0xFFAFAFAF)),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                shadows: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Row(
+                children: [
+                  GestureDetector(
+                    onTap: () => Navigator.pop(context),
+                    child: Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFF5F5F5),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.arrow_back_rounded, color: Color(0xFF6D7985), size: 20),
+                    ),
+                  ),
+                  const Spacer(flex: 1),
+                  const Text(
+                    'EVENTS',
+                    style: TextStyle(
+                      color: AppTheme.textMain,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      fontFamily: AppTheme.fontUnivers,
+                      height: 1.2,
+                    ),
+                  ),
+                  const Spacer(flex: 2),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTabBar() {
+    return Container(
+      height: 45,
+      margin: const EdgeInsets.only(top: 16),
+      child: TabBar(
+        controller: _tabController,
+        isScrollable: true,
+        tabAlignment: TabAlignment.start,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        labelPadding: const EdgeInsets.symmetric(horizontal: 20),
+        indicator: UnderlineTabIndicator(
+          borderSide: const BorderSide(width: 3, color: Color(0xFF002B5B)),
+          borderRadius: BorderRadius.circular(3),
+        ),
+        dividerColor: const Color(0xFFE8E8E8),
+        indicatorSize: TabBarIndicatorSize.label,
+        labelColor: const Color(0xFF002B5B),
+        unselectedLabelColor: const Color(0xFF6D7985),
+        labelStyle: const TextStyle(
+          fontWeight: FontWeight.w700,
+          fontSize: 14,
+          fontFamily: AppTheme.fontUnivers,
+        ),
+        unselectedLabelStyle: const TextStyle(
+          fontWeight: FontWeight.w500,
+          fontSize: 14,
+          fontFamily: AppTheme.fontGeneralSans,
+        ),
+        tabs: eventData.map((category) {
+          return Tab(text: category.title.toUpperCase());
+        }).toList(),
       ),
     );
   }
@@ -152,10 +158,10 @@ class _EventsScreenState extends State<EventsScreen>
   Widget _buildSubCategoryGrid(List<SubCategory> subCategories) {
     return AnimationLimiter(
       child: GridView.builder(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+        padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2,
-          childAspectRatio: 0.75,
+          childAspectRatio: 0.82,
           crossAxisSpacing: 16,
           mainAxisSpacing: 16,
         ),
@@ -163,12 +169,12 @@ class _EventsScreenState extends State<EventsScreen>
         itemBuilder: (context, index) {
           return AnimationConfiguration.staggeredGrid(
             position: index,
-            duration: const Duration(milliseconds: 500),
+            duration: const Duration(milliseconds: 400),
             columnCount: 2,
             child: SlideAnimation(
-              verticalOffset: 50.0,
+              verticalOffset: 30.0,
               child: FadeInAnimation(
-                child: _GlassmorphismCard(
+                child: _EventCard(
                   subCategory: subCategories[index],
                   onTap: () => showEventDetail(context, subCategories[index]),
                 ),
@@ -181,164 +187,106 @@ class _EventsScreenState extends State<EventsScreen>
   }
 }
 
-class _GlassmorphismCard extends StatefulWidget {
+class _EventCard extends StatelessWidget {
   final SubCategory subCategory;
   final VoidCallback onTap;
 
-  const _GlassmorphismCard({
+  const _EventCard({
     required this.subCategory,
     required this.onTap,
   });
 
   @override
-  State<_GlassmorphismCard> createState() => _GlassmorphismCardState();
-}
-
-class _GlassmorphismCardState extends State<_GlassmorphismCard>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _scaleController;
-  late Animation<double> _scaleAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-    _scaleController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 150),
-    );
-    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.95).animate(
-      CurvedAnimation(parent: _scaleController, curve: Curves.easeInOut),
-    );
-  }
-
-  @override
-  void dispose() {
-    _scaleController.stop();
-    _scaleController.dispose();
-    super.dispose();
-  }
-
-  void _onTapDown(TapDownDetails details) {
-    _scaleController.forward();
-  }
-
-  void _onTapUp(TapUpDetails details) {
-    _scaleController.reverse();
-    widget.onTap();
-  }
-
-  void _onTapCancel() {
-    _scaleController.reverse();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return ScaleTransition(
-      scale: _scaleAnimation,
-      child: GestureDetector(
-        onTapDown: _onTapDown,
-        onTapUp: _onTapUp,
-        onTapCancel: _onTapCancel,
-        child: Hero(
-          tag: 'subcategory_${widget.subCategory.title}',
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(20),
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
-                // Background image
-                Image.asset(
-                  widget.subCategory.imageAsset,
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: const Color(0xFFE8E8E8)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        clipBehavior: Clip.hardEdge,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Expanded(
+              child: Hero(
+                tag: 'subcategory_${subCategory.title}',
+                child: Image.asset(
+                  subCategory.imageAsset,
                   fit: BoxFit.cover,
                 ),
-                // Gradient overlay
-                Container(
-                  decoration: GlassmorphismStyles.imageOverlayGradient(
-                    borderRadius: 20,
-                  ),
-                ),
-                // Glass effect border
-                Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: Colors.white.withOpacity(0.25),
-                      width: 1.5,
-                    ),
-                  ),
-                ),
-                // Content
-                Positioned(
-                  left: 12,
-                  right: 12,
-                  bottom: 16,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        widget.subCategory.title,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                          shadows: [
-                            Shadow(
-                              color: Colors.black54,
-                              offset: Offset(0, 2),
-                              blurRadius: 4,
-                            ),
-                          ],
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 6),
-                      _buildEventBadge(),
-                    ],
-                  ),
-                ),
-              ],
+              ),
             ),
-          ),
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    subCategory.title,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      fontFamily: AppTheme.fontUnivers,
+                      color: AppTheme.textMain,
+                      height: 1.2,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 6),
+                  _buildEventBadge(),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
 
   Widget _buildEventBadge() {
-    final events = widget.subCategory.events;
+    final events = subCategory.events;
 
     String text;
     Color color;
+    Color bgColor;
 
     if (events.isEmpty) {
       text = 'Coming Soon';
-      color = GlassmorphismStyles.accentPurple;
-    } else if (events.length == 1 && events.first.redirectUrl != null) {
-      text = 'Register Now';
-      color = GlassmorphismStyles.accentCyan;
+      color = const Color(0xFFBDBDBD);
+      bgColor = const Color(0xFFF5F5F5);
     } else {
-      text = '${events.length} Events';
-      color = GlassmorphismStyles.accentCyan;
+      text = events.length == 1 && events.first.redirectUrl != null
+          ? 'REGISTER NOW'
+          : '${events.length} EVENTS';
+      color = const Color(0xFF002B5B);
+      bgColor = const Color(0xFFE1EBFF);
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.3),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: color.withOpacity(0.6),
-          width: 1,
-        ),
+        color: bgColor,
+        borderRadius: BorderRadius.circular(8),
       ),
       child: Text(
         text,
         style: TextStyle(
-          fontSize: 11,
-          fontWeight: FontWeight.w600,
+          fontSize: 10,
+          fontWeight: FontWeight.w700,
           color: color,
+          fontFamily: AppTheme.fontGeneralSans,
+          letterSpacing: 0.5,
         ),
       ),
     );
