@@ -20,6 +20,17 @@ class _MarathonMainScreenState extends ConsumerState<MarathonMainScreen> {
   int _currentIndex = 0;
 
   @override
+  void initState() {
+    super.initState();
+    // Start GPS acquisition early — when the marathon screen loads,
+    // not just when the Run tab is opened. This gives GPS time to
+    // acquire a fix and cache map tiles before the user starts running.
+    Future.microtask(() {
+      ref.read(liveRunProvider.notifier).enableTrackingIfPermitted();
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     final username = ref.watch(marathonUsernameProvider);
 

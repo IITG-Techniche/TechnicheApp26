@@ -24,6 +24,7 @@ class MarathonDashboardTab extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final progressAsync = ref.watch(progressStatsProvider);
     final recentRunsAsync = ref.watch(recentRunsProvider);
+    final currentUser = ref.watch(marathonUsernameProvider);
 
     return Scaffold(
       backgroundColor: AppTheme.backgroundGray,
@@ -47,8 +48,8 @@ class MarathonDashboardTab extends ConsumerWidget {
                   width: double.infinity,
                   color: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 14),
-                  child: const Text(
-                    'DASHBOARD',
+                  child: Text(
+                    currentUser.isEmpty ? 'Dashboard' : currentUser,
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: AppTheme.textMain,

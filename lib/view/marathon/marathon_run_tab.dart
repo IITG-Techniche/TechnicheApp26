@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import '../../providers/marathon_provider.dart';
 import '../../constant/appTheme.dart';
 import 'widgets/live_run_map.dart';
@@ -27,6 +27,15 @@ class _MarathonRunTabState extends ConsumerState<MarathonRunTab> {
     });
   }
 
+  /// Trigger haptic feedback reliably using the platform channel
+  Future<void> _hapticLong() async {
+    await SystemChannels.platform.invokeMethod('HapticFeedback.vibrate', 'HapticFeedbackType.heavyImpact');
+  }
+
+  Future<void> _hapticShort() async {
+    await SystemChannels.platform.invokeMethod('HapticFeedback.vibrate', 'HapticFeedbackType.lightImpact');
+  }
+
   @override
   Widget build(BuildContext context) {
     final runState = ref.watch(liveRunProvider);
@@ -46,9 +55,6 @@ class _MarathonRunTabState extends ConsumerState<MarathonRunTab> {
 
     return Column(
       children: [
-        // ── Header/Dashboard UI ──────────────────────────────────────────
-        // (Skipping detailed header for brevity, assuming standard layout)
-
         // ── Live Map ────────────────────────────────────────────────────
         Expanded(
           child: ClipRRect(
@@ -128,9 +134,14 @@ class _MarathonRunTabState extends ConsumerState<MarathonRunTab> {
                       children: [
                         Expanded(
                           child: _ActionButton(
-                            onPressed: () => runState.isPaused
-                                ? ref.read(liveRunProvider.notifier).resumeRun()
-                                : ref.read(liveRunProvider.notifier).pauseRun(),
+                            onPressed: () {
+                              _hapticShort();
+                              if (runState.isPaused) {
+                                ref.read(liveRunProvider.notifier).resumeRun();
+                              } else {
+                                ref.read(liveRunProvider.notifier).pauseRun();
+                              }
+                            },
                             label: runState.isPaused ? 'RESUME' : 'PAUSE',
                             color: _btnColor,
                           ),
@@ -139,17 +150,29 @@ class _MarathonRunTabState extends ConsumerState<MarathonRunTab> {
                         Expanded(
                           child: _ActionButton(
                             onPressed: () async {
+                              _hapticLong();
                               final finalState = runState;
                               await ref.read(liveRunProvider.notifier).stopRun();
                               if (context.mounted) {
-                                showDialog(
-                                  context: context,
-                                  builder: (context) => RunSummaryDialog(
-                                    routePoints: finalState.routePoints,
-                                    distanceKm: finalState.distanceKm,
-                                    totalSeconds: finalState.elapsedSeconds,
-                                    avgSpeed: finalState.avgSpeed,
-                                    calories: finalState.calories,
+                                Navigator.of(context).push(
+                                  PageRouteBuilder(
+                                    pageBuilder: (context, animation, secondaryAnimation) =>
+                                        RunSummaryDialog(
+                                      routePoints: finalState.routePoints,
+                                      distanceKm: finalState.distanceKm,
+                                      totalSeconds: finalState.elapsedSeconds,
+                                      avgSpeed: finalState.avgSpeed,
+                                      calories: finalState.calories,
+                                    ),
+                                    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                                      final tween = Tween(begin: const Offset(0, 1), end: Offset.zero)
+                                          .chain(CurveTween(curve: Curves.easeOutCubic));
+                                      return SlideTransition(
+                                        position: animation.drive(tween),
+                                        child: child,
+                                      );
+                                    },
+                                    transitionDuration: const Duration(milliseconds: 400),
                                   ),
                                 );
                               }
@@ -161,7 +184,10 @@ class _MarathonRunTabState extends ConsumerState<MarathonRunTab> {
                       ],
                     )
                   : _ActionButton(
-                      onPressed: () => ref.read(liveRunProvider.notifier).startRun(),
+                      onPressed: () {
+                        _hapticLong();
+                        ref.read(liveRunProvider.notifier).startRun();
+                      },
                       label: 'START RUN',
                       color: _btnColor,
                     ),

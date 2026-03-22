@@ -19,11 +19,17 @@ class MyForegroundTaskHandler extends TaskHandler {
   // ── GPS (primary) ──────────────────────────────────────────────────────────
   StreamSubscription<Position>? _locationSubscription;
   Position? _lastPosition;
+  DateTime? _lastPositionTime;
   bool _hasGpsFix = false;
+
+  // ── EMA smoothing ─────────────────────────────────────────────────────────
+  double? _smoothedLat;
+  double? _smoothedLng;
+  static const double _emaAlpha = 0.3; // Responsiveness vs smoothness tradeoff
 
   // ── Route tracking ─────────────────────────────────────────────────────────
   final List<Map<String, double>> _routePoints = [];
-  int _lastSentRouteIndex = 0; 
+  int _lastSentRouteIndex = 0;
 
   // ── Pace calculation ───────────────────────────────────────────────────────
   final List<({int time, double dist})> _history = [];
@@ -34,9 +40,9 @@ class MyForegroundTaskHandler extends TaskHandler {
 
   @override
   Future<void> onStart(DateTime timestamp, TaskStarter starter) async {
-    print('MyForegroundTaskHandler onStart (v11 Pure GPS)');
+    print('MyForegroundTaskHandler onStart (v12 Filtered GPS)');
     _startLocationTracking();
-    
+
     // Setup IsolateNameServer port
     final ReceivePort port = ReceivePort();
     IsolateNameServer.removePortNameMapping(_kPortName);
@@ -90,7 +96,7 @@ class MyForegroundTaskHandler extends TaskHandler {
     final String timeStr =
         '${(_elapsedSeconds ~/ 60).toString().padLeft(2, '0')}:'
         '${(_elapsedSeconds % 60).toString().padLeft(2, '0')}';
-    
+
     final String msg =
         '${_distanceKm.toStringAsFixed(2)} km | $timeStr | Pace: ${currentPace.toStringAsFixed(1)} min/km';
 
@@ -108,7 +114,7 @@ class MyForegroundTaskHandler extends TaskHandler {
       'hasGpsFix': _hasGpsFix,
       'newRoutePoints': newPoints,
     };
-    
+
     // Explicitly send data to main isolate
     FlutterForegroundTask.sendDataToMain(data);
 
@@ -148,7 +154,7 @@ class MyForegroundTaskHandler extends TaskHandler {
   }
 
   void _startLocationTracking() {
-    print('Starting Pure GPS tracking');
+    print('Starting Filtered GPS tracking (v12)');
     try {
       _locationSubscription?.cancel();
       _locationSubscription = Geolocator.getPositionStream(
@@ -159,13 +165,23 @@ class MyForegroundTaskHandler extends TaskHandler {
       ).listen((Position position) {
         if (_isPaused) return;
 
-        // Accuracy check: loosened to 35m to ensure tracking starts smoothly
-        if (position.accuracy > 35.0) {
-          print('GPS Log: Weak Signal (${position.accuracy.toStringAsFixed(1)}m)');
+        final now = DateTime.now();
+
+        // ── Filter 1: Accuracy check (30m threshold) ──
+        if (position.accuracy > 30.0) {
+          print(
+              'GPS Filter: Weak signal (${position.accuracy.toStringAsFixed(1)}m) — rejected');
           return;
         }
 
-        if (_lastPosition != null) {
+        // ── Filter 2: Minimum time delta (at least 1 second between points) ──
+        if (_lastPositionTime != null &&
+            now.difference(_lastPositionTime!).inMilliseconds < 1000) {
+          return;
+        }
+
+        // ── Filter 3: Speed-based rejection ──
+        if (_lastPosition != null && _lastPositionTime != null) {
           final double distMeters = Geolocator.distanceBetween(
             _lastPosition!.latitude,
             _lastPosition!.longitude,
@@ -173,22 +189,52 @@ class MyForegroundTaskHandler extends TaskHandler {
             position.longitude,
           );
 
-          // Movements less than 1m or greater than 100m in one update are usually noise
-          if (distMeters > 1.0 && distMeters < 100.0) {
+          final double timeDeltaSeconds =
+              now.difference(_lastPositionTime!).inMilliseconds / 1000.0;
+
+          if (timeDeltaSeconds > 0) {
+            final double speedMs = distMeters / timeDeltaSeconds;
+            // >12 m/s ≈ 43 km/h — impossible for running, reject
+            if (speedMs > 12.0) {
+              print(
+                  'GPS Filter: Speed spike (${speedMs.toStringAsFixed(1)} m/s) — rejected');
+              return;
+            }
+          }
+
+          // ── Filter 4: Displacement bounds (same as before but tighter upper) ──
+          // Movements <1m are jitter, >50m in one update are GPS teleports
+          if (distMeters > 1.0 && distMeters < 50.0) {
             _distanceKm += distMeters / 1000.0;
             _lastMovementTime = _elapsedSeconds;
           }
         }
 
+        // ── Filter 5: EMA smoothing on lat/lng ──
+        double smoothLat, smoothLng;
+        if (_smoothedLat == null || _smoothedLng == null) {
+          smoothLat = position.latitude;
+          smoothLng = position.longitude;
+        } else {
+          smoothLat =
+              _emaAlpha * position.latitude + (1 - _emaAlpha) * _smoothedLat!;
+          smoothLng =
+              _emaAlpha * position.longitude + (1 - _emaAlpha) * _smoothedLng!;
+        }
+        _smoothedLat = smoothLat;
+        _smoothedLng = smoothLng;
+
         _routePoints.add({
-          'lat': position.latitude,
-          'lng': position.longitude,
+          'lat': smoothLat,
+          'lng': smoothLng,
         });
 
         _lastPosition = position;
+        _lastPositionTime = now;
         _hasGpsFix = true;
 
-        print('GPS: ${position.latitude.toStringAsFixed(5)}, ${position.longitude.toStringAsFixed(5)} | dist: ${_distanceKm.toStringAsFixed(3)} km');
+        print(
+            'GPS: ${smoothLat.toStringAsFixed(5)}, ${smoothLng.toStringAsFixed(5)} | dist: ${_distanceKm.toStringAsFixed(3)} km');
       }, onError: (e) {
         print('Geolocator error: $e');
       });

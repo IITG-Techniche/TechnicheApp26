@@ -192,7 +192,7 @@ class _MarathonLeaderboardTabState
                       'Global Leaderboard ($category)',
                       style: const TextStyle(
                         color: AppTheme.textMain,
-                        fontSize: 20,
+                        fontSize: 24,
                         fontFamily: AppTheme.fontUnivers,
                         fontWeight: FontWeight.w700,
                       ),
@@ -315,13 +315,13 @@ class _MarathonLeaderboardTabState
   // ── LEADERBOARD TILE (rank 4+) ───────────────────────────────────────
   Widget _buildLeaderboardTile(_LeaderboardItem item, int rank, bool isMe) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
       padding: const EdgeInsets.all(12),
       clipBehavior: Clip.antiAlias,
       decoration: ShapeDecoration(
         color: isMe ? const Color(0xFFE8F0FE) : AppTheme.backgroundGray,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(68),
+          borderRadius: BorderRadius.circular(16),
         ),
       ),
       child: Row(
@@ -365,7 +365,7 @@ class _MarathonLeaderboardTabState
               maxLines: 1,
               style: const TextStyle(
                 color: Colors.black,
-                fontSize: 20,
+                fontSize: 18,
                 fontFamily: 'General Sans',
                 fontWeight: FontWeight.w600,
                 height: 1.2,
@@ -395,6 +395,7 @@ class _MarathonLeaderboardTabState
 
   // ── STICKY RANK FOOTER ───────────────────────────────────────────────
   Widget _buildStickyRank(_LeaderboardItem item, int rank) {
+    final currentUser = ref.watch(marathonUsernameProvider);
     return Container(
       height: 75,
       clipBehavior: Clip.antiAlias,
@@ -425,8 +426,8 @@ class _MarathonLeaderboardTabState
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Your Rank',
+               Text(
+                currentUser.isEmpty ? 'Your Rank' : currentUser,
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 18,

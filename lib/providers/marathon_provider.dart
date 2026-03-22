@@ -171,6 +171,13 @@ class LiveRunNotifier extends StateNotifier<LiveRunState> {
 
   static ReceivePort? _staticPort;
 
+  // ── EMA smoothing for UI marker ──
+  double? _smoothedLat;
+  double? _smoothedLng;
+  DateTime? _lastUiPositionTime;
+  Position? _lastUiPosition;
+  static const double _emaAlpha = 0.3;
+
   LiveRunNotifier(this._ref) : super(LiveRunState.initial()) {
     debugPrint('LiveRunNotifier initialized.');
     _initForegroundTask();
@@ -243,42 +250,82 @@ class LiveRunNotifier extends StateNotifier<LiveRunState> {
           distanceFilter: 3,
         ),
       ).listen((Position position) {
-        if (mounted) {
-          final newLoc = LatLng(position.latitude, position.longitude);
-          
-          // Local/Background source of truth for current point
-          state = state.copyWith(
-            currentLocation: newLoc, 
-            hasGpsFix: true, 
-            currentHeading: position.heading
+        if (!mounted) return;
+
+        final now = DateTime.now();
+
+        // ── Filter 1: Accuracy ──
+        if (position.accuracy > 30.0) return;
+
+        // ── Filter 2: Min time delta (1s) ──
+        if (_lastUiPositionTime != null &&
+            now.difference(_lastUiPositionTime!).inMilliseconds < 1000) {
+          return;
+        }
+
+        // ── Filter 3: Speed-based rejection ──
+        if (_lastUiPosition != null && _lastUiPositionTime != null) {
+          final distM = Geolocator.distanceBetween(
+            _lastUiPosition!.latitude,
+            _lastUiPosition!.longitude,
+            position.latitude,
+            position.longitude,
           );
+          final dtSec =
+              now.difference(_lastUiPositionTime!).inMilliseconds / 1000.0;
+          if (dtSec > 0 && (distM / dtSec) > 12.0) return; // >12 m/s = noise
+        }
 
-          // If tracking is active, update the route
-          if (state.isRunning && !state.isPaused) {
-            final updatedRoute = [...state.routePoints, newLoc];
+        // ── Filter 4: EMA smoothing ──
+        double sLat, sLng;
+        if (_smoothedLat == null || _smoothedLng == null) {
+          sLat = position.latitude;
+          sLng = position.longitude;
+        } else {
+          sLat = _emaAlpha * position.latitude +
+              (1 - _emaAlpha) * _smoothedLat!;
+          sLng = _emaAlpha * position.longitude +
+              (1 - _emaAlpha) * _smoothedLng!;
+        }
+        _smoothedLat = sLat;
+        _smoothedLng = sLng;
+        _lastUiPosition = position;
+        _lastUiPositionTime = now;
 
-            double addedDist = 0.0;
-            if (state.routePoints.isNotEmpty) {
-              addedDist = Geolocator.distanceBetween(
-                    state.routePoints.last.latitude,
-                    state.routePoints.last.longitude,
-                    position.latitude,
-                    position.longitude,
-                  ) /
-                  1000.0;
-            }
+        final newLoc = LatLng(sLat, sLng);
 
-            if (addedDist > 0.001 || state.routePoints.isEmpty) {
-              state = state.copyWith(
-                routePoints: updatedRoute,
-                distanceKm: state.distanceKm + addedDist,
-              );
-              _ref.read(localDbServiceProvider).insertRoutePoints([newLoc]);
-            }
-          } else if (!state.isRunning) {
-            // Preview mode - just show the dot
-            state = state.copyWith(routePoints: [newLoc]);
+        // Local/Background source of truth for current point
+        state = state.copyWith(
+          currentLocation: newLoc,
+          hasGpsFix: true,
+          currentHeading: position.heading,
+        );
+
+        // If tracking is active, update the route
+        if (state.isRunning && !state.isPaused) {
+          final updatedRoute = [...state.routePoints, newLoc];
+
+          double addedDist = 0.0;
+          if (state.routePoints.isNotEmpty) {
+            addedDist = Geolocator.distanceBetween(
+                  state.routePoints.last.latitude,
+                  state.routePoints.last.longitude,
+                  sLat,
+                  sLng,
+                ) /
+                1000.0;
           }
+
+          if (addedDist > 0.001 || state.routePoints.isEmpty) {
+            state = state.copyWith(
+              routePoints: updatedRoute,
+              distanceKm: state.distanceKm + addedDist,
+            );
+            _ref.read(localDbServiceProvider).insertRoutePoints([newLoc]);
+          }
+        } else if (!state.isRunning) {
+          // Preview mode - just show the dot
+          state = state.copyWith(routePoints: [newLoc]);
         }
       });
     }
@@ -444,9 +491,17 @@ class LiveRunNotifier extends StateNotifier<LiveRunState> {
       debugPrint('Error requesting permissions: $e');
     }
 
+    // Preserve current GPS fix so the marker doesn't vanish
+    final preservedLocation = state.currentLocation;
+    final preservedHeading = state.currentHeading;
+    final preservedHasGps = state.hasGpsFix;
+
     state = LiveRunState.initial().copyWith(
       isRunning: true,
       errorMessage: null,
+      currentLocation: preservedLocation,
+      hasGpsFix: preservedHasGps,
+      currentHeading: preservedHeading,
     );
 
     _startUiTimer();
@@ -494,7 +549,9 @@ class LiveRunNotifier extends StateNotifier<LiveRunState> {
       isSaving: true,
     );
     _uiTimer?.cancel();
+    // Cancel and null the subscription so enableTrackingIfPermitted can re-create it
     _uiLocationSubscription?.cancel();
+    _uiLocationSubscription = null;
 
     try {
       final username = _ref.read(marathonUsernameProvider);
@@ -539,6 +596,14 @@ class LiveRunNotifier extends StateNotifier<LiveRunState> {
     }
 
     state = LiveRunState.initial();
+
+    // Re-initialize GPS tracking for preview mode
+    // Reset EMA state for clean tracking
+    _smoothedLat = null;
+    _smoothedLng = null;
+    _lastUiPosition = null;
+    _lastUiPositionTime = null;
+    enableTrackingIfPermitted();
   }
 
   void resetRun() {
