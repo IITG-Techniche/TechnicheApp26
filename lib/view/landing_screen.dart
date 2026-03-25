@@ -194,7 +194,7 @@ class _LandingScreenState extends ConsumerState<LandingScreen> {
     final selectedIndex = ref.watch(bottomNavSelectedIndexProvider);
     return UpgradeAlert(
       child: Scaffold(
-        backgroundColor: Colors.transparent,
+        backgroundColor: Colors.white,
         body: AnimatedSwitcher(
           duration: const Duration(milliseconds: 420),
           switchInCurve: Curves.easeOutCubic,
@@ -232,6 +232,7 @@ class _LandingScreenState extends ConsumerState<LandingScreen> {
             ],
           ),
         ),
+        drawer: const AppDrawer(),
       ),
     );
   }
@@ -239,169 +240,165 @@ class _LandingScreenState extends ConsumerState<LandingScreen> {
   Widget _buildHomeContent(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
 
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: Stack(
-        children: [
-          Container(
-            width: double.infinity,
-            height: double.infinity,
-            color: AppTheme.backgroundGray,
-          ),
-          SafeArea(
-            top: true,
-            bottom: false,
-            child: Column(
-              children: [
-                Container(
-                  width: double.infinity,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFF002B5B),
-                    image: DecorationImage(
-                      image: AssetImage('assets/ghm/frame3.png'),
-                      fit: BoxFit.cover,
-                    ),
+    return Stack(
+      children: [
+        Container(
+          width: double.infinity,
+          height: double.infinity,
+          color: AppTheme.backgroundGray,
+        ),
+        SafeArea(
+          top: true,
+          bottom: false,
+          child: Column(
+            children: [
+              Container(
+                width: double.infinity,
+                decoration: const BoxDecoration(
+                  color: Color(0xFF002B5B),
+                  image: DecorationImage(
+                    image: AssetImage('assets/ghm/frame3.png'),
+                    fit: BoxFit.cover,
                   ),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                ),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(16),
+                      decoration: ShapeDecoration(
+                        color: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          side: const BorderSide(
+                            width: 1,
+                            color: Color(0xFFAFAFAF),
+                          ),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        shadows: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.05),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Builder(
+                            builder: (BuildContext innerContext) {
+                              return GestureDetector(
+                                onTap: () {
+                                  Scaffold.of(innerContext).openDrawer();
+                                },
+                                child: SizedBox(
+                                  width: 24,
+                                  height: 24,
+                                  child: Image.asset(
+                                    'assets/ghm/menu.png',
+                                    color: Colors.grey[600],
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                          SizedBox(
+                            width: 118.06,
+                            height: 20.01,
+                            child: Image.asset(
+                              'assets/ghm/logo3.png',
+                              fit: BoxFit.contain,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: EdgeInsets.all(screenWidth * 0.04),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(16),
-                        decoration: ShapeDecoration(
-                          color: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            side: const BorderSide(
-                              width: 1,
-                              color: Color(0xFFAFAFAF),
-                            ),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          shadows: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.05),
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Builder(
-                              builder: (BuildContext innerContext) {
-                                return GestureDetector(
-                                  onTap: () {
-                                    Scaffold.of(innerContext).openDrawer();
-                                  },
-                                  child: SizedBox(
-                                    width: 24,
-                                    height: 24,
-                                    child: Image.asset(
-                                      'assets/ghm/menu.png',
-                                      color: Colors.grey[600],
-                                    ),
-                                  ),
-                                );
-                              },
-                            ),
-                            SizedBox(
-                              width: 118.06,
-                              height: 20.01,
-                              child: Image.asset(
-                                'assets/ghm/logo3.png',
-                                fit: BoxFit.contain,
-                              ),
-                            ),
-                          ],
-                        ),
+                      Text(
+                        '  Explore',
+                        style: TextStyle(
+                            color: Color(0XFF232930),
+                            fontSize: 20,
+                            fontWeight: FontWeight.w700,
+                            height: 1.2,
+                            fontFamily: AppTheme.fontUnivers),
                       ),
-                      const SizedBox(height: 12),
+                      SizedBox(height: 20),
+                      _gridItem(
+                        context: context,
+                        title: 'GHM Registration',
+                        description:
+                            'Register for the biggest student organised marathon of india',
+                        imagePath: 'assets/ghm/ghm2.png',
+                        onTap: () => ref
+                            .read(bottomNavSelectedIndexProvider.notifier)
+                            .state = 3,
+                        logo_image: 'assets/ghm/shoes.png',
+                        logo_color: const Color(0xFF7C3EC3),
+                        logo_name: 'Register',
+                      ),
+                      SizedBox(height: screenWidth * 0.04),
+                      _gridItem(
+                        context: context,
+                        title: 'Practice Run',
+                        description:
+                            'Track your runs and join the leaderboard!',
+                        imagePath: 'assets/ghm/practicerun2.png',
+                        onTap: () => Navigator.pushNamed(
+                            context, MarathonMainScreen.routeName),
+                        logo_image: 'assets/ghm/runline.png',
+                        logo_color: const Color(0xFF175BCC),
+                        logo_name: 'Track',
+                      ),
+                      SizedBox(height: screenWidth * 0.04),
+                      _gridItem(
+                        context: context,
+                        title: 'Upcoming Events',
+                        description:
+                            'Stay updated with the latest fest information.',
+                        imagePath: 'assets/ghm/techniche2.png',
+                        onTap: () => ref
+                            .read(bottomNavSelectedIndexProvider.notifier)
+                            .state = 0,
+                        logo_image: 'assets/ghm/technichelogo.png',
+                        logo_color: const Color(0xFF175BCC),
+                        logo_name: 'Check Out',
+                      ),
+                      SizedBox(height: screenWidth * 0.04),
+                      _gridItem(
+                        context: context,
+                        title: 'Techno PYQs',
+                        description: 'Practice past year papers.',
+                        imagePath: 'assets/ghm/techno2.png',
+                        onTap: () => Navigator.pushNamed(
+                            context, TechnothlonScreen.routeName),
+                        logo_image: 'assets/ghm/technichelogo.png',
+                        logo_color: const Color(0xFF23242B),
+                        logo_name: 'Check Out',
+                      ),
+                      SizedBox(height: 20),
                     ],
                   ),
                 ),
-                Expanded(
-                  child: SingleChildScrollView(
-                    padding: EdgeInsets.all(screenWidth * 0.04),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          '  Explore',
-                          style: TextStyle(
-                              color: Color(0XFF232930),
-                              fontSize: 20,
-                              fontWeight: FontWeight.w700,
-                              height: 1.2,
-                              fontFamily: AppTheme.fontUnivers),
-                        ),
-                        SizedBox(height: 20),
-                        _gridItem(
-                          context: context,
-                          title: 'GHM Registration',
-                          description:
-                              'Register for the biggest student organised marathon of india',
-                          imagePath: 'assets/ghm/ghm2.png',
-                          onTap: () => ref
-                              .read(bottomNavSelectedIndexProvider.notifier)
-                              .state = 3,
-                          logo_image: 'assets/ghm/shoes.png',
-                          logo_color: const Color(0xFF7C3EC3),
-                          logo_name: 'Register',
-                        ),
-                        SizedBox(height: screenWidth * 0.04),
-                        _gridItem(
-                          context: context,
-                          title: 'Practice Run',
-                          description:
-                              'Track your runs and join the leaderboard!',
-                          imagePath: 'assets/ghm/practicerun2.png',
-                          onTap: () => Navigator.pushNamed(
-                              context, MarathonMainScreen.routeName),
-                          logo_image: 'assets/ghm/runline.png',
-                          logo_color: const Color(0xFF175BCC),
-                          logo_name: 'Track',
-                        ),
-                        SizedBox(height: screenWidth * 0.04),
-                        _gridItem(
-                          context: context,
-                          title: 'Upcoming Events',
-                          description:
-                              'Stay updated with the latest fest information.',
-                          imagePath: 'assets/ghm/techniche2.png',
-                          onTap: () => ref
-                              .read(bottomNavSelectedIndexProvider.notifier)
-                              .state = 0,
-                          logo_image: 'assets/ghm/technichelogo.png',
-                          logo_color: const Color(0xFF175BCC),
-                          logo_name: 'Check Out',
-                        ),
-                        SizedBox(height: screenWidth * 0.04),
-                        _gridItem(
-                          context: context,
-                          title: 'Techno PYQs',
-                          description: 'Practice past year papers.',
-                          imagePath: 'assets/ghm/techno2.png',
-                          onTap: () => Navigator.pushNamed(
-                              context, TechnothlonScreen.routeName),
-                          logo_image: 'assets/ghm/technichelogo.png',
-                          logo_color: const Color(0xFF23242B),
-                          logo_name: 'Check Out',
-                        ),
-                        SizedBox(height: 20),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
-      ),
-      drawer: const AppDrawer(),
+        ),
+      ],
     );
   }
 

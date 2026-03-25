@@ -10,11 +10,25 @@ const _statCardBg   = Color(0xFF002661);
 const _statCardText = Color(0xFFDFE8F4);
 const _btnColor     = AppTheme.primaryBlue;
 
-class MarathonRunTab extends ConsumerWidget {
+class MarathonRunTab extends ConsumerStatefulWidget {
   const MarathonRunTab({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<MarathonRunTab> createState() => _MarathonRunTabState();
+}
+
+class _MarathonRunTabState extends ConsumerState<MarathonRunTab> {
+  @override
+  void initState() {
+    super.initState();
+    // Request permissions and start tracking immediately when the Run Tab is opened
+    Future.microtask(() {
+      ref.read(liveRunProvider.notifier).enableTrackingIfPermitted();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final runState = ref.watch(liveRunProvider);
     final isRunning = runState.isRunning;
 
@@ -44,6 +58,7 @@ class MarathonRunTab extends ConsumerWidget {
             ),
             child: LiveRunMap(
               routePoints: runState.routePoints,
+              currentLocation: runState.currentLocation,
               hasGpsFix: runState.hasGpsFix,
               isRunning: isRunning,
               currentHeading: runState.currentHeading,

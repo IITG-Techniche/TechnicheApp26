@@ -23,29 +23,23 @@ class _MarathonMainScreenState extends ConsumerState<MarathonMainScreen> {
   Widget build(BuildContext context) {
     final username = ref.watch(marathonUsernameProvider);
 
-    // Tab Logic
-    Widget currentTab;
     if (username.isEmpty) {
-      currentTab = const MarathonEnrollmentView();
-    } else {
-      switch (_currentIndex) {
-        case 0:
-          currentTab = const MarathonDashboardTab();
-          break;
-        case 1:
-          currentTab = const MarathonRunTab();
-          break;
-        case 2:
-          currentTab = const MarathonLeaderboardTab();
-          break;
-        default:
-          currentTab = const MarathonDashboardTab();
-      }
+      return const Scaffold(
+        backgroundColor: AppTheme.backgroundGray,
+        body: MarathonEnrollmentView(),
+      );
     }
 
     return Scaffold(
       backgroundColor: AppTheme.backgroundGray,
-      body: currentTab,
+      body: IndexedStack(
+        index: _currentIndex,
+        children: const [
+          MarathonDashboardTab(),
+          MarathonRunTab(),
+          MarathonLeaderboardTab(),
+        ],
+      ),
       bottomNavigationBar: _buildBottomBar(),
     );
   }

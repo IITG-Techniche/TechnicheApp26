@@ -12,12 +12,7 @@ class RunnerMarker extends StatefulWidget {
   State<RunnerMarker> createState() => _RunnerMarkerState();
 }
 
-class _RunnerMarkerState extends State<RunnerMarker>
-    with TickerProviderStateMixin {
-  late AnimationController _pulseController;
-  late Animation<double> _scaleAnim;
-  late Animation<double> _opacityAnim;
-  
+class _RunnerMarkerState extends State<RunnerMarker> {
   StreamSubscription<CompassEvent>? _compassSubscription;
   double _currentHeading = 0;
 
@@ -26,18 +21,6 @@ class _RunnerMarkerState extends State<RunnerMarker>
     super.initState();
     _currentHeading = widget.heading ?? 0;
     
-    _pulseController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1500),
-    )..repeat();
-
-    _scaleAnim = Tween<double>(begin: 1.0, end: 2.5).animate(
-      CurvedAnimation(parent: _pulseController, curve: Curves.easeOut),
-    );
-    _opacityAnim = Tween<double>(begin: 0.6, end: 0.0).animate(
-      CurvedAnimation(parent: _pulseController, curve: Curves.easeOut),
-    );
-
     // Initialize compass listener with fallback
     _initCompass();
   }
@@ -74,7 +57,6 @@ class _RunnerMarkerState extends State<RunnerMarker>
 
   @override
   void dispose() {
-    _pulseController.dispose();
     _compassSubscription?.cancel();
     super.dispose();
   }
@@ -90,73 +72,94 @@ class _RunnerMarkerState extends State<RunnerMarker>
       child: Stack(
         alignment: Alignment.center,
         children: [
-          // 1. Pulsing ring
-          AnimatedBuilder(
-            animation: _pulseController,
-            builder: (context, child) => Transform.scale(
-              scale: _scaleAnim.value,
-              child: Container(
-                width: 18,
-                height: 18,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: const Color(0xFF002661).withOpacity(_opacityAnim.value),
+          // 2. The "Torch/Beam" (expanding cone)
+          AnimatedRotation(
+            turns: turns,
+            duration: const Duration(milliseconds: 100),
+            curve: Curves.easeOutCubic,
+            alignment: Alignment.center,
+            child: SizedBox(
+              width: 900, // Increased reach
+              height: 900,
+              child: CustomPaint(
+                painter: _BeamPainter(
+                  color: const Color(0xFF002661),
+                  beamWidth: 90, // Keeping user's manual 90
                 ),
               ),
             ),
           ),
-          
-          // 2. Ultra High-speed rotation wrapper
-          AnimatedRotation(
-            turns: turns,
-            duration: const Duration(milliseconds: 20), // Instantaneous feel
-            curve: Curves.linear,
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                // Directional Indicator Tip (North)
-                Positioned(
-                  top: -6,
-                  child: Container(
-                    width: 14,
-                    height: 14,
-                    decoration: const BoxDecoration(
-                      color: Color(0xFF002661),
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                ),
-                
-                // Solid center dot with North Icon
-                Container(
-                  width: 24,
-                  height: 24,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: const Color(0xFF002661),
-                    border: Border.all(color: Colors.white, width: 2.5),
-                    boxShadow: const [
-                      BoxShadow(
-                        color: Color(0x60000000),
-                        blurRadius: 5,
-                        offset: Offset(0, 3),
-                      ),
-                    ],
-                  ),
-                  child: const Center(
-                    child: Icon(
-                      Icons.north, 
-                      color: Colors.white,
-                      size: 16,
-                      weight: 900,
-                    ),
-                  ),
+
+          // 3. Central Dot (Location) - No pulsing circle here as requested
+          Container(
+            width: 18,
+            height: 18,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.white,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.2),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
                 ),
               ],
+            ),
+            child: Center(
+              child: Container(
+                width: 14,
+                height: 14,
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Color(0xFF002661),
+                ),
+              ),
             ),
           ),
         ],
       ),
     );
   }
+}
+
+class _BeamPainter extends CustomPainter {
+  final Color color;
+  final double beamWidth;
+  _BeamPainter({required this.color, this.beamWidth = 70});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..shader = RadialGradient(
+        colors: [
+          color.withOpacity(0.4),
+          color.withOpacity(0.12),
+          Colors.transparent,
+        ],
+        stops: const [0.0, 0.85, 1.0], // More reach
+      ).createShader(Rect.fromCircle(
+        center: Offset(size.width / 2, size.height / 2),
+        radius: size.width / 2,
+      ));
+
+    final path = Path();
+    final center = Offset(size.width / 2, size.height / 2);
+    
+    // Create cone pointing upwards (North by default)
+    final double startAngle = -90 - (beamWidth / 2);
+    
+    path.moveTo(center.dx, center.dy);
+    path.arcTo(
+      Rect.fromCircle(center: center, radius: size.width / 2),
+      startAngle * (3.14159 / 180),
+      beamWidth * (3.14159 / 180),
+      false,
+    );
+    path.close();
+
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

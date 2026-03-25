@@ -37,6 +37,7 @@ class MapCacheService {
     if (!_initialized) await init();
 
     const double radiusDegrees = 0.01;
+    final List<String> urls = [];
 
     for (int zoom = minZoom; zoom <= maxZoom; zoom++) {
       final northTile = _latLngToTile(
@@ -50,18 +51,33 @@ class MapCacheService {
 
       for (int x = westTile.x; x <= eastTile.x; x++) {
         for (int y = northTile.y; y <= southTile.y; y++) {
-          final url = 'https://tile.openstreetmap.org/$zoom/$x/$y.png';
-          _prefetchTile(url);
+          final url = 'https://mt1.google.com/vt/lyrs=m&x=$x&y=$y&z=$zoom';
+          urls.add(url);
         }
       }
+    }
+
+    // Limit concurrency to avoid overwhelming network
+    const int concurrency = 5;
+    for (int i = 0; i < urls.length; i += concurrency) {
+      final end = (i + concurrency < urls.length) ? i + concurrency : urls.length;
+      final batch = urls.sublist(i, end);
+      await Future.wait(batch.map((url) => _prefetchTile(url)));
     }
   }
 
   static Future<void> _prefetchTile(String url) async {
     try {
-      await _dio.get(url);
+      await _dio.get(
+        url,
+        options: Options(
+          responseType: ResponseType.bytes,
+          sendTimeout: const Duration(seconds: 5),
+          receiveTimeout: const Duration(seconds: 5),
+        ),
+      );
     } catch (_) {
-      // Ignore failures
+      // Ignore failures during prefetch
     }
   }
 

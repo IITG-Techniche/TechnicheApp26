@@ -106,21 +106,12 @@ class MarathonService {
   }
 
   // ── Progress stats ────────────────────────────────────────────────────────
-  /// Replaces the old RPC call get_user_progress.
-  /// Fetches last 14 days of runs and computes stats in Dart.
+  /// Uses the get_user_progress RPC on Supabase for data accuracy and performance.
   Future<ProgressStats> getUserProgress(String username) async {
-    final since = DateTime.now().subtract(const Duration(days: 14));
+    final response = await _supabase.rpc('get_user_progress', params: {
+      'p_username': username,
+    });
 
-    final response = await _supabase
-        .from('practice_logs')
-        .select()
-        .eq('username', username)
-        .gte('created_at', since.toIso8601String())
-        .order('created_at', ascending: true);
-
-    final logs =
-    (response as List).map((e) => PracticeLog.fromJson(e)).toList();
-
-    return ProgressStats.fromLogs(logs);
+    return ProgressStats.fromJson(response);
   }
 }

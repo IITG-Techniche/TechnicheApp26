@@ -88,11 +88,12 @@ class LiveRunState {
   final double distanceKm;
   final int elapsedSeconds;
   final double currentPace;
-  final double? currentHeading; // User's orientation
+  final double? currentHeading;
   final bool isSaving;
   final String? errorMessage;
   final List<LatLng> routePoints;
   final bool hasGpsFix;
+  final LatLng? currentLocation;
 
   LiveRunState({
     required this.isRunning,
@@ -105,6 +106,7 @@ class LiveRunState {
     this.errorMessage,
     this.routePoints = const [],
     this.hasGpsFix = false,
+    this.currentLocation,
   });
 
   double get avgSpeed {
@@ -125,6 +127,7 @@ class LiveRunState {
     String? errorMessage,
     List<LatLng>? routePoints,
     bool? hasGpsFix,
+    LatLng? currentLocation,
   }) {
     return LiveRunState(
       isRunning: isRunning ?? this.isRunning,
@@ -137,6 +140,7 @@ class LiveRunState {
       errorMessage: errorMessage,
       routePoints: routePoints ?? this.routePoints,
       hasGpsFix: hasGpsFix ?? this.hasGpsFix,
+      currentLocation: currentLocation ?? this.currentLocation,
     );
   }
 
@@ -170,51 +174,114 @@ class LiveRunNotifier extends StateNotifier<LiveRunState> {
   LiveRunNotifier(this._ref) : super(LiveRunState.initial()) {
     debugPrint('LiveRunNotifier initialized.');
     _initForegroundTask();
-    _dataSubscription =
-        _liveRunDataController.stream.listen(_onReceiveTaskData);
     _setupBulletproofPort();
 
-    // START PREVIEW TRACKING (Orientation + Location before START is clicked)
-    _startPreviewTracking();
+    // START TRACKING (Orientation + Location check)
+    enableTrackingIfPermitted();
   }
 
-  Future<void> _startPreviewTracking() async {
-    // 0. Ensure permissions for sensors/location are requested
+  Future<bool> requestPermissions() async {
     try {
+      // 1. Sensors (Compass)
       if (!await Permission.sensors.isGranted) {
         await Permission.sensors.request();
       }
-      if (!await Geolocator.isLocationServiceEnabled()) {
-        // Location is often needed for compass on Android
-        await Geolocator.requestPermission();
+
+      // 2. Location (Foreground)
+      LocationPermission status = await Geolocator.checkPermission();
+      if (status == LocationPermission.denied) {
+        status = await Geolocator.requestPermission();
       }
-    } catch (_) {}
+
+      if (status == LocationPermission.deniedForever) {
+        state = state.copyWith(
+          errorMessage: 'Location permission is permanently denied. Please enable in settings.'
+        );
+        return false;
+      }
+      
+      if (status == LocationPermission.denied) {
+        state = state.copyWith(
+          errorMessage: 'Location permission is required for tracking.'
+        );
+        return false;
+      }
+
+      // 3. Activity Recognition (Steps/Motion)
+      if (!await Permission.activityRecognition.isGranted) {
+        await Permission.activityRecognition.request();
+      }
+
+      return true;
+    } catch (e) {
+      debugPrint('Error requesting permissions: $e');
+      return false;
+    }
+  }
+
+  Future<void> enableTrackingIfPermitted() async {
+    // 0. Ensure permissions for sensors/location are requested
+    final granted = await requestPermissions();
+    if (!granted) return;
 
     // 1. Instant Compass for the arrow
-    _compassSubscription?.cancel();
-    _compassSubscription = FlutterCompass.events?.listen((event) {
-      if (mounted) {
-        state = state.copyWith(
-            currentHeading: event.heading ?? event.headingForCameraMode);
-      }
-    });
+    if (_compassSubscription == null) {
+      _compassSubscription = FlutterCompass.events?.listen((event) {
+        if (mounted) {
+          state = state.copyWith(
+              currentHeading: event.heading ?? event.headingForCameraMode);
+        }
+      });
+    }
 
     // 2. Low-frequency location for the preview dot
-    _uiLocationSubscription?.cancel();
-    _uiLocationSubscription = Geolocator.getPositionStream(
-      locationSettings: const LocationSettings(
-        accuracy: LocationAccuracy.best,
-        distanceFilter: 3,
-      ),
-    ).listen((Position pos) {
-      if (mounted && !state.isRunning) {
-        state = state.copyWith(
-          routePoints: [LatLng(pos.latitude, pos.longitude)],
-          hasGpsFix: true,
-          currentHeading: pos.heading,
-        );
-      }
-    });
+    // Note: Always maintain a listener for 'currentLocation' fix
+    if (_uiLocationSubscription == null) {
+      _uiLocationSubscription = Geolocator.getPositionStream(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.best,
+          distanceFilter: 3,
+        ),
+      ).listen((Position position) {
+        if (mounted) {
+          final newLoc = LatLng(position.latitude, position.longitude);
+          
+          // Local/Background source of truth for current point
+          state = state.copyWith(
+            currentLocation: newLoc, 
+            hasGpsFix: true, 
+            currentHeading: position.heading
+          );
+
+          // If tracking is active, update the route
+          if (state.isRunning && !state.isPaused) {
+            final updatedRoute = [...state.routePoints, newLoc];
+
+            double addedDist = 0.0;
+            if (state.routePoints.isNotEmpty) {
+              addedDist = Geolocator.distanceBetween(
+                    state.routePoints.last.latitude,
+                    state.routePoints.last.longitude,
+                    position.latitude,
+                    position.longitude,
+                  ) /
+                  1000.0;
+            }
+
+            if (addedDist > 0.001 || state.routePoints.isEmpty) {
+              state = state.copyWith(
+                routePoints: updatedRoute,
+                distanceKm: state.distanceKm + addedDist,
+              );
+              _ref.read(localDbServiceProvider).insertRoutePoints([newLoc]);
+            }
+          } else if (!state.isRunning) {
+            // Preview mode - just show the dot
+            state = state.copyWith(routePoints: [newLoc]);
+          }
+        }
+      });
+    }
   }
 
   void _setupBulletproofPort() {
@@ -326,54 +393,8 @@ class LiveRunNotifier extends StateNotifier<LiveRunState> {
   }
 
   void _startUiGpsTracking() {
-    _uiLocationSubscription?.cancel();
-
-    // Compass for stationary orientation
-    _compassSubscription?.cancel();
-    _compassSubscription = FlutterCompass.events?.listen((event) {
-      if (state.isRunning && !state.isPaused) {
-        state = state.copyWith(currentHeading: event.heading);
-      }
-    });
-
-    _uiLocationSubscription = Geolocator.getPositionStream(
-      locationSettings: const LocationSettings(
-        accuracy: LocationAccuracy.best,
-        distanceFilter: 3,
-      ),
-    ).listen((Position position) {
-      if (state.isRunning && !state.isPaused) {
-        final newPoint = LatLng(position.latitude, position.longitude);
-
-        // Add point to UI route immediately
-        final updatedRoute = [...state.routePoints, newPoint];
-
-        // Calculate incremental distance locally for smooth UI updates
-        double addedDist = 0.0;
-        if (state.routePoints.isNotEmpty) {
-          addedDist = Geolocator.distanceBetween(
-                state.routePoints.last.latitude,
-                state.routePoints.last.longitude,
-                position.latitude,
-                position.longitude,
-              ) /
-              1000.0;
-        }
-
-        // Only add significant movement (> 1m) to avoid GPS jitter at static location
-        if (addedDist > 0.001 || state.routePoints.isEmpty) {
-          state = state.copyWith(
-            routePoints: updatedRoute,
-            currentHeading: position.heading,
-            hasGpsFix: true,
-            distanceKm: state.distanceKm + addedDist,
-          );
-
-          // Also save to local SQLite for safety
-          _ref.read(localDbServiceProvider).insertRoutePoints([newPoint]);
-        }
-      }
-    });
+    // This is now handled by the unified listener in enableTrackingIfPermitted()
+    // which remains active throughout the notifier lifecycle to ensure a live fix.
   }
 
   void _startUiTimer() {
@@ -396,42 +417,20 @@ class LiveRunNotifier extends StateNotifier<LiveRunState> {
     }
 
     try {
-      // 1. Check if GPS is enabled on the device
+      // 1. Core Permissions
+      if (!await requestPermissions()) return;
+
+      // 2. Extra Location / Background
       if (!await Geolocator.isLocationServiceEnabled()) {
-        state = state.copyWith(
-            errorMessage:
-                'Please enable GPS/Location services on your device.');
+        state = state.copyWith(errorMessage: 'Please enable GPS/Location services.');
         return;
       }
 
-      // 2. Activity Recognition
-      if (!await Permission.activityRecognition.isGranted) {
-        final status = await Permission.activityRecognition.request();
-        if (!status.isGranted) {
-          state = state.copyWith(
-              errorMessage: 'Activity Recognition permission is required.');
-          return;
-        }
+      if (!await Permission.locationAlways.isGranted) {
+        await Permission.locationAlways.request();
       }
 
-      // 3. Location
-      if (!await Permission.location.isGranted) {
-        final status = await Permission.location.request();
-        if (!status.isGranted) {
-          state = state.copyWith(
-              errorMessage:
-                  'Location permission is required for accurate tracking.');
-          return;
-        }
-      }
-
-      // 4. Background Location (Best effort for Android 10+)
-      if (await Permission.location.isGranted) {
-        if (!await Permission.locationAlways.isGranted) {
-          await Permission.locationAlways.request();
-        }
-      }
-
+      // 3. System Optimizations
       if (!await FlutterForegroundTask.isIgnoringBatteryOptimizations) {
         await FlutterForegroundTask.requestIgnoreBatteryOptimization();
       }

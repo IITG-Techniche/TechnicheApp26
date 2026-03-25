@@ -57,16 +57,25 @@ class _GHMRegistrationScreenState extends State<GHMRegistrationScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final bodyContent = registrationsOpen
+        ? _buildRegistrationForm()
+        : Column(
+            children: [
+              _buildHeader(context),
+              Expanded(child: _buildClosedMessage()),
+            ],
+          );
+
+    if (widget.isTab) {
+      return Container(
+        color: const Color(0xFFEDF1F5),
+        child: bodyContent,
+      );
+    }
+
     return Scaffold(
       backgroundColor: const Color(0xFFEDF1F5),
-      body: registrationsOpen
-          ? _buildRegistrationForm()
-          : Column(
-              children: [
-                _buildHeader(context),
-                Expanded(child: _buildClosedMessage()),
-              ],
-            ),
+      body: bodyContent,
     );
   }
 

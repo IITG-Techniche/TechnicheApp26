@@ -62,7 +62,13 @@ class _RunSummaryDialogState extends State<RunSummaryDialog> {
 
       // 3. Share using share_plus
       final xFile = XFile(imagePath.path);
-      await Share.shareXFiles([xFile], text: 'Just finished my Marathon Practice run!');
+      final String shareMessage = "🏃 I just crushed my GHM Practice Run! \n"
+          "📊 Distance: ${widget.distanceKm} km \n"
+          "🏆 Check out my rank on the GHM Leaderboard in the Techniche App! \n\n"
+          "🔥 Join me and start your fitness journey! Download the official Techniche App here: \n"
+          "🔗 https://play.google.com/store/apps/details?id=com.techniche.techniche_app"; 
+      
+      await Share.shareXFiles([xFile], text: shareMessage);
     } catch (e) {
       debugPrint('Error sharing screenshot: $e');
       if (mounted) {
@@ -119,10 +125,10 @@ class _RunSummaryDialogState extends State<RunSummaryDialog> {
                         child: Stack(
                           fit: StackFit.expand,
                           children: [
-                            Image.asset(
-                              'assets/ghm.png',
-                              fit: BoxFit.fill,
-                            ),
+                            // Image.asset(
+                            //   'assets/ghm.png',
+                            //   fit: BoxFit.fill,
+                            // ),
                             Container(color: Colors.black.withOpacity(0.5)),
                             if (widget.routePoints.isNotEmpty)
                               Padding(
@@ -303,20 +309,31 @@ class RoutePainter extends CustomPainter {
     double latRange = (maxLat - minLat).abs();
     double lngRange = (maxLng - minLng).abs();
 
-    // Avoid division by zero for single points or vertical/horizontal lines
-    if (latRange == 0) latRange = 0.0001;
-    if (lngRange == 0) lngRange = 0.0001;
-
-    // 2. Map coordinates to canvas space
-    // We want to keep the aspect ratio of the route correctly
-    double scale = size.width / lngRange;
-    if (size.height / latRange < scale) {
-      scale = size.height / latRange;
+    // Fix: Enforce a minimum range (approx 1km) so short runs (e.g. 0.01km) 
+    // don't appear misleadingly large by filling the entire canvas.
+    const double minRange = 0.008; // Roughly 900m at equator
+    if (latRange < minRange) {
+      double diff = (minRange - latRange) / 2;
+      minLat -= diff;
+      maxLat += diff;
+      latRange = minRange;
+    }
+    if (lngRange < minRange) {
+      double diff = (minRange - lngRange) / 2;
+      minLng -= diff;
+      maxLng += diff;
+      lngRange = minRange;
     }
 
+    // 2. Map coordinates to canvas space
+    // Scale points to fit, maintaining aspect ratio
+    final double scaleX = size.width / lngRange;
+    final double scaleY = size.height / latRange;
+    final double scale = (scaleX < scaleY) ? scaleX : scaleY;
+
     // Center the route in the canvas
-    double offsetX = (size.width - (lngRange * scale)) / 2;
-    double offsetY = (size.height - (latRange * scale)) / 2;
+    final double offsetX = (size.width - (lngRange * scale)) / 2;
+    final double offsetY = (size.height - (latRange * scale)) / 2;
 
     List<Offset> offsets = [];
     for (var p in points) {

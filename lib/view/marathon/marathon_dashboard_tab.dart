@@ -263,7 +263,8 @@ class _StatsGrid extends StatelessWidget {
               const SizedBox(width: 16),
               Expanded(
                   child: _StatCard(
-                      label: 'Improvement', value: '+${stats.improvement}%')),
+                      label: 'Improvement',
+                      value: '${stats.improvement > 0 ? '+' : ''}${stats.improvement.round()}%')),
             ],
           ),
         ),

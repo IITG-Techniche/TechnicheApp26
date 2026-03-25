@@ -285,20 +285,29 @@ class ProgressStats {
       }
     }
 
-    // Improvement % vs last week
-    final startOfLastWeek = startOfWeek.subtract(const Duration(days: 7));
-    final lastWeekKm = logs
+    // Improvement % vs Yesterday
+    final yesterday = todayMidnight.subtract(const Duration(days: 1));
+    final todayDist = logs
         .where((r) =>
-            !r.createdAt.isBefore(startOfLastWeek) &&
-            r.createdAt.isBefore(startOfWeek))
+            !r.createdAt.isBefore(todayMidnight) &&
+            r.createdAt.isAfter(todayMidnight.subtract(const Duration(seconds: 1))))
+        .fold(0.0, (s, r) => s + r.distanceKm);
+
+    final yesterdayDist = logs
+        .where((r) =>
+            !r.createdAt.isBefore(yesterday) &&
+            r.createdAt.isBefore(todayMidnight))
         .fold(0.0, (s, r) => s + r.distanceKm);
 
     double improvement = 0;
-    if (lastWeekKm > 0) {
-      improvement = ((weeklyKm - lastWeekKm) / lastWeekKm) * 100;
-    } else if (weeklyKm > 0) {
-      improvement = 100;
+    if (yesterdayDist > 0) {
+      improvement = ((todayDist - yesterdayDist) / yesterdayDist) * 100;
+    } else if (todayDist > 0) {
+      improvement = 100.0;
     }
+
+    // Round to 1 decimal place or integer as requested (using round to keep it clean)
+    improvement = double.parse(improvement.toStringAsFixed(1));
 
     return ProgressStats(
       streak: streak,

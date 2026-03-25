@@ -35,35 +35,44 @@ class _EventsScreenState extends State<EventsScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppTheme.backgroundGray,
-      body: NestedScrollView(
-        headerSliverBuilder: (context, innerBoxIsScrolled) {
-          return [
-            SliverToBoxAdapter(child: _buildHeader(context)),
-            SliverPersistentHeader(
-              pinned: true,
-              delegate: _SliverAppBarDelegate(
-                Container(
-                  color: AppTheme.backgroundGray,
-                  child: Column(
-                    children: [
-                      _buildTabBar(),
-                      const SizedBox(height: 8),
-                    ],
-                  ),
+    final bodyContent = NestedScrollView(
+      headerSliverBuilder: (context, innerBoxIsScrolled) {
+        return [
+          SliverToBoxAdapter(child: _buildHeader(context)),
+          SliverPersistentHeader(
+            pinned: true,
+            delegate: _SliverAppBarDelegate(
+              Container(
+                color: AppTheme.backgroundGray,
+                child: Column(
+                  children: [
+                    _buildTabBar(),
+                    const SizedBox(height: 8),
+                  ],
                 ),
               ),
             ),
-          ];
-        },
-        body: TabBarView(
-          controller: _tabController,
-          children: eventData.map((category) {
-            return _buildSubCategoryGrid(category.subCategories);
-          }).toList(),
-        ),
+          ),
+        ];
+      },
+      body: TabBarView(
+        controller: _tabController,
+        children: eventData.map((category) {
+          return _buildSubCategoryGrid(category.subCategories);
+        }).toList(),
       ),
+    );
+
+    if (widget.isTab) {
+      return Container(
+        color: AppTheme.backgroundGray,
+        child: bodyContent,
+      );
+    }
+
+    return Scaffold(
+      backgroundColor: AppTheme.backgroundGray,
+      body: bodyContent,
     );
   }
 
