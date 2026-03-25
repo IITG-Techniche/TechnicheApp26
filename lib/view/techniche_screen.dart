@@ -6,8 +6,9 @@ import '../constant/appTheme.dart';
 
 class EventsScreen extends StatefulWidget {
   static const String routeName = '/events-screen';
+  final bool isTab;
 
-  const EventsScreen({super.key});
+  const EventsScreen({super.key, this.isTab = false});
 
   @override
   State<EventsScreen> createState() => _EventsScreenState();
@@ -36,20 +37,32 @@ class _EventsScreenState extends State<EventsScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.backgroundGray,
-      body: Column(
-        children: [
-          _buildHeader(context),
-          _buildTabBar(),
-          const SizedBox(height: 8),
-          Expanded(
-            child: TabBarView(
-              controller: _tabController,
-              children: eventData.map((category) {
-                return _buildSubCategoryGrid(category.subCategories);
-              }).toList(),
+      body: NestedScrollView(
+        headerSliverBuilder: (context, innerBoxIsScrolled) {
+          return [
+            SliverToBoxAdapter(child: _buildHeader(context)),
+            SliverPersistentHeader(
+              pinned: true,
+              delegate: _SliverAppBarDelegate(
+                Container(
+                  color: AppTheme.backgroundGray,
+                  child: Column(
+                    children: [
+                      _buildTabBar(),
+                      const SizedBox(height: 8),
+                    ],
+                  ),
+                ),
+              ),
             ),
-          ),
-        ],
+          ];
+        },
+        body: TabBarView(
+          controller: _tabController,
+          children: eventData.map((category) {
+            return _buildSubCategoryGrid(category.subCategories);
+          }).toList(),
+        ),
       ),
     );
   }
@@ -89,14 +102,26 @@ class _EventsScreenState extends State<EventsScreen>
               child: Row(
                 children: [
                   GestureDetector(
-                    onTap: () => Navigator.pop(context),
+                    onTap: () {
+                      if (widget.isTab) {
+                        Scaffold.of(context).openDrawer();
+                      } else {
+                        Navigator.pop(context);
+                      }
+                    },
                     child: Container(
                       padding: const EdgeInsets.all(6),
                       decoration: const BoxDecoration(
                         color: Color(0xFFF5F5F5),
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(Icons.arrow_back_rounded, color: Color(0xFF6D7985), size: 20),
+                      child: Icon(
+                        widget.isTab
+                            ? Icons.menu_rounded
+                            : Icons.arrow_back_rounded,
+                        color: const Color(0xFF6D7985),
+                        size: 20,
+                      ),
                     ),
                   ),
                   const Spacer(flex: 1),
@@ -290,5 +315,27 @@ class _EventCard extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
+  final Widget child;
+
+  _SliverAppBarDelegate(this.child);
+
+  @override
+  double get minExtent => 69.0;
+  @override
+  double get maxExtent => 69.0;
+
+  @override
+  Widget build(
+      BuildContext context, double shrinkOffset, bool overlapsContent) {
+    return child;
+  }
+
+  @override
+  bool shouldRebuild(_SliverAppBarDelegate oldDelegate) {
+    return false;
   }
 }

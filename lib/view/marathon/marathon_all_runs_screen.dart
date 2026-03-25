@@ -122,7 +122,7 @@ class MarathonAllRunsScreen extends ConsumerWidget {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          '$timeStr • ${run.avgPace.toStringAsFixed(2)}/KM',
+                          '$timeStr • ${run.avgSpeed.toStringAsFixed(1)} km/h',
                           style: const TextStyle(
                             color: AppTheme.textSecondary,
                             fontFamily: AppTheme.fontGeneralSans,

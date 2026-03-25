@@ -8,8 +8,9 @@ import 'ghm_payment_screen.dart';
 
 class GHMRegistrationScreen extends StatefulWidget {
   static const String routeName = '/ghm-registration';
+  final bool isTab;
 
-  const GHMRegistrationScreen({Key? key}) : super(key: key);
+  const GHMRegistrationScreen({super.key, this.isTab = false});
 
   @override
   _GHMRegistrationScreenState createState() => _GHMRegistrationScreenState();
@@ -58,14 +59,14 @@ class _GHMRegistrationScreenState extends State<GHMRegistrationScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFEDF1F5),
-      body: Column(
-        children: [
-          _buildHeader(context),
-          Expanded(
-            child: registrationsOpen ? _buildRegistrationForm() : _buildClosedMessage(),
-          ),
-        ],
-      ),
+      body: registrationsOpen
+          ? _buildRegistrationForm()
+          : Column(
+              children: [
+                _buildHeader(context),
+                Expanded(child: _buildClosedMessage()),
+              ],
+            ),
     );
   }
 
@@ -81,42 +82,46 @@ class _GHMRegistrationScreenState extends State<GHMRegistrationScreen> {
       ),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 25),
       child: SafeArea(
-        bottom: false,
         child: Column(
           children: [
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: const Color(0xFF002B5B),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.white.withOpacity(0.1)),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.15),
-                    blurRadius: 12,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
+              decoration: ShapeDecoration(
+                color: Colors.white,
+                shape: RoundedRectangleBorder(
+                  side: const BorderSide(width: 1, color: Color(0xFFAFAFAF)),
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
               child: Row(
                 children: [
                   GestureDetector(
-                    onTap: () => Navigator.pop(context),
+                    onTap: () {
+                      if (widget.isTab) {
+                        Scaffold.of(context).openDrawer();
+                      } else {
+                        Navigator.pop(context);
+                      }
+                    },
                     child: Container(
                       padding: const EdgeInsets.all(6),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.1),
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFF5F5F5),
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(Icons.arrow_back_rounded, color: Colors.white, size: 20),
+                      child: Icon(
+                        widget.isTab ? Icons.menu_rounded : Icons.arrow_back_rounded,
+                        color: const Color(0xFF6D7985),
+                        size: 20,
+                      ),
                     ),
                   ),
                   const Spacer(flex: 1),
                   const Text(
                     'GHM REGISTRATION',
                     style: TextStyle(
-                      color: Colors.white,
+                      color: Color(0XFF232930),
                       fontSize: 18,
                       fontWeight: FontWeight.w700,
                       fontFamily: 'Univers',
@@ -138,34 +143,43 @@ class _GHMRegistrationScreenState extends State<GHMRegistrationScreen> {
     return Form(
       key: _formKey,
       child: ListView(
-        padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 20),
+        padding: EdgeInsets.zero,
         physics: const BouncingScrollPhysics(),
         children: [
-          _buildSectionCard(
-            title: "Personal Details",
-            children: [
-              _buildTextField(
-                label: "Full Name",
-                icon: Icons.person_outline_rounded,
-                validator: (value) => value?.isEmpty ?? true ? "Please enter your name" : null,
-                controller: _nameController,
-              ),
-              _buildTextField(
-                label: "Age",
-                icon: Icons.calendar_today_rounded,
-                keyboardType: TextInputType.number,
-                validator: (value) => value?.isEmpty ?? true ? "Please enter your age" : null,
-                controller: _ageController,
-              ),
-              _buildDropdown(
-                label: "Gender",
-                items: ["Male", "Female", "Prefer not to say"],
-                value: gender,
-                prefixIcon: Icons.wc_rounded,
-                onChanged: (value) => setState(() => gender = value),
-              ),
-            ],
-          ),
+          _buildHeader(context),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 20),
+            child: Column(
+              children: [
+                _buildSectionCard(
+                  title: "Personal Details",
+                  children: [
+                    _buildTextField(
+                      label: "Full Name",
+                      icon: Icons.person_outline_rounded,
+                      validator: (value) => value?.isEmpty ?? true
+                          ? "Please enter your name"
+                          : null,
+                      controller: _nameController,
+                    ),
+                    _buildTextField(
+                      label: "Age",
+                      icon: Icons.calendar_today_rounded,
+                      keyboardType: TextInputType.number,
+                      validator: (value) => value?.isEmpty ?? true
+                          ? "Please enter your age"
+                          : null,
+                      controller: _ageController,
+                    ),
+                    _buildDropdown(
+                      label: "Gender",
+                      items: ["Male", "Female", "Prefer not to say"],
+                      value: gender,
+                      prefixIcon: Icons.wc_rounded,
+                      onChanged: (value) => setState(() => gender = value),
+                    ),
+                  ],
+                ),
           const SizedBox(height: 20),
           _buildSectionCard(
             title: "Contact Information",
@@ -261,7 +275,9 @@ class _GHMRegistrationScreenState extends State<GHMRegistrationScreen> {
                 ),
               ),
             ),
-          const SizedBox(height: 40),
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -273,13 +289,6 @@ class _GHMRegistrationScreenState extends State<GHMRegistrationScreen> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: const Color(0xFFE8E8E8)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.02),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
       ),
       padding: const EdgeInsets.all(20),
       child: Column(

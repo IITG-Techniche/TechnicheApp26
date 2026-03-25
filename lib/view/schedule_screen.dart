@@ -110,11 +110,12 @@ class _SchedulePageState extends State<SchedulePage>
       return Scaffold(
         backgroundColor: const Color(0xFFF5F5F5),
         drawer: const AppDrawer(),
-        body: Column(
-          children: [
-            _buildHeader(context),
-            Expanded(
-              child: Center(
+        body: SingleChildScrollView(
+          child: Column(
+            children: [
+              _buildHeader(context),
+              const SizedBox(height: 100),
+              Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -132,14 +133,14 @@ class _SchedulePageState extends State<SchedulePage>
                     const Text("The future is not yet written.",
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                          color: Color(0xFF6D7985),
-                          fontFamily: 'General Sans'
-                        )),
+                            color: Color(0xFF6D7985),
+                            fontFamily: 'General Sans')),
                   ],
                 ),
               ),
-            ),
-          ],
+              const SizedBox(height: 40),
+            ],
+          ),
         ),
       );
     }
@@ -150,86 +151,98 @@ class _SchedulePageState extends State<SchedulePage>
       child: Scaffold(
         backgroundColor: const Color(0xFFF5F5F5),
         drawer: const AppDrawer(),
-        body: Column(
-          children: [
-            _buildHeader(context),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-              child: DropdownButtonFormField<String>(
-                value: _selectedCategory,
-                decoration: InputDecoration(
-                  labelText: 'Filter by Category',
-                  labelStyle: const TextStyle(color: Color(0xFF6D7985), fontSize: 14),
-                  filled: true,
-                  fillColor: const Color(0xFFF5F5F5),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Color(0xFFE8E8E8)),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Color(0xFF002B5B), width: 1.5),
+        body: NestedScrollView(
+          headerSliverBuilder: (context, innerBoxIsScrolled) {
+            return [
+              SliverToBoxAdapter(child: _buildHeader(context)),
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                sliver: SliverToBoxAdapter(
+                  child: DropdownButtonFormField<String>(
+                    value: _selectedCategory,
+                    decoration: InputDecoration(
+                      labelText: 'Filter by Category',
+                      labelStyle: const TextStyle(
+                          color: Color(0xFF6D7985), fontSize: 14),
+                      filled: true,
+                      fillColor: const Color(0xFFF5F5F5),
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 8),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: Color(0xFFE8E8E8)),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(
+                            color: Color(0xFF002B5B), width: 1.5),
+                      ),
+                    ),
+                    dropdownColor: Colors.white,
+                    style: const TextStyle(
+                        color: Color(0XFF232930), fontWeight: FontWeight.w600),
+                    items: _categories.map((String category) {
+                      return DropdownMenuItem<String>(
+                          value: category, child: Text(category));
+                    }).toList(),
+                    onChanged: (newValue) =>
+                        setState(() => _selectedCategory = newValue!),
                   ),
                 ),
-                dropdownColor: Colors.white,
-                style: const TextStyle(color: Color(0XFF232930), fontWeight: FontWeight.w600),
-                items: _categories.map((String category) {
-                  return DropdownMenuItem<String>(
-                      value: category, child: Text(category));
-                }).toList(),
-                onChanged: (newValue) =>
-                    setState(() => _selectedCategory = newValue!),
               ),
-            ),
-            TabBar(
-              isScrollable: true,
-              tabAlignment: TabAlignment.start,
-              labelColor: const Color(0xFF002B5B),
-              unselectedLabelColor: const Color(0xFF6D7985),
-              indicatorColor: const Color(0xFF002B5B),
-              indicatorSize: TabBarIndicatorSize.label,
-              labelStyle: const TextStyle(fontWeight: FontWeight.w700, fontFamily: 'Univers'),
-              unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontFamily: 'Univers'),
-              tabs: days.map((day) => Tab(text: day['title'])).toList(),
-            ),
-            Expanded(
-              child: TabBarView(
-                children: days.map((day) {
-                  final List<dynamic> allEvents =
-                      List.from(day['events'] ?? [])
-                        ..sort((a, b) =>
-                            a['startTime'].compareTo(b['startTime']));
-                  final List<dynamic> filteredEvents =
-                      _selectedCategory == 'All'
-                          ? allEvents
-                          : allEvents
-                              .where((event) =>
-                                  event['category'] == _selectedCategory)
-                              .toList();
-
-                  if (filteredEvents.isEmpty) {
-                    return Center(
-                        child: Text(
-                            'No events for this category on ${day['title']}.',
-                            style: const TextStyle(color: Color(0xFF6D7985))));
-                  }
-
-                  return ListView.builder(
-                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 40),
-                    itemCount: filteredEvents.length,
-                    itemBuilder: (context, index) => EventTimelineTile(
-                      event: filteredEvents[index],
-                      animation: AnimationController(
-                        vsync: this,
-                        duration: const Duration(milliseconds: 600),
-                      )..forward(),
+              SliverPersistentHeader(
+                pinned: true,
+                delegate: _SliverAppBarDelegate(
+                  Container(
+                    color: const Color(0xFFF5F5F5),
+                    child: TabBar(
+                      isScrollable: true,
+                      tabAlignment: TabAlignment.start,
+                      labelColor: const Color(0xFF002B5B),
+                      unselectedLabelColor: const Color(0xFF6D7985),
+                      indicatorColor: const Color(0xFF002B5B),
+                      indicatorSize: TabBarIndicatorSize.label,
+                      labelStyle: const TextStyle(
+                          fontWeight: FontWeight.w700, fontFamily: 'Univers'),
+                      unselectedLabelStyle: const TextStyle(
+                          fontWeight: FontWeight.w500, fontFamily: 'Univers'),
+                      tabs: days.map((day) => Tab(text: day['title'])).toList(),
                     ),
-                  );
-                }).toList(),
+                  ),
+                ),
               ),
-            ),
-          ],
+            ];
+          },
+          body: TabBarView(
+            children: days.map((day) {
+              final List<dynamic> allEvents = List.from(day['events'] ?? [])
+                ..sort((a, b) => a['startTime'].compareTo(b['startTime']));
+              final List<dynamic> filteredEvents = _selectedCategory == 'All'
+                  ? allEvents
+                  : allEvents
+                      .where((event) => event['category'] == _selectedCategory)
+                      .toList();
+
+              if (filteredEvents.isEmpty) {
+                return Center(
+                    child: Text(
+                        'No events for this category on ${day['title']}.',
+                        style: const TextStyle(color: Color(0xFF6D7985))));
+              }
+
+              return ListView.builder(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 40),
+                itemCount: filteredEvents.length,
+                itemBuilder: (context, index) => EventTimelineTile(
+                  event: filteredEvents[index],
+                  animation: AnimationController(
+                    vsync: this,
+                    duration: const Duration(milliseconds: 600),
+                  )..forward(),
+                ),
+              );
+            }).toList(),
+          ),
         ),
       ),
     );
@@ -383,7 +396,8 @@ class EventTimelineTile extends StatelessWidget {
                             fontSize: 14)),
                     const SizedBox(height: 2),
                     Text(_formatTime(event['endTime']),
-                        style: const TextStyle(color: subTextColor, fontSize: 11)),
+                        style:
+                            const TextStyle(color: subTextColor, fontSize: 11)),
                   ],
                 ),
               ),
@@ -463,5 +477,27 @@ class EventTimelineTile extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
+  final Widget child;
+
+  _SliverAppBarDelegate(this.child);
+
+  @override
+  double get minExtent => 48.0;
+  @override
+  double get maxExtent => 48.0;
+
+  @override
+  Widget build(
+      BuildContext context, double shrinkOffset, bool overlapsContent) {
+    return child;
+  }
+
+  @override
+  bool shouldRebuild(_SliverAppBarDelegate oldDelegate) {
+    return false;
   }
 }

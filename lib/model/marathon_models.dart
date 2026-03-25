@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 // ════════════════════════════════════════════════════════════════════════════
 // MARATHON MODELS
 // Supabase tables: marathon_participants, practice_logs, distance_leaderboard
@@ -30,12 +32,12 @@ class MarathonParticipant {
   }
 
   Map<String, dynamic> toJson() => {
-    'id': id,
-    'username': username,
-    'pin': pin,
-    'category': category,
-    'created_at': createdAt.toIso8601String(),
-  };
+        'id': id,
+        'username': username,
+        'pin': pin,
+        'category': category,
+        'created_at': createdAt.toIso8601String(),
+      };
 }
 
 // ── PracticeLog ───────────────────────────────────────────────────────────────
@@ -47,46 +49,50 @@ class PracticeLog {
   final String username;
   final double distanceKm;
   final double durationMinutes;
-  final double avgPace;
+  final double avgSpeed; // This maps to avg_pace in DB but treated as km/h
   final int stepCount;
   final int calories;
   final String category;
   final DateTime createdAt;
+  final List<Map<String, double>>? routePoints;
 
   PracticeLog({
     required this.id,
     required this.username,
     required this.distanceKm,
     required this.durationMinutes,
-    required this.avgPace,
+    required this.avgSpeed,
     this.stepCount = 0,
     this.calories = 0,
     this.category = '6KM',
     required this.createdAt,
+    this.routePoints,
   });
 
   /// Used when inserting to Supabase — no id/created_at (auto-generated)
   Map<String, dynamic> toInsertMap() => {
-    'username': username,
-    'distance_km': distanceKm,
-    'duration_minutes': durationMinutes,
-    'avg_pace': avgPace,
-    'step_count': stepCount,
-    'calories': calories,
-    'category': category,
-  };
+        'username': username,
+        'distance_km': distanceKm,
+        'duration_minutes': durationMinutes,
+        'avg_pace': avgSpeed,
+        'step_count': stepCount,
+        'calories': calories,
+        'category': category,
+        if (routePoints != null) 'route_points': jsonEncode(routePoints),
+      };
 
   Map<String, dynamic> toJson() => {
-    'id': id,
-    'username': username,
-    'distance_km': distanceKm,
-    'duration_minutes': durationMinutes,
-    'avg_pace': avgPace,
-    'step_count': stepCount,
-    'calories': calories,
-    'category': category,
-    'created_at': createdAt.toIso8601String(),
-  };
+        'id': id,
+        'username': username,
+        'distance_km': distanceKm,
+        'duration_minutes': durationMinutes,
+        'avg_pace': avgSpeed,
+        'step_count': stepCount,
+        'calories': calories,
+        'category': category,
+        'created_at': createdAt.toIso8601String(),
+        if (routePoints != null) 'route_points': jsonEncode(routePoints),
+      };
 
   factory PracticeLog.fromJson(Map<String, dynamic> json) {
     return PracticeLog(
@@ -94,7 +100,7 @@ class PracticeLog {
       username: json['username'] ?? '',
       distanceKm: (json['distance_km'] ?? 0).toDouble(),
       durationMinutes: (json['duration_minutes'] ?? 0).toDouble(),
-      avgPace: (json['avg_pace'] ?? 0).toDouble(),
+      avgSpeed: (json['avg_pace'] ?? 0).toDouble(),
       stepCount: (json['step_count'] ?? 0) is int
           ? (json['step_count'] ?? 0)
           : (json['step_count'] ?? 0).toInt(),
@@ -104,6 +110,17 @@ class PracticeLog {
       category: json['category'] ?? '6KM',
       createdAt: DateTime.parse(
           json['created_at'] ?? DateTime.now().toIso8601String()),
+      routePoints: json['route_points'] != null
+          ? (json['route_points'] is String
+              ? (jsonDecode(json['route_points']) as List)
+                  .map((p) => Map<String, double>.from((p as Map).map(
+                      (k, v) => MapEntry(k.toString(), (v as num).toDouble()))))
+                  .toList()
+              : (json['route_points'] as List)
+                  .map((p) => Map<String, double>.from((p as Map).map(
+                      (k, v) => MapEntry(k.toString(), (v as num).toDouble()))))
+                  .toList())
+          : null,
     );
   }
 }
@@ -137,17 +154,17 @@ class DistanceLeaderboardEntry {
 
 class PaceLeaderboardEntry {
   final String username;
-  final double avgPace;
+  final double avgSpeed;
 
   PaceLeaderboardEntry({
     required this.username,
-    required this.avgPace,
+    required this.avgSpeed,
   });
 
   factory PaceLeaderboardEntry.fromJson(Map<String, dynamic> json) {
     return PaceLeaderboardEntry(
       username: json['username'] ?? '',
-      avgPace: (json['avg_pace'] ?? 0).toDouble(),
+      avgSpeed: (json['avg_pace'] ?? 0).toDouble(),
     );
   }
 }
@@ -157,13 +174,13 @@ class PaceLeaderboardEntry {
 class DailyStat {
   final String dayName;
   final double distance;
-  final double pace;
+  final double speed;
   final bool isToday;
 
   DailyStat({
     required this.dayName,
     required this.distance,
-    required this.pace,
+    required this.speed,
     required this.isToday,
   });
 
@@ -171,7 +188,7 @@ class DailyStat {
     return DailyStat(
       dayName: json['day_name'] ?? '',
       distance: (json['distance'] ?? 0).toDouble(),
-      pace: (json['pace'] ?? 0).toDouble(),
+      speed: (json['pace'] ?? 0).toDouble(),
       isToday: json['is_today'] ?? false,
     );
   }
@@ -182,14 +199,14 @@ class DailyStat {
 class ProgressStats {
   final int streak;
   final double weeklyKm;
-  final double weeklyPace;
+  final double weeklySpeed;
   final double improvement;
   final List<DailyStat> dailyStats;
 
   ProgressStats({
     required this.streak,
     required this.weeklyKm,
-    required this.weeklyPace,
+    required this.weeklySpeed,
     required this.improvement,
     required this.dailyStats,
   });
@@ -198,7 +215,7 @@ class ProgressStats {
     return ProgressStats(
       streak: json['streak'] ?? 0,
       weeklyKm: (json['weekly_km'] ?? 0).toDouble(),
-      weeklyPace: (json['weekly_pace'] ?? 0).toDouble(),
+      weeklySpeed: (json['weekly_pace'] ?? 0).toDouble(),
       improvement: (json['improvement'] ?? 0).toDouble(),
       dailyStats: (json['daily_stats'] as List? ?? [])
           .map((e) => DailyStat.fromJson(e))
@@ -210,29 +227,26 @@ class ProgressStats {
     return ProgressStats(
       streak: 0,
       weeklyKm: 0.0,
-      weeklyPace: 0.0,
+      weeklySpeed: 0.0,
       improvement: 0.0,
       dailyStats: [],
     );
   }
 
   /// Compute stats directly from a list of PracticeLogs.
-  /// Called by MarathonService.getUserProgress() instead of the old RPC.
   factory ProgressStats.fromLogs(List<PracticeLog> logs) {
     final now = DateTime.now();
     final todayMidnight = DateTime(now.year, now.month, now.day);
-    final startOfWeek =
-    todayMidnight.subtract(Duration(days: now.weekday - 1));
+    final startOfWeek = todayMidnight.subtract(Duration(days: now.weekday - 1));
 
     // This-week runs
     final thisWeekLogs =
-    logs.where((r) => !r.createdAt.isBefore(startOfWeek)).toList();
-    final weeklyKm =
-    thisWeekLogs.fold(0.0, (s, r) => s + r.distanceKm);
-    final weeklyPace = thisWeekLogs.isEmpty
+        logs.where((r) => !r.createdAt.isBefore(startOfWeek)).toList();
+    final weeklyKm = thisWeekLogs.fold(0.0, (s, r) => s + r.distanceKm);
+    final weeklySpeed = thisWeekLogs.isEmpty
         ? 0.0
-        : thisWeekLogs.fold(0.0, (s, r) => s + r.avgPace) /
-        thisWeekLogs.length;
+        : thisWeekLogs.fold(0.0, (s, r) => s + r.avgSpeed) /
+            thisWeekLogs.length;
 
     // Daily stats Mon–Sun
     const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -240,28 +254,28 @@ class ProgressStats {
       final day = startOfWeek.add(Duration(days: i));
       final dayLogs = logs.where((r) {
         final d =
-        DateTime(r.createdAt.year, r.createdAt.month, r.createdAt.day);
+            DateTime(r.createdAt.year, r.createdAt.month, r.createdAt.day);
         return d == day;
       }).toList();
       final dist = dayLogs.fold(0.0, (s, r) => s + r.distanceKm);
-      final pace = dayLogs.isEmpty
+      final speed = dayLogs.isEmpty
           ? 0.0
-          : dayLogs.fold(0.0, (s, r) => s + r.avgPace) / dayLogs.length;
+          : dayLogs.fold(0.0, (s, r) => s + r.avgSpeed) / dayLogs.length;
       return DailyStat(
         dayName: dayNames[i],
         distance: dist,
-        pace: pace,
+        speed: speed,
         isToday: day == todayMidnight,
       );
     });
 
-    // Streak — consecutive days with a run, counting back from today
+    // Streak
     int streak = 0;
     for (int i = 0; i <= 13; i++) {
       final day = todayMidnight.subtract(Duration(days: i));
       final hasRun = logs.any((r) {
         final d =
-        DateTime(r.createdAt.year, r.createdAt.month, r.createdAt.day);
+            DateTime(r.createdAt.year, r.createdAt.month, r.createdAt.day);
         return d == day;
       });
       if (hasRun) {
@@ -275,8 +289,8 @@ class ProgressStats {
     final startOfLastWeek = startOfWeek.subtract(const Duration(days: 7));
     final lastWeekKm = logs
         .where((r) =>
-    !r.createdAt.isBefore(startOfLastWeek) &&
-        r.createdAt.isBefore(startOfWeek))
+            !r.createdAt.isBefore(startOfLastWeek) &&
+            r.createdAt.isBefore(startOfWeek))
         .fold(0.0, (s, r) => s + r.distanceKm);
 
     double improvement = 0;
@@ -289,7 +303,7 @@ class ProgressStats {
     return ProgressStats(
       streak: streak,
       weeklyKm: weeklyKm,
-      weeklyPace: weeklyPace,
+      weeklySpeed: weeklySpeed,
       improvement: improvement,
       dailyStats: dailyStats,
     );

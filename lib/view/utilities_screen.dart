@@ -93,135 +93,153 @@ class _UtilitiesScreenState extends State<UtilitiesScreen> {
       drawer: const AppDrawer(),
       body: Column(
         children: [
-          _buildHeader(context),
           Expanded(
             child: ListView(
-              padding: const EdgeInsets.all(20.0),
+              padding: EdgeInsets.zero,
               children: [
-                const Text(
-                  'Utilities & Contacts',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: AppTheme.textMain,
-                    fontSize: 24,
-                    fontWeight: FontWeight.w700,
-                    fontFamily: AppTheme.fontUnivers,
-                  ),
-                ),
-                const SizedBox(height: 24),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    _ModalUtilityIcon(
-                      icon: Icons.local_hospital_rounded,
-                      label: 'Hospital',
-                      color: const Color(0xFFE53935),
-                      onTap: () => _showContactsModal(
-                          'IITG Hospital', hospitalContacts),
-                    ),
-                    _ModalUtilityIcon(
-                      icon: Icons.local_shipping_rounded,
-                      label: 'Transport',
-                      color: const Color(0xFF1E88E5),
-                      onTap: () =>
-                          _showContactsModal('Transport', transportContacts),
-                    ),
-                    _ModalUtilityIcon(
-                      icon: Icons.hotel_rounded,
-                      label: 'Hospitality',
-                      color: const Color(0xFF43A047),
-                      onTap: () => _showContactsModal(
-                          'Hospitality', hospitalityContacts),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 32),
-                _buildSectionTile(
-                  icon: Icons.people_alt_rounded,
-                  title: 'Meet the Team',
-                  onTap: () => Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => const TeamImageCarouselScreen(),
-                    ),
-                  ),
-                ),
-                _buildSectionTile(
-                  icon: Icons.code_rounded,
-                  title: 'App Developers',
-                  onTap: _openTeamCarousel,
-                ),
-                _buildSectionTile(
-                  icon: Icons.help_outline_rounded,
-                  title: 'Frequently Asked Questions',
-                  trailing: Icon(
-                    showFAQ ? Icons.keyboard_arrow_up_rounded : Icons.keyboard_arrow_down_rounded,
-                    color: const Color(0xFF6D7985),
-                  ),
-                  onTap: () => setState(() => showFAQ = !showFAQ),
-                ),
-                if (showFAQ) ...[
-                  const _FAQList(),
-                  const SizedBox(height: 12),
-                ],
-
-                const SizedBox(height: 32),
-                const Text(
-                  'Quick Links',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                    fontFamily: AppTheme.fontUnivers,
-                    color: AppTheme.textMain,
-                  ),
-                ),
-                const SizedBox(height: 20),
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
+                _buildHeader(context),
+                Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: Column(
                     children: [
-                      _QuickLinkIcon(
-                        assetIconPath: 'assets/instagram.png',
-                        color: const Color(0xFFE4405F),
-                        url: 'https://www.instagram.com/techniche_iitguwahati/?hl=en',
-                        label: 'Instagram',
+                      const Text(
+                        'Utilities & Contacts',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: AppTheme.textMain,
+                          fontSize: 24,
+                          fontWeight: FontWeight.w700,
+                          fontFamily: AppTheme.fontUnivers,
+                        ),
                       ),
-                      const SizedBox(width: 20),
-                      _QuickLinkIcon(
-                        assetIconPath: 'assets/linkedin.png',
-                        color: const Color(0xFF0077B5),
-                        url: 'https://in.linkedin.com/company/techniche-iitg',
-                        label: 'LinkedIn',
+                      const SizedBox(height: 24),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: [
+                          _ModalUtilityIcon(
+                            icon: Icons.local_hospital_rounded,
+                            label: 'Hospital',
+                            color: const Color(0xFFE53935),
+                            onTap: () => _showContactsModal(
+                                'IITG Hospital', hospitalContacts),
+                          ),
+                          _ModalUtilityIcon(
+                            icon: Icons.local_shipping_rounded,
+                            label: 'Transport',
+                            color: const Color(0xFF1E88E5),
+                            onTap: () => _showContactsModal(
+                                'Transport', transportContacts),
+                          ),
+                          _ModalUtilityIcon(
+                            icon: Icons.hotel_rounded,
+                            label: 'Hospitality',
+                            color: const Color(0xFF43A047),
+                            onTap: () => _showContactsModal(
+                                'Hospitality', hospitalityContacts),
+                          ),
+                        ],
                       ),
-                      const SizedBox(width: 20),
-                      _QuickLinkIcon(
-                        assetIconPath: 'assets/social-media.png',
-                        color: const Color(0xFF1DA1F2),
-                        url: 'https://twitter.com/Techniche_IITG',
-                        label: 'X.com',
+                      const SizedBox(height: 32),
+                      _buildSectionTile(
+                        icon: Icons.people_alt_rounded,
+                        title: 'Meet the Team',
+                        onTap: () => Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const TeamImageCarouselScreen(),
+                          ),
+                        ),
                       ),
-                      const SizedBox(width: 20),
-                      _QuickLinkIcon(
-                        assetIconPath: 'assets/youtube.png',
-                        color: const Color(0xFFFF0000),
-                        url: 'https://www.youtube.com/c/techniche',
-                        label: 'YouTube',
+                      _buildSectionTile(
+                        icon: Icons.code_rounded,
+                        title: 'App Developers',
+                        onTap: _openTeamCarousel,
                       ),
-                      const SizedBox(width: 20),
-                      _QuickLinkIcon(
-                        assetIconPath: 'assets/medium.png',
-                        color: const Color(0xFF000000),
-                        url: 'https://media-techniche.medium.com/',
-                        label: 'Medium',
+                      _buildSectionTile(
+                        icon: Icons.help_outline_rounded,
+                        title: 'Frequently Asked Questions',
+                        trailing: Icon(
+                          showFAQ
+                              ? Icons.keyboard_arrow_up_rounded
+                              : Icons.keyboard_arrow_down_rounded,
+                          color: const Color(0xFF6D7985),
+                        ),
+                        onTap: () => setState(() => showFAQ = !showFAQ),
+                      ),
+                      if (showFAQ) ...[
+                        const _FAQList(),
+                        // const SizedBox(height: 12),
+                      ],
+                      const SizedBox(height: 10),
+                      const Text(
+                        'Quick Links',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                          fontFamily: AppTheme.fontUnivers,
+                          color: AppTheme.textMain,
+                        ),
+                      ),
+                      const SizedBox(height: 30),
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: [
+                            _QuickLinkIcon(
+                              assetIconPath: 'assets/instagram.png',
+                              color: const Color(0xFFE4405F),
+                              url:
+                                  'https://www.instagram.com/techniche_iitguwahati/?hl=en',
+                              label: 'Instagram',
+                            ),
+                            const SizedBox(width: 20),
+                            _QuickLinkIcon(
+                              assetIconPath: 'assets/linkedin.png',
+                              color: const Color(0xFF0077B5),
+                              url:
+                                  'https://in.linkedin.com/company/techniche-iitg',
+                              label: 'LinkedIn',
+                            ),
+                            const SizedBox(width: 20),
+                            _QuickLinkIcon(
+                              assetIconPath: 'assets/x.png',
+                              color: const Color(0xFF1DA1F2),
+                              url: 'https://twitter.com/Techniche_IITG',
+                              label: 'X.com',
+                            ),
+                            const SizedBox(width: 20),
+                            _QuickLinkIcon(
+                              assetIconPath: 'assets/youtube.png',
+                              color: const Color(0xFFFF0000),
+                              url: 'https://www.youtube.com/c/techniche',
+                              label: 'YouTube',
+                            ),
+                            const SizedBox(width: 20),
+                            _QuickLinkIcon(
+                              assetIconPath: 'assets/facebook.png',
+                              color: const Color(0xFF1877F2),
+                              url:
+                                  'https://www.facebook.com/techniche.iitguwahati/',
+                              label: 'Facebook',
+                            ),
+                            const SizedBox(width: 20),
+                            _QuickLinkIcon(
+                              assetIconPath: 'assets/medium.png',
+                              color: const Color(0xFF000000),
+                              url: 'https://media-techniche.medium.com/',
+                              label: 'Medium',
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(height: 40),
               ],
             ),
           ),
           Container(
-            height: 30,
+            height: 65,
+            padding: const EdgeInsets.only(bottom: 35),
             width: double.infinity,
             color: AppTheme.backgroundGray,
             alignment: Alignment.center,
@@ -273,7 +291,8 @@ class _UtilitiesScreenState extends State<UtilitiesScreen> {
             color: AppTheme.textMain,
           ),
         ),
-        trailing: trailing ?? const Icon(Icons.chevron_right_rounded, color: Color(0xFF6D7985)),
+        trailing: trailing ??
+            const Icon(Icons.chevron_right_rounded, color: Color(0xFF6D7985)),
         onTap: onTap,
       ),
     );
@@ -384,7 +403,8 @@ class _QuickLinkIcon extends StatelessWidget {
               color: color.withOpacity(0.08),
               borderRadius: BorderRadius.circular(18),
             ),
-            child: Image.asset(assetIconPath, width: 28, height: 28, color: color),
+            child:
+                Image.asset(assetIconPath, width: 28, height: 28, color: color),
           ),
         ),
         const SizedBox(height: 8),
@@ -465,7 +485,8 @@ class _ContactListTile extends StatelessWidget {
             color: Color(0xFFE1EBFF),
             shape: BoxShape.circle,
           ),
-          child: const Icon(Icons.phone_rounded, color: Color(0xFF002B5B), size: 22),
+          child: const Icon(Icons.phone_rounded,
+              color: Color(0xFF002B5B), size: 22),
         ),
         title: Text(contact.name,
             style: const TextStyle(
@@ -475,7 +496,9 @@ class _ContactListTile extends StatelessWidget {
                 color: AppTheme.textMain)),
         subtitle: Text(contact.number,
             style: const TextStyle(
-                color: AppTheme.textSecondary, fontSize: 13, fontFamily: AppTheme.fontGeneralSans)),
+                color: AppTheme.textSecondary,
+                fontSize: 13,
+                fontFamily: AppTheme.fontGeneralSans)),
         trailing: IconButton(
           icon: Container(
             padding: const EdgeInsets.all(6),
@@ -483,7 +506,8 @@ class _ContactListTile extends StatelessWidget {
               color: const Color(0xFF43A047).withOpacity(0.1),
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.call_rounded, color: Color(0xFF43A047), size: 18),
+            child: const Icon(Icons.call_rounded,
+                color: Color(0xFF43A047), size: 18),
           ),
           onPressed: () async {
             final Uri url = Uri.parse('tel:${contact.number}');
@@ -508,7 +532,9 @@ class ContactsScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppTheme.backgroundGray,
       appBar: AppBar(
-        title: Text(title, style: const TextStyle(fontFamily: AppTheme.fontUnivers, fontWeight: FontWeight.bold)),
+        title: Text(title,
+            style: const TextStyle(
+                fontFamily: AppTheme.fontUnivers, fontWeight: FontWeight.bold)),
         backgroundColor: Colors.white,
         foregroundColor: AppTheme.textMain,
         elevation: 0,
@@ -568,7 +594,8 @@ class _FAQList extends StatelessWidget {
           child: Theme(
             data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
             child: ExpansionTile(
-              tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              tilePadding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
               title: Text(
                 f.question,
                 style: const TextStyle(
@@ -599,6 +626,7 @@ class _FAQList extends StatelessWidget {
     );
   }
 }
+
 class TeamCarouselScreen extends StatefulWidget {
   const TeamCarouselScreen({Key? key}) : super(key: key);
 
@@ -852,7 +880,8 @@ class _TeamCarouselScreenState extends State<TeamCarouselScreen>
                                     ],
                                     border: Border.all(
                                       color: i == _currentIndex
-                                          ? const Color(0xFF002B5B).withOpacity(0.1)
+                                          ? const Color(0xFF002B5B)
+                                              .withOpacity(0.1)
                                           : Colors.transparent,
                                       width: 1.5,
                                     ),
@@ -1059,7 +1088,7 @@ class TeamImageCarouselScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA), 
+      backgroundColor: const Color(0xFFF8F9FA),
       body: SafeArea(
         child: Stack(
           children: [
@@ -1086,14 +1115,14 @@ class TeamImageCarouselScreen extends StatelessWidget {
                         color: Colors.white,
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(Icons.close_rounded, color: Color(0xFF6D7985), size: 24),
+                      child: const Icon(Icons.close_rounded,
+                          color: Color(0xFF6D7985), size: 24),
                     ),
                     onPressed: () => Navigator.of(context).pop(),
                   ),
                 ],
               ),
             ),
-
             Center(
               child: SizedBox(
                 height: size.height * 0.6,
@@ -1103,7 +1132,8 @@ class TeamImageCarouselScreen extends StatelessWidget {
                   itemBuilder: (context, i) {
                     final m = teamMembers[i];
                     return Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 12),
                       child: Container(
                         decoration: BoxDecoration(
                           color: Colors.white,
@@ -1160,7 +1190,8 @@ class TeamImageCarouselScreen extends StatelessWidget {
                               onPressed: () async {
                                 final url = Uri.parse(m.linkedinUrl);
                                 if (await canLaunchUrl(url)) {
-                                  await launchUrl(url, mode: LaunchMode.externalApplication);
+                                  await launchUrl(url,
+                                      mode: LaunchMode.externalApplication);
                                 }
                               },
                               icon: const Icon(Icons.link_rounded, size: 18),
@@ -1169,8 +1200,10 @@ class TeamImageCarouselScreen extends StatelessWidget {
                                 backgroundColor: const Color(0xFFE1EBFF),
                                 foregroundColor: const Color(0xFF002B5B),
                                 elevation: 0,
-                                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 20, vertical: 12),
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12)),
                               ),
                             ),
                           ],
@@ -1288,4 +1321,3 @@ class _MarqueeTextState extends State<MarqueeText>
     );
   }
 }
-

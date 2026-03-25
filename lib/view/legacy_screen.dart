@@ -26,19 +26,22 @@ class _LegacyPageState extends State<LegacyPage> {
     {
       "year": "2010",
       "title": "Technothlon",
-      "event": "Technothlon achieves global reach, emerging as India's premier logic exam for students.",
+      "event":
+          "Technothlon achieves global reach, emerging as India's premier logic exam for students.",
       "image": "assets/tchno_logo.png",
     },
     {
       "year": "2017",
       "title": "Pragati",
-      "event": "Five neighbouring villages adopted under the pragati initiatives.",
+      "event":
+          "Five neighbouring villages adopted under the pragati initiatives.",
       "icon": Icons.people_rounded,
     },
     {
       "year": "2023",
       "title": "Techniche",
-      "event": "Techniche successfully completes 25 years, marking a silver milestone.",
+      "event":
+          "Techniche successfully completes 25 years, marking a silver milestone.",
       "icon": Icons.emoji_events_rounded,
     },
   ];
@@ -306,9 +309,11 @@ class _LegacyPageState extends State<LegacyPage> {
                 Row(
                   children: [
                     if (data.containsKey('image'))
-                      Image.asset(data['image'], width: 22, height: 22, fit: BoxFit.contain)
+                      Image.asset(data['image'],
+                          width: 22, height: 22, fit: BoxFit.contain)
                     else
-                      Icon(data['icon'], color: const Color(0xFF002B5B), size: 20),
+                      Icon(data['icon'],
+                          color: const Color(0xFF002B5B), size: 20),
                     const SizedBox(width: 8),
                     Text(
                       data['title'],
@@ -340,4 +345,3 @@ class _LegacyPageState extends State<LegacyPage> {
     );
   }
 }
-

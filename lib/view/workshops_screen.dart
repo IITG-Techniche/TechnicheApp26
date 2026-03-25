@@ -142,7 +142,9 @@ class _WorkshopsScreenState extends State<WorkshopsScreen> {
       width: w,
       height: h,
       color: AppTheme.backgroundGray,
-      child: const Center(child: Icon(Icons.image_outlined, size: 30, color: Color(0xFFBDBDBD))),
+      child: const Center(
+          child:
+              Icon(Icons.image_outlined, size: 30, color: Color(0xFFBDBDBD))),
     );
   }
 
@@ -162,7 +164,10 @@ class _WorkshopsScreenState extends State<WorkshopsScreen> {
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: const Color(0xFFE8E8E8)),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 8, offset: const Offset(0, 4)),
+          BoxShadow(
+              color: Colors.black.withOpacity(0.02),
+              blurRadius: 8,
+              offset: const Offset(0, 4)),
         ],
       ),
       clipBehavior: Clip.hardEdge,
@@ -199,11 +204,16 @@ class _WorkshopsScreenState extends State<WorkshopsScreen> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF002B5B),
                       foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8)),
                       elevation: 0,
                     ),
                     onPressed: () => _openUnstop(registerUrl),
-                    child: const Text('Register', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, fontFamily: AppTheme.fontGeneralSans)),
+                    child: const Text('Register',
+                        style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            fontFamily: AppTheme.fontGeneralSans)),
                   ),
                 ),
               ],
@@ -226,7 +236,10 @@ class _WorkshopsScreenState extends State<WorkshopsScreen> {
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: const Color(0xFFE8E8E8)),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 8, offset: const Offset(0, 4)),
+          BoxShadow(
+              color: Colors.black.withOpacity(0.02),
+              blurRadius: 8,
+              offset: const Offset(0, 4)),
         ],
       ),
       clipBehavior: Clip.hardEdge,
@@ -276,13 +289,18 @@ class _WorkshopsScreenState extends State<WorkshopsScreen> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF002B5B),
                       foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8)),
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       elevation: 0,
                     ),
                     onPressed: () => _openUnstop(
                         'https://unstop.com/workshops-webinars/nexus-the-corpo-management-conference-iit-guwahati-1541891'),
-                    child: const Text('Register', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, fontFamily: AppTheme.fontGeneralSans)),
+                    child: const Text('Register',
+                        style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            fontFamily: AppTheme.fontGeneralSans)),
                   ),
                 ),
               ],
@@ -297,17 +315,18 @@ class _WorkshopsScreenState extends State<WorkshopsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.backgroundGray,
-      body: Column(
-        children: [
-          _buildHeader(context),
-          Expanded(
-            child: LayoutBuilder(builder: (context, constraints) {
-              const horizontalPadding = 20.0;
-              const spacing = 16.0;
-              final fullWidth = constraints.maxWidth - (horizontalPadding * 2);
-              final cardWidth = (fullWidth - spacing) / 2;
+      body: LayoutBuilder(builder: (context, constraints) {
+        const horizontalPadding = 20.0;
+        const spacing = 16.0;
+        final fullWidth = constraints.maxWidth - (horizontalPadding * 2);
+        final cardWidth = (fullWidth - spacing) / 2;
 
-              return SingleChildScrollView(
+        return SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _buildHeader(context),
+              Padding(
                 padding: const EdgeInsets.all(horizontalPadding),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -315,19 +334,19 @@ class _WorkshopsScreenState extends State<WorkshopsScreen> {
                     Wrap(
                       spacing: spacing,
                       runSpacing: spacing,
-                      children: List<Widget>.generate(
-                          _workshops.length, (i) => _buildWorkshopCardByIndex(i, cardWidth)),
+                      children: List<Widget>.generate(_workshops.length,
+                          (i) => _buildWorkshopCardByIndex(i, cardWidth)),
                     ),
                     const SizedBox(height: 20),
                     _buildNexusFullWidth(fullWidth),
                     const SizedBox(height: 40),
                   ],
                 ),
-              );
-            }),
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      }),
     );
   }
 
@@ -355,7 +374,10 @@ class _WorkshopsScreenState extends State<WorkshopsScreen> {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 shadows: [
-                  BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4)),
+                  BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4)),
                 ],
               ),
               child: Row(
@@ -364,14 +386,22 @@ class _WorkshopsScreenState extends State<WorkshopsScreen> {
                     onTap: () => Navigator.pop(context),
                     child: Container(
                       padding: const EdgeInsets.all(6),
-                      decoration: const BoxDecoration(color: Color(0xFFF5F5F5), shape: BoxShape.circle),
-                      child: const Icon(Icons.arrow_back_rounded, color: Color(0xFF6D7985), size: 20),
+                      decoration: const BoxDecoration(
+                          color: Color(0xFFF5F5F5), shape: BoxShape.circle),
+                      child: const Icon(Icons.arrow_back_rounded,
+                          color: Color(0xFF6D7985), size: 20),
                     ),
                   ),
                   const Spacer(flex: 1),
                   const Text(
                     ' PAST WORKSHOPS & NEXUS',
-                    style: TextStyle(color: AppTheme.textMain, fontSize: 18, fontWeight: FontWeight.w700, fontFamily: AppTheme.fontUnivers, height: 1.2, letterSpacing: 1),
+                    style: TextStyle(
+                        color: AppTheme.textMain,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        fontFamily: AppTheme.fontUnivers,
+                        height: 1.2,
+                        letterSpacing: 1),
                   ),
                   const Spacer(flex: 2),
                 ],

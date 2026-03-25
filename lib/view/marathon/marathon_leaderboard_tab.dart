@@ -21,75 +21,91 @@ class _MarathonLeaderboardTabState
 
     return Scaffold(
       backgroundColor: AppTheme.primaryBlue,
-      body: Stack(
-        children: [
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            height: screenHeight * 0.47,
-            child: SvgPicture.asset(
-              'assets/ghm/framebig.svg',
-              fit: BoxFit.cover,
-            ),
-          ),
-          SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      body: RefreshIndicator(
+        onRefresh: () async => ref.invalidate(distanceLeaderboardProvider),
+        color: AppTheme.primaryBlue,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: Column(
+            children: [
+              Stack(
                 children: [
-                  GestureDetector(
-                    onTap: () => Navigator.of(context).pop(),
-                    child: Container(
-                      width: 44,
-                      height: 44,
-                      alignment: Alignment.center,
-                      decoration: const BoxDecoration(
-                        color: Colors.white,
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.chevron_left,
-                        color: Color(0xFF1C2340),
-                        size: 26,
-                      ),
+                  Positioned(
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    height: screenHeight * 0.47,
+                    child: SvgPicture.asset(
+                      'assets/ghm/framebig.svg',
+                      fit: BoxFit.cover,
                     ),
                   ),
-
-                  // Logout button (same style)
-                  GestureDetector(
-                    onTap: () {
-                      ref.read(marathonUsernameProvider.notifier).state = '';
-                      ref.read(marathonCategoryProvider.notifier).state = '6K';
-                    },
-                    child: Container(
-                      width: 44,
-                      height: 44,
-                      alignment: Alignment.center,
-                      decoration: const BoxDecoration(
-                        color: Colors.white,
-                        shape: BoxShape.circle,
+                  Column(
+                    children: [
+                      SafeArea(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16.0, vertical: 10),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              GestureDetector(
+                                onTap: () => Navigator.of(context).pop(),
+                                child: Container(
+                                  width: 44,
+                                  height: 44,
+                                  alignment: Alignment.center,
+                                  decoration: const BoxDecoration(
+                                    color: Colors.white,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(
+                                    Icons.chevron_left,
+                                    color: Color(0xFF1C2340),
+                                    size: 26,
+                                  ),
+                                ),
+                              ),
+                              GestureDetector(
+                                onTap: () {
+                                  ref
+                                      .read(marathonUsernameProvider.notifier)
+                                      .state = '';
+                                  ref
+                                      .read(marathonCategoryProvider.notifier)
+                                      .state = '6K';
+                                },
+                                child: Container(
+                                  width: 44,
+                                  height: 44,
+                                  alignment: Alignment.center,
+                                  decoration: const BoxDecoration(
+                                    color: Colors.white,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(
+                                    Icons.logout,
+                                    color: Colors.black,
+                                    size: 22,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
-                      child: const Icon(
-                        Icons.logout,
-                        color: Colors.black,
-                        size: 22,
-                      ),
-                    ),
+                      _buildDistanceBoard(category),
+                    ],
                   ),
                 ],
               ),
-            ),
+            ],
           ),
-          SafeArea(
-            bottom: false,
-            child: _buildDistanceBoard(category),
-          ),
-        ],
+        ),
       ),
     );
   }
+
   Widget _buildDistanceBoard(String category) {
     final asyncData = ref.watch(distanceLeaderboardProvider);
     return asyncData.when(
@@ -99,13 +115,13 @@ class _MarathonLeaderboardTabState
             .toList();
         return _buildBoard(items, category);
       },
-      loading: () => const Center(
-          child: CircularProgressIndicator(color: Colors.white)),
+      loading: () =>
+          const Center(child: CircularProgressIndicator(color: Colors.white)),
       error: (e, st) => Center(
-          child: Text('Error: $e',
-              style: const TextStyle(color: Colors.red))),
+          child: Text('Error: $e', style: const TextStyle(color: Colors.red))),
     );
   }
+
   Widget _buildBoard(List<_LeaderboardItem> items, String category) {
     final currentUser = ref.watch(marathonUsernameProvider);
     final myItemIndex = items.indexWhere((e) => e.username == currentUser);
@@ -113,7 +129,7 @@ class _MarathonLeaderboardTabState
 
     final topThree = items.take(3).toList();
     final remainingItems =
-    items.length > 3 ? items.sublist(3) : <_LeaderboardItem>[];
+        items.length > 3 ? items.sublist(3) : <_LeaderboardItem>[];
 
     return Column(
       children: [
@@ -127,19 +143,17 @@ class _MarathonLeaderboardTabState
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-
                   if (topThree.length >= 2)
-                    _buildPodiumBar(topThree[1], 2,
-                        const Color(0xFF3E72D7), 120, 'assets/ghm/2nd.png', barWidth),
+                    _buildPodiumBar(topThree[1], 2, const Color(0xFF3E72D7),
+                        120, 'assets/ghm/2nd.png', barWidth),
                   const SizedBox(width: 16),
                   if (topThree.isNotEmpty)
-                    _buildPodiumBar(topThree[0], 1,
-                        const Color(0xFFF6BC2F), 180, 'assets/ghm/1st.png', barWidth),
+                    _buildPodiumBar(topThree[0], 1, const Color(0xFFF6BC2F),
+                        180, 'assets/ghm/1st.png', barWidth),
                   const SizedBox(width: 16),
                   if (topThree.length >= 3)
-                    _buildPodiumBar(topThree[2], 3,
-                        const Color(0xFF7C3EC3), 90, 'assets/ghm/3rd.png', barWidth),
-
+                    _buildPodiumBar(topThree[2], 3, const Color(0xFF7C3EC3), 90,
+                        'assets/ghm/3rd.png', barWidth),
                 ],
               );
             },
@@ -147,45 +161,39 @@ class _MarathonLeaderboardTabState
         ),
 
         // ── WHITE LIST SECTION ────────────────────────────────────
-        Expanded(
-          child: Container(
-            width: double.infinity,
-            decoration: const BoxDecoration(color: Colors.white),
-            child: Column(
-              children: [
-                const SizedBox(height: 16),
-                Text(
-                  'Global Leaderboard ($category)',
-                  style: const TextStyle(
-                    color: AppTheme.textMain,
-                    fontSize: 20,
-                    fontFamily: AppTheme.fontUnivers,
-                    fontWeight: FontWeight.w700,
-                  ),
+        Container(
+          width: double.infinity,
+          decoration: const BoxDecoration(color: Colors.white),
+          child: Column(
+            children: [
+              const SizedBox(height: 16),
+              Text(
+                'Global Leaderboard ($category)',
+                style: const TextStyle(
+                  color: AppTheme.textMain,
+                  fontSize: 20,
+                  fontFamily: AppTheme.fontUnivers,
+                  fontWeight: FontWeight.w700,
                 ),
-                const SizedBox(height: 10),
+              ),
+              const SizedBox(height: 10),
 
-                // ── LIST ─────────────────────────────────────────
-                Expanded(
-                  child: RefreshIndicator(
-                    onRefresh: () async =>
-                        ref.invalidate(distanceLeaderboardProvider),
-                    child: ListView.builder(
-                      padding: const EdgeInsets.only(top: 6, bottom: 110),
-                      itemCount: remainingItems.length,
-                      itemBuilder: (context, index) {
-                        final item = remainingItems[index];
-                        return _buildLeaderboardTile(
-                          item,
-                          index + 4,
-                          item.username == currentUser,
-                        );
-                      },
-                    ),
-                  ),
-                ),
-              ],
-            ),
+              // ── LIST ─────────────────────────────────────────
+              ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                padding: const EdgeInsets.only(top: 6, bottom: 110),
+                itemCount: remainingItems.length,
+                itemBuilder: (context, index) {
+                  final item = remainingItems[index];
+                  return _buildLeaderboardTile(
+                    item,
+                    index + 4,
+                    item.username == currentUser,
+                  );
+                },
+              ),
+            ],
           ),
         ),
 
@@ -196,8 +204,8 @@ class _MarathonLeaderboardTabState
   }
 
 // ── PODIUM BAR ───────────────────────────────────────────────────────
-  Widget _buildPodiumBar(_LeaderboardItem item, int rank,
-      Color color, double barHeight, String trophyPath, double barWidth) {
+  Widget _buildPodiumBar(_LeaderboardItem item, int rank, Color color,
+      double barHeight, String trophyPath, double barWidth) {
     return SizedBox(
       width: barWidth,
       child: Column(
@@ -224,7 +232,7 @@ class _MarathonLeaderboardTabState
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
                       fontFamily: AppTheme.fontGeneralSans,
-                        height : 1.2,
+                      height: 1.2,
                       color: AppTheme.textMain,
                     ),
                   ),
@@ -241,7 +249,7 @@ class _MarathonLeaderboardTabState
             decoration: BoxDecoration(
               color: color,
               borderRadius:
-              const BorderRadius.vertical(top: Radius.circular(12)),
+                  const BorderRadius.vertical(top: Radius.circular(12)),
             ),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -251,11 +259,10 @@ class _MarathonLeaderboardTabState
                 Text(
                   item.value.toStringAsFixed(2),
                   style: const TextStyle(
-                    color: AppTheme.textMain,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 16,
-                    fontFamily: AppTheme.fontGeneralSans
-                  ),
+                      color: AppTheme.textMain,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 16,
+                      fontFamily: AppTheme.fontGeneralSans),
                 ),
                 const Text(
                   'KM',
@@ -263,7 +270,7 @@ class _MarathonLeaderboardTabState
                     color: AppTheme.textMain,
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
-                      fontFamily: AppTheme.fontGeneralSans,
+                    fontFamily: AppTheme.fontGeneralSans,
                     height: 1.1,
                   ),
                 ),
@@ -276,8 +283,7 @@ class _MarathonLeaderboardTabState
   }
 
   // ── LEADERBOARD TILE (rank 4+) ───────────────────────────────────────
-  Widget _buildLeaderboardTile(
-      _LeaderboardItem item, int rank, bool isMe) {
+  Widget _buildLeaderboardTile(_LeaderboardItem item, int rank, bool isMe) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
       padding: const EdgeInsets.all(12),
@@ -383,7 +389,6 @@ class _MarathonLeaderboardTabState
         ],
       ),
       child: Row(
-
         children: [
           const SizedBox(width: 100),
           Column(
@@ -428,7 +433,7 @@ class _MarathonLeaderboardTabState
         ],
       ),
     );
-  }}
+  }
 
 // ── Stripe: hollow bordered rectangle, exact Figma spec ──
   Widget _stripe() {
@@ -446,6 +451,7 @@ class _MarathonLeaderboardTabState
       ),
     );
   }
+}
 
 // ── DATA MODEL ──────────────────────────────────────────────────────────
 class _LeaderboardItem {

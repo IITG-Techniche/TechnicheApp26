@@ -5,7 +5,6 @@ import 'package:techniche26/view/merch_screen.dart';
 import 'package:techniche26/view/marathon/marathon_main.dart';
 import 'package:techniche26/view/ghm/ghm_registration.dart';
 import 'package:techniche26/view/techniche_screen.dart';
-import 'package:techniche26/view/schedule_screen.dart';
 import 'package:techniche26/view/techno/papers_display.dart';
 import 'package:techniche26/view/utilities_screen.dart';
 import 'package:techniche26/view/workshops_screen.dart';
@@ -78,13 +77,13 @@ Route<dynamic> generateRoute(RouteSettings routeSettings) {
     case '/schedule':
       return MaterialPageRoute(
         settings: routeSettings,
-        builder: (_) => const SchedulePage(),
+        builder: (_) => const LandingScreen(initialTab: 3),
       );
 
     case UtilitiesScreen.routeName:
       return MaterialPageRoute(
         settings: routeSettings,
-        builder: (_) => const UtilitiesScreen(),
+        builder: (_) => const LandingScreen(initialTab: 4),
       );
 
     case WorkshopsScreen.routeName:

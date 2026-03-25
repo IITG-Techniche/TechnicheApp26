@@ -8,8 +8,8 @@ import '../../constant/appTheme.dart';
 import 'dart:ui';
 
 // ── Design Tokens ──────────────────────────────────────────────────────────
-const _cardGray   = Color(0xFFE8ECEF);
-const _barFaded  = Color(0xFFB8BFF0); // faded bar for non-today days
+const _cardGray = Color(0xFFE8ECEF);
+const _barFaded = Color(0xFFB8BFF0); // faded bar for non-today days
 const _iconCircle = Color(0xFF2C3349); // dark circle behind run icon
 
 const _cardShadow = [
@@ -22,7 +22,7 @@ class MarathonDashboardTab extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final progressAsync   = ref.watch(progressStatsProvider);
+    final progressAsync = ref.watch(progressStatsProvider);
     final recentRunsAsync = ref.watch(recentRunsProvider);
 
     return Scaffold(
@@ -113,8 +113,7 @@ class MarathonDashboardTab extends ConsumerWidget {
                           if (runs.isEmpty) {
                             return Container(
                               width: double.infinity,
-                              padding:
-                              const EdgeInsets.symmetric(vertical: 40),
+                              padding: const EdgeInsets.symmetric(vertical: 40),
                               decoration: BoxDecoration(
                                 color: AppTheme.backgroundGray,
                                 borderRadius: BorderRadius.circular(16),
@@ -123,7 +122,9 @@ class MarathonDashboardTab extends ConsumerWidget {
                                 child: Text(
                                   'No runs logged yet.',
                                   style: TextStyle(
-                                      color: AppTheme.textSecondary, fontSize: 14, fontFamily: AppTheme.fontGeneralSans),
+                                      color: AppTheme.textSecondary,
+                                      fontSize: 14,
+                                      fontFamily: AppTheme.fontGeneralSans),
                                 ),
                               ),
                             );
@@ -134,23 +135,20 @@ class MarathonDashboardTab extends ConsumerWidget {
                                   .format(run.createdAt.toLocal());
                               final timeStr = DateFormat('hh:mm a')
                                   .format(run.createdAt.toLocal());
-                              final int mm =
-                              run.durationMinutes.floor();
+                              final int mm = run.durationMinutes.floor();
                               final int ss =
-                              ((run.durationMinutes - mm) * 60)
-                                  .round();
+                                  ((run.durationMinutes - mm) * 60).round();
                               final String durStr =
                                   '${mm.toString().padLeft(2, '0')}:${ss.toString().padLeft(2, '0')}';
                               return Padding(
-                                padding:
-                                const EdgeInsets.only(bottom: 12),
+                                padding: const EdgeInsets.only(bottom: 12),
                                 child: _RunCard(
                                   distanceKm: run.distanceKm,
                                   dateStr: dateStr,
                                   timeStr: timeStr,
                                   durStr: durStr,
-                                  paceStr:
-                                  '${run.avgPace.toStringAsFixed(2)}/KM',
+                                  speedStr:
+                                      '${run.avgSpeed.toStringAsFixed(1)} km/h',
                                 ),
                               );
                             }).toList(),
@@ -163,8 +161,7 @@ class MarathonDashboardTab extends ConsumerWidget {
                                   color: AppTheme.primaryBlue)),
                         ),
                         error: (e, _) => Text('Error: $e',
-                            style: const TextStyle(
-                                color: Colors.redAccent)),
+                            style: const TextStyle(color: Colors.redAccent)),
                       ),
                     ],
                   ),
@@ -211,8 +208,8 @@ class _DashboardHeader extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: Colors.white,
                       shape: BoxShape.circle,
-                      border: Border.all(
-                          color: const Color(0xFFDEE9FE), width: 1),
+                      border:
+                          Border.all(color: const Color(0xFFDEE9FE), width: 1),
                     ),
                     child: const Icon(
                       Icons.chevron_left,
@@ -245,14 +242,12 @@ class _StatsGrid extends StatelessWidget {
             children: [
               Expanded(
                   child: _StatCard(
-                      label: 'Streak',
-                      value: '${stats.streak} Days')),
+                      label: 'Streak', value: '${stats.streak} Days')),
               const SizedBox(width: 16),
               Expanded(
                   child: _StatCard(
                       label: 'This Week',
-                      value:
-                      '${stats.weeklyKm.toStringAsFixed(2)} KM')),
+                      value: '${stats.weeklyKm.toStringAsFixed(2)} KM')),
             ],
           ),
         ),
@@ -263,13 +258,12 @@ class _StatsGrid extends StatelessWidget {
             children: [
               Expanded(
                   child: _StatCard(
-                      label: 'Avg Pace',
-                      value: stats.weeklyPace.toStringAsFixed(2))),
+                      label: 'Avg Speed',
+                      value: '${stats.weeklySpeed.toStringAsFixed(1)} km/h')),
               const SizedBox(width: 16),
               Expanded(
                   child: _StatCard(
-                      label: 'Improvement',
-                      value: '+${stats.improvement}%')),
+                      label: 'Improvement', value: '+${stats.improvement}%')),
             ],
           ),
         ),
@@ -288,8 +282,9 @@ class _StatCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.fromLTRB(8, 16, 8, 16),
       decoration: BoxDecoration(
-        color: _cardGray,                         
-        borderRadius: BorderRadius.circular(8),
+        color: const Color(0xFFdee9fe),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE8E8E8)),
         boxShadow: _cardShadow,
       ),
       child: Column(
@@ -341,14 +336,15 @@ class _ChartCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final daily = stats.dailyStats;
     double maxVal =
-    daily.map((e) => e.distance).fold(0.0, (a, b) => a > b ? a : b);
+        daily.map((e) => e.distance).fold(0.0, (a, b) => a > b ? a : b);
     if (maxVal == 0) maxVal = 1.0;
 
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
       decoration: BoxDecoration(
-        color: const Color(0xFFF1F3F6),                      
-        borderRadius: BorderRadius.circular(18),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE8E8E8)),
         boxShadow: _cardShadow,
       ),
       child: Column(
@@ -375,14 +371,13 @@ class _ChartCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 18),
-
           SizedBox(
             height: 120,
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: daily.map((stat) {
                 final double barH =
-                ((stat.distance / maxVal) * 90).clamp(4.0, 90.0);
+                    ((stat.distance / maxVal) * 90).clamp(4.0, 90.0);
                 final bool isToday = stat.isToday;
                 return Expanded(
                   child: Column(
@@ -396,7 +391,7 @@ class _ChartCard extends StatelessWidget {
                         decoration: BoxDecoration(
                           color: isToday ? AppTheme.primaryBlue : _barFaded,
                           borderRadius: const BorderRadius.only(
-                            topLeft:  Radius.circular(5),
+                            topLeft: Radius.circular(5),
                             topRight: Radius.circular(5),
                           ),
                         ),
@@ -405,11 +400,12 @@ class _ChartCard extends StatelessWidget {
                       Text(
                         stat.dayName[0],
                         style: TextStyle(
-                          color: isToday ? AppTheme.primaryBlue : AppTheme.textSecondary,
+                          color: isToday
+                              ? AppTheme.primaryBlue
+                              : AppTheme.textSecondary,
                           fontSize: 11,
-                          fontWeight: isToday
-                              ? FontWeight.w800
-                              : FontWeight.w500,
+                          fontWeight:
+                              isToday ? FontWeight.w800 : FontWeight.w500,
                           fontFamily: AppTheme.fontGeneralSans,
                         ),
                       ),
@@ -428,13 +424,13 @@ class _ChartCard extends StatelessWidget {
 // ─────────────────────────────────────────────
 class _RunCard extends StatelessWidget {
   final double distanceKm;
-  final String dateStr, timeStr, durStr, paceStr;
+  final String dateStr, timeStr, durStr, speedStr;
   const _RunCard({
     required this.distanceKm,
     required this.dateStr,
     required this.timeStr,
     required this.durStr,
-    required this.paceStr,
+    required this.speedStr,
   });
 
   @override
@@ -444,6 +440,7 @@ class _RunCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE8E8E8)),
         boxShadow: _cardShadow,
       ),
       child: Column(
@@ -485,7 +482,6 @@ class _RunCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 10),
-
           Row(
             children: [
               _InfoChip(icon: Icons.calendar_today_outlined, text: dateStr),
@@ -494,12 +490,11 @@ class _RunCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 6),
-
           Row(
             children: [
               _InfoChip(icon: Icons.timer_outlined, text: durStr),
               const SizedBox(width: 20),
-              _InfoChip(icon: Icons.speed_outlined, text: paceStr),
+              _InfoChip(icon: Icons.speed_outlined, text: speedStr),
             ],
           ),
         ],
@@ -510,7 +505,7 @@ class _RunCard extends StatelessWidget {
 
 class _InfoChip extends StatelessWidget {
   final IconData icon;
-  final String   text;
+  final String text;
   const _InfoChip({required this.icon, required this.text});
 
   @override

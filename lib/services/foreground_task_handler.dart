@@ -1,7 +1,10 @@
 import 'dart:async';
+import 'dart:ui';
 import 'dart:isolate';
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
-import 'package:pedometer/pedometer.dart';
+import 'package:geolocator/geolocator.dart';
+
+const String _kPortName = 'marathon_gps_port';
 
 @pragma('vm:entry-point')
 void startCallback() {
@@ -10,73 +13,120 @@ void startCallback() {
 
 class MyForegroundTaskHandler extends TaskHandler {
   int _elapsedSeconds = 0;
-  int _stepCount = 0;
   double _distanceKm = 0.0;
-  int _initialStepCount = -1;
-  int _baseSteps = 0;
+  bool _isPaused = false;
 
-  // Pace calculation
-  int _lastStepCount = 0;
-  int _lastStepTime = 0;
+  // ── GPS (primary) ──────────────────────────────────────────────────────────
+  StreamSubscription<Position>? _locationSubscription;
+  Position? _lastPosition;
+  bool _hasGpsFix = false;
+
+  // ── Route tracking ─────────────────────────────────────────────────────────
+  final List<Map<String, double>> _routePoints = [];
+  int _lastSentRouteIndex = 0; 
+
+  // ── Pace calculation ───────────────────────────────────────────────────────
   final List<({int time, double dist})> _history = [];
   static const int _windowSeconds = 10;
+  int _lastMovementTime = 0;
 
-  final double _strideLengthKm = 0.000762;
-
-  StreamSubscription<StepCount>? _stepSubscription;
+  Timer? _timer;
 
   @override
   Future<void> onStart(DateTime timestamp, TaskStarter starter) async {
-    // In newer versions, we use specialized methods to listen for data from main
-    // instead of manually managing a ReceivePort in some cases,
-    // but the handler still supports receiving data via onReceiveData.
+    print('MyForegroundTaskHandler onStart (v11 Pure GPS)');
+    _startLocationTracking();
+    
+    // Setup IsolateNameServer port
+    final ReceivePort port = ReceivePort();
+    IsolateNameServer.removePortNameMapping(_kPortName);
+    IsolateNameServer.registerPortWithName(port.sendPort, _kPortName);
 
-    _startStepTracking();
-  }
-
-  @override
-  void onRepeatEvent(DateTime timestamp) {
-    _elapsedSeconds++;
-
-    // Calculate windowed pace
-    double currentPace = 0.0;
-    if (_elapsedSeconds - _lastStepTime <= 3) {
-      _history.add((time: _elapsedSeconds, dist: _distanceKm));
-      _history.removeWhere((p) => p.time < _elapsedSeconds - _windowSeconds);
-
-      if (_history.length >= 2) {
-        final first = _history.first;
-        final last = _history.last;
-        final timeDiff = last.time - first.time;
-        final distDiff = last.dist - first.dist;
-
-        if (timeDiff > 0 && distDiff > 0.0002) {
-          double minutes = timeDiff / 60.0;
-          currentPace = minutes / distDiff;
-          if (currentPace > 30) currentPace = 0.0;
-        }
-      }
-    }
-
-    // Update notification
-    FlutterForegroundTask.updateService(
-      notificationTitle: 'Run in Progress',
-      notificationText:
-      '${_distanceKm.toStringAsFixed(2)} km | ${(_elapsedSeconds ~/ 60).toString().padLeft(2, '0')}:${(_elapsedSeconds % 60).toString().padLeft(2, '0')} | $_stepCount steps',
-    );
-
-    // Send data to the main isolate using the built-in static method
-    FlutterForegroundTask.sendDataToMain({
-      'elapsedSeconds': _elapsedSeconds,
-      'stepCount': _stepCount,
-      'distanceKm': _distanceKm,
-      'currentPace': currentPace,
+    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
+      _tick();
     });
   }
 
   @override
+  void onRepeatEvent(DateTime timestamp) {
+    // Handled by manual _tick() for better reliability on Android
+  }
+
+  void _tick() {
+    print('Handler Tick: dist=$_distanceKm, fix=$_hasGpsFix');
+    if (!_isPaused) {
+      _elapsedSeconds++;
+    }
+
+    double currentPace = 0.0;
+    try {
+      if (!_isPaused && (_elapsedSeconds - _lastMovementTime <= 15)) {
+        _history.add((time: _elapsedSeconds, dist: _distanceKm));
+        _history.removeWhere((p) => p.time < _elapsedSeconds - _windowSeconds);
+
+        if (_history.length >= 2) {
+          final first = _history.first;
+          final last = _history.last;
+          final timeDiff = last.time - first.time;
+          final distDiff = last.dist - first.dist;
+
+          if (timeDiff > 0 && distDiff > 0.0001) {
+            double minutes = timeDiff / 60.0;
+            currentPace = minutes / distDiff;
+            if (currentPace > 30) currentPace = 0.0;
+          }
+        }
+      }
+    } catch (e) {
+      print('Error calculating pace: $e');
+    }
+
+    List<Map<String, double>> newPoints = [];
+    if (_lastSentRouteIndex < _routePoints.length) {
+      newPoints = _routePoints.sublist(_lastSentRouteIndex);
+      _lastSentRouteIndex = _routePoints.length;
+    }
+
+    final String timeStr =
+        '${(_elapsedSeconds ~/ 60).toString().padLeft(2, '0')}:'
+        '${(_elapsedSeconds % 60).toString().padLeft(2, '0')}';
+    
+    final String msg =
+        '${_distanceKm.toStringAsFixed(2)} km | $timeStr | Pace: ${currentPace.toStringAsFixed(1)} min/km';
+
+    FlutterForegroundTask.updateService(
+      notificationTitle: _isPaused ? 'Run Paused' : 'Live Run Tracking',
+      notificationText: msg,
+    );
+
+    final data = {
+      'elapsedSeconds': _elapsedSeconds,
+      'distanceKm': _distanceKm,
+      'currentPace': currentPace,
+      'currentHeading': _lastPosition?.heading,
+      'isPaused': _isPaused,
+      'hasGpsFix': _hasGpsFix,
+      'newRoutePoints': newPoints,
+    };
+    
+    // Explicitly send data to main isolate
+    FlutterForegroundTask.sendDataToMain(data);
+
+    // Bulletproof backup: Send via IsolateNameServer
+    final SendPort? mainPort = IsolateNameServer.lookupPortByName(_kPortName);
+    if (mainPort != null) {
+      mainPort.send(data);
+    } else {
+      print('Handler Warning: No main port found via IsolateNameServer');
+    }
+  }
+
+  @override
   Future<void> onDestroy(DateTime timestamp) async {
-    await _stepSubscription?.cancel();
+    print('MyForegroundTaskHandler onDestroy');
+    IsolateNameServer.removePortNameMapping(_kPortName);
+    _timer?.cancel();
+    await _locationSubscription?.cancel();
   }
 
   @override
@@ -84,39 +134,66 @@ class MyForegroundTaskHandler extends TaskHandler {
     FlutterForegroundTask.launchApp();
   }
 
-  // Use this method to handle messages sent FROM the main UI to this Isolate
   @override
   void onReceiveData(Object data) {
     if (data is Map) {
       if (data['action'] == 'pause') {
-        _stepSubscription?.cancel();
-        _stepSubscription = null;
-        _initialStepCount = -1;
+        _isPaused = true;
+        _locationSubscription?.pause();
       } else if (data['action'] == 'resume') {
-        _baseSteps = _stepCount;
-        _startStepTracking();
+        _isPaused = false;
+        _locationSubscription?.resume();
       }
     }
   }
 
-  void _startStepTracking() {
-    _stepSubscription?.cancel();
-    _stepSubscription = Pedometer.stepCountStream.listen((event) {
-      if (_initialStepCount == -1) {
-        _initialStepCount = event.steps;
-        return;
-      }
+  void _startLocationTracking() {
+    print('Starting Pure GPS tracking');
+    try {
+      _locationSubscription?.cancel();
+      _locationSubscription = Geolocator.getPositionStream(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.best,
+          distanceFilter: 3, // Update every 3 meters
+        ),
+      ).listen((Position position) {
+        if (_isPaused) return;
 
-      int deltaSteps = event.steps - _initialStepCount;
-      if (deltaSteps < 0) deltaSteps = 0;
+        // Accuracy check: loosened to 35m to ensure tracking starts smoothly
+        if (position.accuracy > 35.0) {
+          print('GPS Log: Weak Signal (${position.accuracy.toStringAsFixed(1)}m)');
+          return;
+        }
 
-      _stepCount = _baseSteps + deltaSteps;
-      _distanceKm = _stepCount * _strideLengthKm;
+        if (_lastPosition != null) {
+          final double distMeters = Geolocator.distanceBetween(
+            _lastPosition!.latitude,
+            _lastPosition!.longitude,
+            position.latitude,
+            position.longitude,
+          );
 
-      if (_stepCount > _lastStepCount) {
-        _lastStepTime = _elapsedSeconds;
-        _lastStepCount = _stepCount;
-      }
-    });
+          // Movements less than 1m or greater than 100m in one update are usually noise
+          if (distMeters > 1.0 && distMeters < 100.0) {
+            _distanceKm += distMeters / 1000.0;
+            _lastMovementTime = _elapsedSeconds;
+          }
+        }
+
+        _routePoints.add({
+          'lat': position.latitude,
+          'lng': position.longitude,
+        });
+
+        _lastPosition = position;
+        _hasGpsFix = true;
+
+        print('GPS: ${position.latitude.toStringAsFixed(5)}, ${position.longitude.toStringAsFixed(5)} | dist: ${_distanceKm.toStringAsFixed(3)} km');
+      }, onError: (e) {
+        print('Geolocator error: $e');
+      });
+    } catch (e) {
+      print('Failed to start GPS tracking: $e');
+    }
   }
 }

@@ -9,6 +9,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
+import 'services/map_cache_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -21,6 +22,9 @@ void main() async {
     url: 'https://app-api.techniche.org.in',
     anonKey: 'sb_publishable_ciFSMUfqc4ynJ7eFvHC0Ug_4js-PR63',
   );
+
+  // Initialize Map Cache immediately
+  await MapCacheService.init();
 
   // Remote Config (skip on web if it causes issues)
   if (!kIsWeb) {
@@ -50,9 +54,11 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Techniche 2026',
       theme: AppTheme.darkTheme,
-      home: kIsWeb
-          ? const SplashScreen() // no foreground task on web
-          : WithForegroundTask(child: const SplashScreen()),
+      home: const SplashScreen(),
+      builder: (context, child) {
+        if (kIsWeb) return child!;
+        return WithForegroundTask(child: child!);
+      },
     );
   }
 }

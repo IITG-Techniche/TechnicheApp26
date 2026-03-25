@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:techniche26/providers/navigation_provider.dart';
 import 'package:techniche26/view/marathon/marathon_main.dart';
 import 'package:techniche26/view/ghm/ghm_registration.dart';
 import 'package:techniche26/view/techniche_screen.dart';
@@ -6,11 +8,11 @@ import 'package:techniche26/view/techno/papers_display.dart';
 import 'package:techniche26/view/utilities_screen.dart';
 import 'package:techniche26/view/workshops_screen.dart';
 
-class AppDrawer extends StatelessWidget {
+class AppDrawer extends ConsumerWidget {
   const AppDrawer({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Drawer(
       backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(
@@ -32,6 +34,9 @@ class AppDrawer extends StatelessWidget {
                   icon: Icons.event_note_rounded,
                   title: 'Events',
                   routeName: EventsScreen.routeName,
+                  isTab: true,
+                  tabIndex: 0,
+                  ref: ref,
                 ),
                 _buildDrawerItem(
                   context: context,
@@ -55,12 +60,14 @@ class AppDrawer extends StatelessWidget {
                   padding: EdgeInsets.symmetric(horizontal: 20, vertical: 8),
                   child: Divider(color: Color(0xFFE8E8E8), height: 1),
                 ),
-                _buildSectionTitle('Marathon'),
                 _buildDrawerItem(
                   context: context,
                   icon: Icons.app_registration_rounded,
                   title: 'GHM Registration',
                   routeName: GHMRegistrationScreen.routeName,
+                  isTab: true,
+                  tabIndex: 3,
+                  ref: ref,
                 ),
                 _buildDrawerItem(
                   context: context,
@@ -81,15 +88,12 @@ class AppDrawer extends StatelessWidget {
                 ),
                 _buildDrawerItem(
                   context: context,
-                  icon: Icons.calendar_month_rounded,
-                  title: 'Schedule',
-                  routeName: '/schedule',
-                ),
-                _buildDrawerItem(
-                  context: context,
                   icon: Icons.settings_suggest_rounded,
                   title: 'Utilities',
                   routeName: UtilitiesScreen.routeName,
+                  isTab: true,
+                  tabIndex: 4,
+                  ref: ref,
                 ),
               ],
             ),
@@ -159,6 +163,9 @@ class AppDrawer extends StatelessWidget {
     required IconData icon,
     required String title,
     required String routeName,
+    bool isTab = false,
+    int? tabIndex,
+    WidgetRef? ref,
   }) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
@@ -179,7 +186,15 @@ class AppDrawer extends StatelessWidget {
         hoverColor: const Color(0xFFF5F5F5),
         onTap: () {
           Navigator.pop(context); // Close the drawer
-          Navigator.pushNamed(context, routeName);
+          if (isTab && tabIndex != null && ref != null) {
+            ref.read(bottomNavSelectedIndexProvider.notifier).state = tabIndex;
+            // Pop until we are back on LandingScreen to see the tab switch
+            Navigator.popUntil(context, (route) {
+              return route.settings.name == '/landing-screen' || route.isFirst;
+            });
+          } else {
+            Navigator.pushNamed(context, routeName);
+          }
         },
       ),
     );

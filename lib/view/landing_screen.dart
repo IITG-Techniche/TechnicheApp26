@@ -2,22 +2,23 @@ import 'package:techniche26/view/auth/ca_auth_screen.dart';
 import 'package:techniche26/utils/app_drawer.dart';
 // import 'package:techniche26/view/workshops_screen.dart';
 import 'package:techniche26/view/techno/papers_display.dart';
+import 'package:techniche26/view/ghm/ghm_registration.dart';
 import 'package:techniche26/view/marathon/marathon_main.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:techniche26/utils/ca_bottom_nav_bar.dart';
-import 'package:techniche26/view/map_screen.dart';
+import 'package:techniche26/view/techniche_screen.dart';
 import 'package:techniche26/view/utilities_screen.dart';
 import 'package:techniche26/view/legacy_screen.dart';
 import 'package:techniche26/controller/riverpod_controller/ca_auth_riverpod_controller.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:techniche26/utils/bottom_nav_bar.dart';
 import 'package:upgrader/upgrader.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:techniche26/services/notification_service.dart';
 import 'package:techniche26/constant/appTheme.dart';
-import 'package:techniche26/view/schedule_screen.dart';
 // import 'package:techniche26/utils/animate_gradient_background.dart';
+
+import 'package:techniche26/providers/navigation_provider.dart';
 
 class LandingScreen extends ConsumerStatefulWidget {
   static const String routeName = '/landing-screen';
@@ -124,14 +125,16 @@ class ScanlinePainter extends CustomPainter {
 }
 
 class _LandingScreenState extends ConsumerState<LandingScreen> {
-  late int _selectedIndex;
-
-  final GlobalKey<MapScreenState> _mapKey = GlobalKey<MapScreenState>();
-
   @override
   void initState() {
     super.initState();
-    _selectedIndex = widget.initialTab;
+    Future.microtask(() {
+      if (mounted) {
+        ref.read(bottomNavSelectedIndexProvider.notifier).state =
+            widget.initialTab;
+      }
+    });
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (kDebugMode) {
         print("LandingScreen: Triggering notification setup.");
@@ -141,10 +144,8 @@ class _LandingScreenState extends ConsumerState<LandingScreen> {
   }
 
   void _onItemTapped(int index) {
-    if (_selectedIndex == index) return;
-    setState(() {
-      _selectedIndex = index;
-    });
+    if (ref.read(bottomNavSelectedIndexProvider) == index) return;
+    ref.read(bottomNavSelectedIndexProvider.notifier).state = index;
   }
 
   Future<void> _handleAuthNavigation(BuildContext context) async {
@@ -183,13 +184,14 @@ class _LandingScreenState extends ConsumerState<LandingScreen> {
   @override
   Widget build(BuildContext context) {
     final List<Widget> screens = <Widget>[
-      MapScreen(key: _mapKey, initialVenue: widget.initialVenue),
+      const EventsScreen(isTab: true),
       LegacyPage(),
       _buildHomeContent(context),
-      const SchedulePage(),
+      const GHMRegistrationScreen(isTab: true),
       const UtilitiesScreen(),
     ];
 
+    final selectedIndex = ref.watch(bottomNavSelectedIndexProvider);
     return UpgradeAlert(
       child: Scaffold(
         backgroundColor: Colors.transparent,
@@ -210,19 +212,21 @@ class _LandingScreenState extends ConsumerState<LandingScreen> {
             return RetroTransition(animation: animation, child: child);
           },
           child: KeyedSubtree(
-            key: ValueKey<int>(_selectedIndex),
-            child: screens.elementAt(_selectedIndex),
+            key: ValueKey<int>(selectedIndex),
+            child: screens.elementAt(selectedIndex),
           ),
         ),
         bottomNavigationBar: SafeArea(
           child: GlowingBottomNavBar(
-            currentIndex: _selectedIndex,
+            currentIndex: selectedIndex,
             onTap: _onItemTapped,
             items: [
-              GlowingBottomNavBarItem(icon: Icons.map_sharp, label: 'Map'),
+              GlowingBottomNavBarItem(
+                  icon: Icons.event_note_sharp, label: 'Events'),
               GlowingBottomNavBarItem(icon: Icons.history_edu, label: 'Legacy'),
               GlowingBottomNavBarItem(icon: Icons.home_filled, label: 'Home'),
-              GlowingBottomNavBarItem(icon: Icons.schedule, label: 'Schedule'),
+              GlowingBottomNavBarItem(
+                  icon: Icons.app_registration_sharp, label: 'GHM'),
               GlowingBottomNavBarItem(
                   icon: Icons.workspace_premium_sharp, label: 'Utilities'),
             ],
@@ -341,8 +345,9 @@ class _LandingScreenState extends ConsumerState<LandingScreen> {
                           description:
                               'Register for the biggest student organised marathon of india',
                           imagePath: 'assets/ghm/ghm2.png',
-                          onTap: () =>
-                              Navigator.pushNamed(context, '/ghm-registration'),
+                          onTap: () => ref
+                              .read(bottomNavSelectedIndexProvider.notifier)
+                              .state = 3,
                           logo_image: 'assets/ghm/shoes.png',
                           logo_color: const Color(0xFF7C3EC3),
                           logo_name: 'Register',
@@ -367,8 +372,9 @@ class _LandingScreenState extends ConsumerState<LandingScreen> {
                           description:
                               'Stay updated with the latest fest information.',
                           imagePath: 'assets/ghm/techniche2.png',
-                          onTap: () =>
-                              Navigator.pushNamed(context, '/events-screen'),
+                          onTap: () => ref
+                              .read(bottomNavSelectedIndexProvider.notifier)
+                              .state = 0,
                           logo_image: 'assets/ghm/technichelogo.png',
                           logo_color: const Color(0xFF175BCC),
                           logo_name: 'Check Out',

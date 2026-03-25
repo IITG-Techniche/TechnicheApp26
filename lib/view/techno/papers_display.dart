@@ -33,130 +33,135 @@ class _TechnothlonScreenState extends State<TechnothlonScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
-      body: Column(
-        children: [
-          _buildHeader(context),
-          Expanded(
-            child: FutureBuilder<List<TechnoPaperModel>>(
-              future: papersFuture,
-              builder: (context, snapshot) {
-                if (!snapshot.hasData) {
-                  return const Center(
-                      child: CircularProgressIndicator(color: Color(0xFF002B5B)));
+      body: FutureBuilder<List<TechnoPaperModel>>(
+        future: papersFuture,
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return const Center(
+                child: CircularProgressIndicator(color: Color(0xFF002B5B)));
+          }
+
+          final data = snapshot.data!;
+          final years = data.map((e) => e.year).toSet().toList()
+            ..sort((a, b) => b.compareTo(a));
+          for (var y in years) {
+            expandedMap.putIfAbsent(y, () => false);
+          }
+
+          return ListView.builder(
+            padding: const EdgeInsets.only(bottom: 40),
+            itemCount: years.length + 1,
+            itemBuilder: (context, index) {
+              if (index == 0) {
+                return Column(
+                  children: [
+                    _buildHeader(context),
+                    const SizedBox(height: 10),
+                  ],
+                );
+              }
+              final year = years[index - 1];
+              final filtered = data.where((e) => e.year == year).toList();
+
+              final Map<String, Map<String, TechnoPaperModel?>> matrix = {
+                'English': {'Hauts': null, 'Juniors': null},
+                'Hindi': {'Hauts': null, 'Juniors': null},
+                'Answer Key': {'Hauts': null, 'Juniors': null},
+              };
+
+              for (TechnoPaperModel item in filtered) {
+                if (item.category == 'Answer Key') {
+                  matrix['Answer Key']?[item.squad] = item;
+                } else {
+                  matrix[item.language]?[item.squad] = item;
                 }
+              }
 
-                final data = snapshot.data!;
-                final years = data.map((e) => e.year).toSet().toList()
-                  ..sort((a, b) => b.compareTo(a));
-                for (var y in years) {
-                  expandedMap.putIfAbsent(y, () => false);
-                }
+              final List<TableRow> rows = [];
+              if (_hasContent(matrix['English'])) {
+                rows.add(_buildRow("English", matrix['English']));
+              }
+              if (_hasContent(matrix['Hindi'])) {
+                rows.add(_buildRow("Hindi", matrix['Hindi']));
+              }
+              if (_hasContent(matrix['Answer Key'])) {
+                rows.add(_buildRow("Answer Key", matrix['Answer Key']));
+              }
 
-                return ListView.builder(
-                  padding: const EdgeInsets.fromLTRB(20, 10, 20, 40),
-                  itemCount: years.length,
-                  itemBuilder: (context, index) {
-                    final year = years[index];
-                    final filtered = data.where((e) => e.year == year).toList();
-
-                    final Map<String, Map<String, TechnoPaperModel?>> matrix = {
-                      'English': {'Hauts': null, 'Juniors': null},
-                      'Hindi': {'Hauts': null, 'Juniors': null},
-                      'Answer Key': {'Hauts': null, 'Juniors': null},
-                    };
-
-                    for (TechnoPaperModel item in filtered) {
-                      if (item.category == 'Answer Key') {
-                        matrix['Answer Key']?[item.squad] = item;
-                      } else {
-                        matrix[item.language]?[item.squad] = item;
-                      }
-                    }
-
-                    final List<TableRow> rows = [];
-                    if (_hasContent(matrix['English'])) {
-                      rows.add(_buildRow("English", matrix['English']));
-                    }
-                    if (_hasContent(matrix['Hindi'])) {
-                      rows.add(_buildRow("Hindi", matrix['Hindi']));
-                    }
-                    if (_hasContent(matrix['Answer Key'])) {
-                      rows.add(_buildRow("Answer Key", matrix['Answer Key']));
-                    }
-
-                    return Container(
-                      margin: const EdgeInsets.only(bottom: 12),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF8F9FA),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: const Color(0xFFE8E8E8)),
-                      ),
-                      child: Theme(
-                        data: Theme.of(context).copyWith(
-                          dividerColor: Colors.transparent,
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Container(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF8F9FA),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: const Color(0xFFE8E8E8)),
+                  ),
+                  child: Theme(
+                    data: Theme.of(context).copyWith(
+                      dividerColor: Colors.transparent,
+                    ),
+                    child: ExpansionTile(
+                      onExpansionChanged: (expanded) {
+                        setState(() {
+                          expandedMap[year] = expanded;
+                        });
+                      },
+                      tilePadding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 8),
+                      title: Text(
+                        "Technothlon $year",
+                        style: const TextStyle(
+                          color: Color(0XFF232930),
+                          fontWeight: FontWeight.w700,
+                          fontSize: 18,
+                          fontFamily: 'Univers',
+                          height: 1.2,
                         ),
-                        child: ExpansionTile(
-                          onExpansionChanged: (expanded) {
-                            setState(() {
-                              expandedMap[year] = expanded;
-                            });
-                          },
-                          tilePadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                          title: Text(
-                            "Technothlon $year",
-                            style: const TextStyle(
-                              color: Color(0XFF232930),
-                              fontWeight: FontWeight.w700,
-                              fontSize: 18,
-                              fontFamily: 'Univers',
-                              height: 1.2,
-                            ),
-                          ),
-                          iconColor: const Color(0xFF6D7985),
-                          collapsedIconColor: const Color(0xFF6D7985),
-                          children: [
-                            if (rows.isNotEmpty)
-                              Padding(
-                                padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-                                child: Table(
-                                  columnWidths: const {
-                                    0: FlexColumnWidth(3),
-                                    1: FlexColumnWidth(2),
-                                    2: FlexColumnWidth(2),
-                                  },
+                      ),
+                      iconColor: const Color(0xFF6D7985),
+                      collapsedIconColor: const Color(0xFF6D7985),
+                      children: [
+                        if (rows.isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+                            child: Table(
+                              columnWidths: const {
+                                0: FlexColumnWidth(3),
+                                1: FlexColumnWidth(2),
+                                2: FlexColumnWidth(2),
+                              },
+                              children: [
+                                TableRow(
                                   children: [
-                                    TableRow(
-                                      children: [
-                                        const SizedBox(),
-                                        _buildHeaderCell("Hauts"),
-                                        _buildHeaderCell("Juniors"),
-                                      ],
-                                    ),
-                                    ...rows,
+                                    const SizedBox(),
+                                    _buildHeaderCell("Hauts"),
+                                    _buildHeaderCell("Juniors"),
                                   ],
                                 ),
-                              )
-                            else
-                              const Padding(
-                                padding: EdgeInsets.all(20.0),
-                                child: Text(
-                                  "No papers available for this year.",
-                                  style: TextStyle(
-                                      color: Color(0xFF6D7985),
-                                      fontFamily: 'General Sans',
-                                      fontStyle: FontStyle.italic),
-                                ),
-                              ),
-                          ],
-                        ),
-                      ),
-                    );
-                  },
-                );
-              },
-            ),
-          ),
-        ],
+                                ...rows,
+                              ],
+                            ),
+                          )
+                        else
+                          const Padding(
+                            padding: EdgeInsets.all(20.0),
+                            child: Text(
+                              "No papers available for this year.",
+                              style: TextStyle(
+                                  color: Color(0xFF6D7985),
+                                  fontFamily: 'General Sans',
+                                  fontStyle: FontStyle.italic),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            },
+          );
+        },
       ),
     );
   }
@@ -203,7 +208,8 @@ class _TechnothlonScreenState extends State<TechnothlonScreen> {
                         color: const Color(0xFFF5F5F5),
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(Icons.arrow_back_rounded, color: Color(0xFF6D7985), size: 20),
+                      child: const Icon(Icons.arrow_back_rounded,
+                          color: Color(0xFF6D7985), size: 20),
                     ),
                   ),
                   const Spacer(flex: 1),
@@ -257,7 +263,7 @@ class _TechnothlonScreenState extends State<TechnothlonScreen> {
           padding: const EdgeInsets.symmetric(vertical: 12),
           child: Text(title,
               style: const TextStyle(
-                  fontWeight: FontWeight.w600, 
+                  fontWeight: FontWeight.w600,
                   color: Color(0XFF232930),
                   fontSize: 14,
                   fontFamily: 'General Sans',
