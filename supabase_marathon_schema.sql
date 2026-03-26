@@ -133,9 +133,10 @@ BEGIN
    FROM practice_logs
    WHERE username = p_username AND DATE_TRUNC('day', created_at AT TIME ZONE 'Asia/Kolkata') = (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Kolkata')::date - INTERVAL '1 day';
  
-   -- Calculate improvement %
+   -- Calculate improvement % (Capped at 100% for UI sanity)
    IF v_yesterday_km > 0 THEN
      v_improvement := ((v_today_km - v_yesterday_km) / v_yesterday_km) * 100;
+     v_improvement := LEAST(GREATEST(v_improvement, -100), 100);
    ELSIF v_today_km > 0 THEN
      v_improvement := 100; -- Ran today but not yesterday
    ELSE

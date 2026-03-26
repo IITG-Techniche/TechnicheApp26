@@ -91,18 +91,6 @@ class MarathonDashboardTab extends ConsumerWidget {
                               fontFamily: AppTheme.fontUnivers,
                             ),
                           ),
-                          GestureDetector(
-                            onTap: () {},
-                            child: const Text(
-                              'See All',
-                              style: TextStyle(
-                                color: AppTheme.accentBlue,
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                fontFamily: AppTheme.fontGeneralSans,
-                              ),
-                            ),
-                          ),
                         ],
                       ),
                       const SizedBox(height: 12),

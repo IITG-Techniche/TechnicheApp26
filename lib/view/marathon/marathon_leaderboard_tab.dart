@@ -137,71 +137,98 @@ class _MarathonLeaderboardTabState
     final remainingItems =
         items.length > 3 ? items.sublist(3) : <_LeaderboardItem>[];
 
-    return Column(
+    // Find current user's item for the sticky rank
+    _LeaderboardItem? myItem;
+    int myRank = -1;
+    for (int i = 0; i < items.length; i++) {
+      if (items[i].username == currentUser) {
+        myItem = items[i];
+        myRank = i + 1;
+        break;
+      }
+    }
+
+    return Stack(
       children: [
-        Padding(
-          padding: const EdgeInsets.only(top: 60),
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              final barWidth = (constraints.maxWidth - 120) / 3;
-
-              return Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  if (topThree.length >= 2)
-                    _buildPodiumBar(topThree[1], 2, const Color(0xFF3E72D7),
-                        120, 'assets/ghm/2nd.png', barWidth),
-                  const SizedBox(width: 16),
-                  if (topThree.isNotEmpty)
-                    _buildPodiumBar(topThree[0], 1, const Color(0xFFF6BC2F),
-                        180, 'assets/ghm/1st.png', barWidth),
-                  const SizedBox(width: 16),
-                  if (topThree.length >= 3)
-                    _buildPodiumBar(topThree[2], 3, const Color(0xFF7C3EC3), 90,
-                        'assets/ghm/3rd.png', barWidth),
-                ],
-              );
-            },
-          ),
-        ),
-
-        // ── WHITE LIST SECTION ────────────────────────────────────
-        Container(
-          width: double.infinity,
-          decoration: const BoxDecoration(color: Colors.white),
+        // ── SCROLLABLE CONTENT ──────────────────────────────────────
+        SingleChildScrollView(
           child: Column(
             children: [
-              const SizedBox(height: 16),
-              Text(
-                'Global Leaderboard ($category)',
-                style: const TextStyle(
-                  color: AppTheme.textMain,
-                  fontSize: 20,
-                  fontFamily: AppTheme.fontUnivers,
-                  fontWeight: FontWeight.w700,
+              Padding(
+                padding: const EdgeInsets.only(top: 60),
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    final barWidth = (constraints.maxWidth - 120) / 3;
+
+                    return Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        if (topThree.length >= 2)
+                          _buildPodiumBar(topThree[1], 2, const Color(0xFF3E72D7),
+                              120, 'assets/ghm/2nd.png', barWidth),
+                        const SizedBox(width: 16),
+                        if (topThree.isNotEmpty)
+                          _buildPodiumBar(topThree[0], 1, const Color(0xFFF6BC2F),
+                              180, 'assets/ghm/1st.png', barWidth),
+                        const SizedBox(width: 16),
+                        if (topThree.length >= 3)
+                          _buildPodiumBar(topThree[2], 3, const Color(0xFF7C3EC3), 90,
+                              'assets/ghm/3rd.png', barWidth),
+                      ],
+                    );
+                  },
                 ),
               ),
-              const SizedBox(height: 10),
 
-        // ── LIST ─────────────────────────────────────────
-              ListView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                padding: const EdgeInsets.only(top: 6, bottom: 20),
-                itemCount: remainingItems.length,
-                itemBuilder: (context, index) {
-                  final item = remainingItems[index];
-                  return _buildLeaderboardTile(
-                    item,
-                    index + 4,
-                    item.username == currentUser,
-                  );
-                },
+              // ── WHITE LIST SECTION ────────────────────────────────────
+              Container(
+                width: double.infinity,
+                decoration: const BoxDecoration(color: Colors.white),
+                child: Column(
+                  children: [
+                    const SizedBox(height: 16),
+                    Text(
+                      'Global Leaderboard ($category)',
+                      style: const TextStyle(
+                        color: AppTheme.textMain,
+                        fontSize: 20,
+                        fontFamily: AppTheme.fontUnivers,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+
+                    // ── LIST ─────────────────────────────────────────
+                    ListView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      padding: const EdgeInsets.only(top: 6, bottom: 95), // Extra padding for sticky footer
+                      itemCount: remainingItems.length,
+                      itemBuilder: (context, index) {
+                        final item = remainingItems[index];
+                        return _buildLeaderboardTile(
+                          item,
+                          index + 4,
+                          item.username == currentUser,
+                        );
+                      },
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
         ),
+
+        // ── STICKY RANK FOOTER ──────────────────────────────────────
+        if (myItem != null)
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: _buildStickyRank(myItem, myRank),
+          ),
       ],
     );
   }

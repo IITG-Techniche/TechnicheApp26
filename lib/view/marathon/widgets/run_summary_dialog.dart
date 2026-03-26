@@ -7,7 +7,10 @@ import 'package:latlong2/latlong.dart';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_map_cache/flutter_map_cache.dart';
 import '../../../constant/appTheme.dart';
+import '../../../services/map_cache_service.dart';
 
 
 class RunSummaryDialog extends StatefulWidget {
@@ -120,30 +123,70 @@ class _RunSummaryDialogState extends State<RunSummaryDialog> {
                         width: double.infinity,
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(24),
+                          border: Border.all(color: Colors.grey.shade200, width: 1),
                         ),
                         clipBehavior: Clip.antiAlias,
-                        child: Stack(
-                          fit: StackFit.expand,
-                          children: [
-                            // Image.asset(
-                            //   'assets/ghm.png',
-                            //   fit: BoxFit.fill,
-                            // ),
-                            Container(color: Colors.black.withOpacity(0.5)),
-                            if (widget.routePoints.isNotEmpty)
-                              Padding(
-                                padding: const EdgeInsets.all(40.0), // Padding so route doesn't touch image edges
-                                child: CustomPaint(
-                                  painter: RoutePainter(
-                                    points: widget.routePoints,
-                                    color: AppTheme.primaryBlue,
+                        child: widget.routePoints.isNotEmpty
+                            ? FlutterMap(
+                                options: MapOptions(
+                                  initialCameraFit: CameraFit.bounds(
+                                    bounds: LatLngBounds.fromPoints(widget.routePoints),
+                                    padding: const EdgeInsets.all(40.0),
+                                  ),
+                                  interactionOptions: const InteractionOptions(
+                                    flags: InteractiveFlag.none, // Disable all interactions (static feel)
                                   ),
                                 ),
+                                children: [
+                                  TileLayer(
+                                    urlTemplate: 'https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',
+                                    userAgentPackageName: 'com.techniche.techniche26',
+                                    tileProvider: CachedTileProvider(
+                                      store: MapCacheService.cacheStore,
+                                    ),
+                                  ),
+                                  PolylineLayer(
+                                    polylines: [
+                                      Polyline(
+                                        points: widget.routePoints,
+                                        color: AppTheme.primaryBlue,
+                                        strokeWidth: 5.0,
+                                      ),
+                                    ],
+                                  ),
+                                  MarkerLayer(
+                                    markers: [
+                                      // Start Marker
+                                      Marker(
+                                        point: widget.routePoints.first,
+                                        width: 12,
+                                        height: 12,
+                                        child: Container(
+                                          decoration: BoxDecoration(
+                                            color: Colors.green,
+                                            shape: BoxShape.circle,
+                                            border: Border.all(color: Colors.white, width: 2),
+                                          ),
+                                        ),
+                                      ),
+                                      // End Marker
+                                      Marker(
+                                        point: widget.routePoints.last,
+                                        width: 16,
+                                        height: 16,
+                                        child: Container(
+                                          decoration: BoxDecoration(
+                                            color: Colors.red,
+                                            shape: BoxShape.circle,
+                                            border: Border.all(color: Colors.white, width: 2),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
                               )
-                            else
-                              const Center(child: Text('No route points recorded')),
-                          ],
-                        ),
+                            : const Center(child: Text('No route points recorded')),
                       ),
                       const SizedBox(height: 20),
 
@@ -280,107 +323,4 @@ class _RunSummaryDialogState extends State<RunSummaryDialog> {
       ),
     );
   }
-}
-
-/// Paints the route polylines relative to the bounding box of coordinates
-class RoutePainter extends CustomPainter {
-  final List<LatLng> points;
-  final Color color;
-
-  RoutePainter({required this.points, required this.color});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    if (points.isEmpty) return;
-
-    // 1. Find bounding box
-    double minLat = points[0].latitude;
-    double maxLat = points[0].latitude;
-    double minLng = points[0].longitude;
-    double maxLng = points[0].longitude;
-
-    for (var p in points) {
-      if (p.latitude < minLat) minLat = p.latitude;
-      if (p.latitude > maxLat) maxLat = p.latitude;
-      if (p.longitude < minLng) minLng = p.longitude;
-      if (p.longitude > maxLng) maxLng = p.longitude;
-    }
-
-    double latRange = (maxLat - minLat).abs();
-    double lngRange = (maxLng - minLng).abs();
-
-    // Fix: Enforce a minimum range (approx 1km) so short runs (e.g. 0.01km) 
-    // don't appear misleadingly large by filling the entire canvas.
-    const double minRange = 0.008; // Roughly 900m at equator
-    if (latRange < minRange) {
-      double diff = (minRange - latRange) / 2;
-      minLat -= diff;
-      maxLat += diff;
-      latRange = minRange;
-    }
-    if (lngRange < minRange) {
-      double diff = (minRange - lngRange) / 2;
-      minLng -= diff;
-      maxLng += diff;
-      lngRange = minRange;
-    }
-
-    // 2. Map coordinates to canvas space
-    // Scale points to fit, maintaining aspect ratio
-    final double scaleX = size.width / lngRange;
-    final double scaleY = size.height / latRange;
-    final double scale = (scaleX < scaleY) ? scaleX : scaleY;
-
-    // Center the route in the canvas
-    final double offsetX = (size.width - (lngRange * scale)) / 2;
-    final double offsetY = (size.height - (latRange * scale)) / 2;
-
-    List<Offset> offsets = [];
-    for (var p in points) {
-      double x = (p.longitude - minLng) * scale + offsetX;
-      double y = size.height - ((p.latitude - minLat) * scale + offsetY); // Flip Y for canvas
-      offsets.add(Offset(x, y));
-    }
-
-    // 3. Draw Polyline
-    final paint = Paint()
-      ..color = color
-      ..strokeWidth = 6.0
-      ..strokeCap = StrokeCap.round
-      ..strokeJoin = StrokeJoin.round
-      ..style = PaintingStyle.stroke;
-
-    final path = ui.Path();
-    path.moveTo(offsets[0].dx, offsets[0].dy);
-    for (int i = 1; i < offsets.length; i++) {
-      path.lineTo(offsets[i].dx, offsets[i].dy);
-    }
-    
-    // Shadow for depth
-    canvas.drawPath(path, Paint()
-      ..color = Colors.black.withOpacity(0.2)
-      ..strokeWidth = 10.0
-      ..strokeCap = StrokeCap.round
-      ..strokeJoin = StrokeJoin.round
-      ..style = PaintingStyle.stroke
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3));
-
-    canvas.drawPath(path, paint);
-
-    // 4. Start & End Markers
-    final startPaint = Paint()..color = Colors.green;
-    final endPaint = Paint()..color = Colors.red;
-    
-    // White ring for markers
-    final ringPaint = Paint()..color = Colors.white..style = PaintingStyle.stroke..strokeWidth = 2.5;
-
-    canvas.drawCircle(offsets.first, 6, startPaint);
-    canvas.drawCircle(offsets.first, 6, ringPaint);
-    
-    canvas.drawCircle(offsets.last, 8, endPaint);
-    canvas.drawCircle(offsets.last, 8, ringPaint);
-  }
-
-  @override
-  bool shouldRepaint(covariant RoutePainter oldDelegate) => oldDelegate.points != points;
 }
