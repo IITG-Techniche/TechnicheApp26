@@ -206,7 +206,7 @@ final List<MainCategory> eventData = [
     subCategories: [
       SubCategory(
         title: 'Guwahati Half Marathon',
-        imageAsset: 'assets/ghm.jpg',
+        imageAsset: 'assets/ghm.png',
         events: const [
           EventDetail(title: 'Blood Donation'),
           EventDetail(title: 'Food Distribution'),

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../providers/marathon_provider.dart';
-import '../../utils/animate_gradient_background.dart';
+import '../../constant/appTheme.dart';
 
 class MarathonEnrollmentView extends ConsumerStatefulWidget {
   const MarathonEnrollmentView({super.key});
@@ -75,7 +75,7 @@ class _MarathonEnrollmentViewState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppTheme.backgroundGray,
       body: Column(
         children: [
           // ── 1. Hero Image ─────────────────────────────────────
@@ -138,11 +138,11 @@ class _MarathonEnrollmentViewState
                   const Text(
                     'Join Guwahati Half Marathon\nLeaderboard',
                     style: TextStyle(
-                      fontFamily: 'GeneralSans',
+                      fontFamily: AppTheme.fontUnivers,
                       fontSize: 24,
                       fontWeight: FontWeight.w700,
-                      color: Colors.black,
-                      height: 1.30,
+                      color: AppTheme.textMain,
+                      height: 1.2,
                     ),
                   ),
                   const SizedBox(height: 6),
@@ -151,11 +151,11 @@ class _MarathonEnrollmentViewState
                   const Text(
                     'Ready to leave your mark on the track?',
                     style: TextStyle(
-                      fontFamily: 'GeneralSans',
+                      fontFamily: AppTheme.fontGeneralSans,
                       fontSize: 14,
                       fontWeight: FontWeight.w400,
-                      color: Color(0xFF4B4B4B),
-                      height: 1.20,
+                      color: AppTheme.textSecondary,
+                      height: 1.25,
                     ),
                   ),
                   const SizedBox(height: 20),
@@ -217,7 +217,7 @@ class _MarathonEnrollmentViewState
                     width: double.infinity,
                     child: Container(
                       decoration: BoxDecoration(
-                        color: const Color(0xFF175BCC),
+                        color: AppTheme.primaryBlue,
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Material(
@@ -250,11 +250,11 @@ class _MarathonEnrollmentViewState
                                   const Text(
                                     'Register',
                                     style: TextStyle(
-                                      fontFamily: 'GeneralSans',
-                                      fontSize: 20,
+                                      fontFamily: AppTheme.fontGeneralSans,
+                                      fontSize: 18,
                                       fontWeight: FontWeight.w600,
-                                      color: Color(0xFFEDEFF0),
-                                      height: 1.20,
+                                      color: Colors.white,
+                                      height: 1.2,
                                     ),
                                   ),
                                 ],
@@ -279,7 +279,7 @@ class _MarathonEnrollmentViewState
     return Text(
       text,
       style: const TextStyle(
-        fontFamily: 'GeneralSans',
+        fontFamily: AppTheme.fontGeneralSans,
         fontSize: 14,
         fontWeight: FontWeight.w500,
         color: Colors.black,
@@ -299,9 +299,9 @@ class _MarathonEnrollmentViewState
     return Theme(
       data: ThemeData.light().copyWith(
         textSelectionTheme: const TextSelectionThemeData(
-          cursorColor: Color(0xFF232930),
-          selectionColor: Color(0xFFB2B8BF),
-          selectionHandleColor: Color(0xFF232930),
+          cursorColor: AppTheme.primaryBlue,
+          selectionColor: Color(0x33002B5B),
+          selectionHandleColor: AppTheme.primaryBlue,
         ),
       ),
       child: Container(
@@ -317,23 +317,23 @@ class _MarathonEnrollmentViewState
           keyboardType: keyboardType,
           obscureText: obscureText,
           maxLength: maxLength,
-          cursorColor: const Color(0xFF5E5E5E),
+          cursorColor: AppTheme.textSecondary,
           style: const TextStyle(
-            fontFamily: 'GeneralSans',
+            fontFamily: AppTheme.fontGeneralSans,
             fontSize: 14,
             fontWeight: FontWeight.w400,
-            color: Color(0xFF5E5E5E),
-            height: 1.43,
+            color: AppTheme.textMain,
+            height: 1.4,
           ),
           decoration: InputDecoration(
             hintText: hint,
             counterText: '',
             hintStyle: const TextStyle(
-              fontFamily: 'GeneralSans',
+              fontFamily: AppTheme.fontGeneralSans,
               fontSize: 14,
               fontWeight: FontWeight.w400,
-              color: Color(0xFF5E5E5E),
-              height: 1.43,
+              color: AppTheme.textSecondary,
+              height: 1.4,
             ),
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 12,
@@ -365,7 +365,7 @@ class _MarathonEnrollmentViewState
         height: 36,
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         decoration: ShapeDecoration(
-          color: isSelected ? const Color(0xFF002661) : Colors.transparent,
+          color: isSelected ? AppTheme.primaryBlue : Colors.transparent,
           shape: RoundedRectangleBorder(
             side: isSelected
                 ? BorderSide.none
@@ -378,11 +378,11 @@ class _MarathonEnrollmentViewState
             label,
             textAlign: TextAlign.center,
             style: TextStyle(
-              fontFamily: 'GeneralSans',
+              fontFamily: AppTheme.fontGeneralSans,
               fontSize: 14,
-              fontWeight: FontWeight.w500,
-              color: isSelected ? Colors.white : const Color(0xFF5E5E5E),
-              height: 1.14,
+              fontWeight: FontWeight.w600,
+              color: isSelected ? Colors.white : AppTheme.textSecondary,
+              height: 1.1,
             ),
           ),
         ),

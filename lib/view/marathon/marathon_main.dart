@@ -20,32 +20,37 @@ class _MarathonMainScreenState extends ConsumerState<MarathonMainScreen> {
   int _currentIndex = 0;
 
   @override
+  void initState() {
+    super.initState();
+    // Start GPS acquisition early — when the marathon screen loads,
+    // not just when the Run tab is opened. This gives GPS time to
+    // acquire a fix and cache map tiles before the user starts running.
+    Future.microtask(() {
+      ref.read(liveRunProvider.notifier).enableTrackingIfPermitted();
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     final username = ref.watch(marathonUsernameProvider);
 
-    // Tab Logic
-    Widget currentTab;
     if (username.isEmpty) {
-      currentTab = const MarathonEnrollmentView();
-    } else {
-      switch (_currentIndex) {
-        case 0:
-          currentTab = const MarathonDashboardTab();
-          break;
-        case 1:
-          currentTab = const MarathonRunTab();
-          break;
-        case 2:
-          currentTab = const MarathonLeaderboardTab();
-          break;
-        default:
-          currentTab = const MarathonDashboardTab();
-      }
+      return const Scaffold(
+        backgroundColor: AppTheme.backgroundGray,
+        body: MarathonEnrollmentView(),
+      );
     }
 
     return Scaffold(
-      backgroundColor: AppTheme.scaffoldBackgroundColor,
-      body: currentTab,
+      backgroundColor: AppTheme.backgroundGray,
+      body: IndexedStack(
+        index: _currentIndex,
+        children: const [
+          MarathonDashboardTab(),
+          MarathonRunTab(),
+          MarathonLeaderboardTab(),
+        ],
+      ),
       bottomNavigationBar: _buildBottomBar(),
     );
   }
@@ -98,7 +103,7 @@ class _MarathonMainScreenState extends ConsumerState<MarathonMainScreen> {
                 child: Icon(
                   isSelected ? activeIcon : inactiveIcon,
                   size: 20,
-                  color: isSelected ? Colors.black : const Color(0xFF5E5E5E),
+                  color: isSelected ? AppTheme.primaryBlue : AppTheme.textSecondary,
                 ),
               ),
               const SizedBox(height: 2), // Spacing from Figma
@@ -109,10 +114,10 @@ class _MarathonMainScreenState extends ConsumerState<MarathonMainScreen> {
                   label,
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    color: isSelected ? Colors.black : const Color(0xFF5E5E5E),
+                    color: isSelected ? AppTheme.primaryBlue : AppTheme.textSecondary,
                     fontSize: 12,
-                    fontFamily: 'General Sans',
-                    fontWeight: FontWeight.w500,
+                    fontFamily: AppTheme.fontGeneralSans,
+                    fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                     height: 1.33,
                   ),
                 ),

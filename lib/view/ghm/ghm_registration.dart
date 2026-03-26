@@ -1,16 +1,16 @@
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:firebase_remote_config/firebase_remote_config.dart';
-import '../../utils/animate_gradient_background.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'ghm_payment_screen.dart';
 
 class GHMRegistrationScreen extends StatefulWidget {
   static const String routeName = '/ghm-registration';
+  final bool isTab;
 
-  const GHMRegistrationScreen({Key? key}) : super(key: key);
+  const GHMRegistrationScreen({super.key, this.isTab = false});
 
   @override
   _GHMRegistrationScreenState createState() => _GHMRegistrationScreenState();
@@ -57,257 +57,265 @@ class _GHMRegistrationScreenState extends State<GHMRegistrationScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final bodyContent = registrationsOpen
+        ? _buildRegistrationForm()
+        : Column(
+            children: [
+              _buildHeader(context),
+              Expanded(child: _buildClosedMessage()),
+            ],
+          );
+
+    if (widget.isTab) {
+      return Container(
+        color: const Color(0xFFEDF1F5),
+        child: bodyContent,
+      );
+    }
+
     return Scaffold(
-      backgroundColor: Colors.transparent,
-      extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        title: Text(
-          'GHM REGISTRATION',
-          style: GoogleFonts.orbitron(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-            letterSpacing: 2,
-          ),
-        ),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
+      backgroundColor: const Color(0xFFEDF1F5),
+      body: bodyContent,
+    );
+  }
+
+  Widget _buildHeader(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      decoration: const BoxDecoration(
+        color: Color(0xFF002B5B),
+        image: DecorationImage(
+          image: AssetImage('assets/ghm/frame3.png'),
+          fit: BoxFit.cover,
         ),
       ),
-      body: Stack(
-        children: [
-          const AnimatedGradientBackground(),
-          registrationsOpen ? _buildRegistrationForm() : _buildClosedMessage(),
-        ],
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 25),
+      child: SafeArea(
+        child: Column(
+          children: [
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              decoration: ShapeDecoration(
+                color: Colors.white,
+                shape: RoundedRectangleBorder(
+                  side: const BorderSide(width: 1, color: Color(0xFFAFAFAF)),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: Row(
+                children: [
+                  GestureDetector(
+                    onTap: () {
+                      if (widget.isTab) {
+                        Scaffold.of(context).openDrawer();
+                      } else {
+                        Navigator.pop(context);
+                      }
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFF5F5F5),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        widget.isTab ? Icons.menu_rounded : Icons.arrow_back_rounded,
+                        color: const Color(0xFF6D7985),
+                        size: 20,
+                      ),
+                    ),
+                  ),
+                  const Spacer(flex: 1),
+                  const Text(
+                    'GHM REGISTRATION',
+                    style: TextStyle(
+                      color: Color(0XFF232930),
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      fontFamily: 'Univers',
+                      height: 1.2,
+                      letterSpacing: 1,
+                    ),
+                  ),
+                  const Spacer(flex: 2),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildRegistrationForm() {
-    return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20.0),
-        child: Form(
-          key: _formKey,
-          child: ListView(
-            physics: const BouncingScrollPhysics(),
-            children: [
-              const SizedBox(height: 20),
-              _buildSectionCard(
-                title: "Personal Details",
-                children: [
-                  _buildTextField(
-                    label: "Full Name",
-                    icon: Icons.person_outline,
-                    validator: (value) => value?.isEmpty ?? true
-                        ? "Please enter your name"
-                        : null,
-                    controller: _nameController,
-                  ),
-                  _buildTextField(
-                    label: "Age",
-                    icon: Icons.calendar_today_outlined,
-                    keyboardType: TextInputType.number,
-                    validator: (value) =>
-                        value?.isEmpty ?? true ? "Please enter your age" : null,
-                    controller: _ageController,
-                  ),
-                  _buildDropdown(
-                    label: "Gender",
-                    items: ["Male", "Female", "Prefer not to say"],
-                    value: gender,
-                    prefixIcon: Icons.wc,
-                    onChanged: (value) => setState(() => gender = value),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              _buildSectionCard(
-                title: "Contact Information",
-                children: [
-                  _buildTextField(
-                    label: "Institution / Company",
-                    icon: Icons.business_outlined,
-                    validator: (value) => value?.isEmpty ?? true
-                        ? "This field is required"
-                        : null,
-                    controller: _institutionController,
-                  ),
-                  _buildTextField(
-                    label: "Contact No",
-                    icon: Icons.phone_android_outlined,
-                    keyboardType: TextInputType.phone,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return "Please enter contact number";
-                      }
-                      if (value.length != 10) {
-                        return "Must be 10 digits";
-                      }
-                      return null;
-                    },
-                    controller: _contactController,
-                    maxLength: 10,
-                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                  ),
-                  _buildTextField(
-                    label: "Email ID",
-                    icon: Icons.email_outlined,
-                    keyboardType: TextInputType.emailAddress,
-                    validator: (value) => value?.isEmpty ?? true
-                        ? "Please enter your email"
-                        : null,
-                    controller: _emailController,
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              _buildSectionCard(
-                title: "Location Details",
-                children: [
-                  _buildTextField(
-                    label: "Country",
-                    icon: Icons.public,
-                    controller: _countryController,
-                  ),
-                  _buildTextField(
-                    label: "State",
-                    icon: Icons.map_outlined,
-                    controller: _stateController,
-                  ),
-                  _buildTextField(
-                    label: "City / District",
-                    icon: Icons.location_city_outlined,
-                    controller: _cityController,
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              _buildSectionCard(
-                title: "Marathon Selection",
-                children: [
-                  _buildDropdown(
-                    label: "Category",
-                    items: ["21km", "6km"],
-                    value: marathonCategory,
-                    onChanged: (value) =>
-                        setState(() => marathonCategory = value),
-                    prefixIcon: Icons.directions_run,
-                  ),
-                  _buildChampionshipSection(),
-                  _buildDropdown(
-                    label: "How did you hear about us?",
-                    items: ["Social Media", "Friends", "Website", "Other"],
-                    value: sourceOfInfo,
-                    prefixIcon: Icons.info_outline,
-                    onChanged: (value) => setState(() => sourceOfInfo = value),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 32),
-              if (marathonCategory != null)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 40.0),
-                  child: ElevatedButton(
-                    onPressed: _submitForm,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF00E5FF),
-                      foregroundColor: Colors.black,
-                      padding: const EdgeInsets.symmetric(vertical: 18),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(15),
-                      ),
-                      elevation: 8,
-                      shadowColor: const Color(0xFF00E5FF).withOpacity(0.4),
+    return Form(
+      key: _formKey,
+      child: ListView(
+        padding: EdgeInsets.zero,
+        physics: const BouncingScrollPhysics(),
+        children: [
+          _buildHeader(context),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 20),
+            child: Column(
+              children: [
+                _buildSectionCard(
+                  title: "Personal Details",
+                  children: [
+                    _buildTextField(
+                      label: "Full Name",
+                      icon: Icons.person_outline_rounded,
+                      validator: (value) => value?.isEmpty ?? true
+                          ? "Please enter your name"
+                          : null,
+                      controller: _nameController,
                     ),
-                    child: Text(
-                      marathonCategory == "6km"
-                          ? "REGISTER"
-                          : "PROCEED TO PAYMENT",
-                      style: GoogleFonts.orbitron(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 1.5,
-                      ),
+                    _buildTextField(
+                      label: "Age",
+                      icon: Icons.calendar_today_rounded,
+                      keyboardType: TextInputType.number,
+                      validator: (value) => value?.isEmpty ?? true
+                          ? "Please enter your age"
+                          : null,
+                      controller: _ageController,
                     ),
-                  ),
+                    _buildDropdown(
+                      label: "Gender",
+                      items: ["Male", "Female", "Prefer not to say"],
+                      value: gender,
+                      prefixIcon: Icons.wc_rounded,
+                      onChanged: (value) => setState(() => gender = value),
+                    ),
+                  ],
                 ),
+          const SizedBox(height: 20),
+          _buildSectionCard(
+            title: "Contact Information",
+            children: [
+              _buildTextField(
+                label: "Institution / Company",
+                icon: Icons.business_rounded,
+                validator: (value) => value?.isEmpty ?? true ? "This field is required" : null,
+                controller: _institutionController,
+              ),
+              _buildTextField(
+                label: "Contact No",
+                icon: Icons.phone_android_rounded,
+                keyboardType: TextInputType.phone,
+                validator: (value) {
+                  if (value == null || value.isEmpty) return "Please enter contact number";
+                  if (value.length != 10) return "Must be 10 digits";
+                  return null;
+                },
+                controller: _contactController,
+                maxLength: 10,
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              ),
+              _buildTextField(
+                label: "Email ID",
+                icon: Icons.email_outlined,
+                keyboardType: TextInputType.emailAddress,
+                validator: (value) => value?.isEmpty ?? true ? "Please enter your email" : null,
+                controller: _emailController,
+              ),
             ],
           ),
-        ),
+          const SizedBox(height: 20),
+          _buildSectionCard(
+            title: "Location Details",
+            children: [
+              _buildTextField(
+                label: "Country",
+                icon: Icons.public_rounded,
+                controller: _countryController,
+              ),
+              _buildTextField(
+                label: "State",
+                icon: Icons.map_rounded,
+                controller: _stateController,
+              ),
+              _buildTextField(
+                label: "City / District",
+                icon: Icons.location_city_rounded,
+                controller: _cityController,
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          _buildSectionCard(
+            title: "Marathon Selection",
+            children: [
+              _buildDropdown(
+                label: "Category",
+                items: ["21km", "6km"],
+                value: marathonCategory,
+                onChanged: (value) => setState(() => marathonCategory = value),
+                prefixIcon: Icons.directions_run_rounded,
+              ),
+              _buildChampionshipSection(),
+              _buildDropdown(
+                label: "How did you hear about us?",
+                items: ["Social Media", "Friends", "Website", "Other"],
+                value: sourceOfInfo,
+                prefixIcon: Icons.info_outline_rounded,
+                onChanged: (value) => setState(() => sourceOfInfo = value),
+              ),
+            ],
+          ),
+          const SizedBox(height: 32),
+          if (marathonCategory != null)
+            ElevatedButton(
+              onPressed: _submitForm,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF002B5B),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 18),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                elevation: 0,
+              ),
+              child: Text(
+                marathonCategory == "6km" ? "REGISTER" : "PROCEED TO PAYMENT",
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  fontFamily: 'General Sans',
+                  height: 1.2,
+                ),
+              ),
+            ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildSectionCard(
-      {required String title, required List<Widget> children}) {
+  Widget _buildSectionCard({required String title, required List<Widget> children}) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        border: Border.all(color: const Color(0xFFE8E8E8)),
       ),
       padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            title.toUpperCase(),
-            style: GoogleFonts.orbitron(
-              color: const Color(0xFF00E5FF),
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 1.2,
+            title,
+            style: const TextStyle(
+              color: Color(0xFF002B5B),
+              fontSize: 18,
+              fontFamily: 'Univers',
+              fontWeight: FontWeight.w700,
+              height: 1.07,
             ),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 16),
           ...children,
         ],
-      ),
-    );
-  }
-
-  Widget _buildClosedMessage() {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(30.0),
-        child: Container(
-          padding: const EdgeInsets.all(32),
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.05),
-            borderRadius: BorderRadius.circular(30),
-            border: Border.all(color: Colors.white.withOpacity(0.1)),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.event_busy, color: Colors.redAccent, size: 80),
-              const SizedBox(height: 24),
-              Text(
-                'REGISTRATIONS\nUNAVAILABLE',
-                textAlign: TextAlign.center,
-                style: GoogleFonts.orbitron(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                  letterSpacing: 2,
-                ),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'Official registrations for\nGuwahati Half Marathon 2026\nare currently unavailable from app.',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.grey[400],
-                  height: 1.5,
-                ),
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }
@@ -321,39 +329,70 @@ class _GHMRegistrationScreenState extends State<GHMRegistrationScreen> {
     int? maxLength,
     List<TextInputFormatter>? inputFormatters,
   }) {
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 10.0),
-      child: TextFormField(
-        controller: controller,
-        style: const TextStyle(color: Colors.white, fontSize: 16),
-        keyboardType: keyboardType,
-        validator: validator,
-        maxLength: maxLength,
-        inputFormatters: inputFormatters,
-        decoration: InputDecoration(
-          labelText: label,
-          labelStyle: TextStyle(color: Colors.grey[400], fontSize: 14),
-          prefixIcon: icon != null
-              ? Icon(icon, color: const Color(0xFF00E5FF), size: 20)
-              : null,
-          filled: true,
-          fillColor: Colors.white.withOpacity(0.05),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: Colors.white.withOpacity(0.1)),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              if (icon != null) ...[
+                Icon(icon, color: const Color(0xFF6D7985), size: 18),
+                const SizedBox(width: 8),
+              ],
+              Text(
+                label,
+                style: const TextStyle(
+                    color: Color(0XFF232930),
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    fontFamily: 'General Sans',
+                    height: 1.2),
+              ),
+            ],
           ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: Colors.white.withOpacity(0.1)),
+          const SizedBox(height: 8),
+          TextFormField(
+            controller: controller,
+            style: const TextStyle(
+              color: Color(0XFF232930), 
+              fontSize: 16, 
+              fontFamily: 'General Sans',
+              height: 1.2,
+              fontWeight: FontWeight.w600,
+            ),
+            keyboardType: keyboardType,
+            validator: validator,
+            maxLength: maxLength,
+            inputFormatters: inputFormatters,
+            decoration: InputDecoration(
+              hintText: "Enter your $label",
+              hintStyle: const TextStyle(
+                color: Color(0xFFBDBDBD), 
+                fontSize: 14, 
+                fontFamily: 'General Sans',
+                height: 1.2,
+                fontWeight: FontWeight.w400,
+              ),
+              filled: true,
+              fillColor: const Color(0xFFF8F9FA),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: Color(0xFFE8E8E8)),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: Color(0xFFE8E8E8)),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: Color(0xFF002B5B), width: 1.5),
+              ),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              counterText: "",
+            ),
           ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: Color(0xFF00E5FF), width: 1.5),
-          ),
-          contentPadding:
-              const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-          counterStyle: const TextStyle(color: Colors.white30),
-        ),
+        ],
       ),
     );
   }
@@ -364,46 +403,61 @@ class _GHMRegistrationScreenState extends State<GHMRegistrationScreen> {
     required String? value,
     required void Function(String?)? onChanged,
     IconData? prefixIcon,
-    Widget? icon,
   }) {
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 10.0),
-      child: DropdownButtonFormField<String>(
-        dropdownColor: const Color(0xFF1A1D24),
-        style: const TextStyle(color: Colors.white, fontSize: 16),
-        decoration: InputDecoration(
-          labelText: label,
-          labelStyle: TextStyle(color: Colors.grey[400], fontSize: 14),
-          prefixIcon: prefixIcon != null
-              ? Icon(prefixIcon, color: const Color(0xFF00E5FF), size: 20)
-              : null,
-          filled: true,
-          fillColor: Colors.white.withOpacity(0.05),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: Colors.white.withOpacity(0.1)),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              if (prefixIcon != null) ...[
+                Icon(prefixIcon, color: const Color(0xFF6D7985), size: 18),
+                const SizedBox(width: 8),
+              ],
+              Text(
+                label,
+                style: const TextStyle(
+                    color: Color(0XFF232930),
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    fontFamily: 'General Sans',
+                    height: 1.20),
+              ),
+            ],
           ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: Colors.white.withOpacity(0.1)),
+          const SizedBox(height: 8),
+          DropdownButtonFormField<String>(
+            dropdownColor: Colors.white,
+            style: const TextStyle(
+              color: Color(0XFF232930), 
+              fontSize: 16, 
+              fontFamily: 'General Sans',
+              height: 1.2,
+            ),
+            decoration: InputDecoration(
+              filled: true,
+              fillColor: const Color(0xFFF8F9FA),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: Color(0xFFE8E8E8)),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: Color(0xFFE8E8E8)),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: Color(0xFF002B5B), width: 1.5),
+              ),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            ),
+            value: value,
+            items: items.map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+            onChanged: onChanged,
+            icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Color(0xFF6D7985)),
           ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: Color(0xFF00E5FF), width: 1.5),
-          ),
-          contentPadding:
-              const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-        ),
-        value: value,
-        items: items
-            .map((e) => DropdownMenuItem(
-                  value: e,
-                  child: Text(e),
-                ))
-            .toList(),
-        onChanged: onChanged,
-        icon: icon ??
-            const Icon(Icons.keyboard_arrow_down, color: Colors.white60),
+        ],
       ),
     );
   }
@@ -417,26 +471,19 @@ class _GHMRegistrationScreenState extends State<GHMRegistrationScreen> {
               context: context,
               builder: (BuildContext context) {
                 return AlertDialog(
-                  backgroundColor: const Color(0xFF1A1D24),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20)),
-                  title: Text(
+                  backgroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                  title: const Text(
                     "General Championship",
-                    style: GoogleFonts.orbitron(
-                        color: const Color(0xFF00E5FF), fontSize: 18),
+                    style: TextStyle(color: Color(0xFF002B5B), fontSize: 20, fontFamily: 'Univers', fontWeight: FontWeight.w700),
                   ),
                   content: Text(
-                    "The General Championship trophy will be awarded to the college, "
-                    "institution, or group whose total distance covered by its runners "
-                    "is the highest. Total distance = Sum of distances of all runners.\n\n"
-                    "Example: 10 runners (21km) + 15 runners (6km) = 300km total.",
-                    style: TextStyle(
-                        color: Colors.grey[300], fontSize: 14, height: 1.5),
+                    "The General Championship trophy will be awarded to the college, institution, or group whose total distance covered by its runners is the highest. Total distance = Sum of distances of all runners.\n\nExample: 10 runners (21km) + 15 runners (6km) = 300km total.",
+                    style: TextStyle(color: const Color(0XFF232930).withOpacity(0.8), fontSize: 14, height: 1.5, fontFamily: 'General Sans'),
                   ),
                   actions: [
                     TextButton(
-                      child: const Text("CLOSE",
-                          style: TextStyle(color: Color(0xFF00E5FF))),
+                      child: const Text("CLOSE", style: TextStyle(color: Color(0xFF002B5B), fontWeight: FontWeight.bold)),
                       onPressed: () => Navigator.of(context).pop(),
                     ),
                   ],
@@ -445,17 +492,18 @@ class _GHMRegistrationScreenState extends State<GHMRegistrationScreen> {
             );
           },
           child: Padding(
-            padding: const EdgeInsets.only(left: 4, top: 4, bottom: 8),
+            padding: const EdgeInsets.only(left: 4, top: 0, bottom: 12),
             child: Row(
               children: [
-                const Icon(Icons.info_outline,
-                    color: Color(0xFF00E5FF), size: 16),
-                const SizedBox(width: 6),
+                const Icon(Icons.info_outline_rounded, color: Color(0xFF002B5B), size: 16),
+                const SizedBox(width: 8),
                 Text(
                   "What is General Championship?",
                   style: TextStyle(
-                    color: Colors.grey[400],
+                    color: const Color(0xFF002B5B).withOpacity(0.8),
                     fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    fontFamily: 'General Sans',
                     decoration: TextDecoration.underline,
                   ),
                 ),
@@ -464,13 +512,56 @@ class _GHMRegistrationScreenState extends State<GHMRegistrationScreen> {
           ),
         ),
         _buildDropdown(
-          label: "Would you like to participate in General Championship?",
+          label: "General Championship Participation",
           items: ["Yes", "No"],
           value: participateInChampionship,
-          onChanged: (value) =>
-              setState(() => participateInChampionship = value),
+          onChanged: (value) => setState(() => participateInChampionship = value),
         ),
       ],
+    );
+  }
+
+  Widget _buildClosedMessage() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(30.0),
+        child: Container(
+          padding: const EdgeInsets.all(32),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF8F9FA),
+            borderRadius: BorderRadius.circular(30),
+            border: Border.all(color: const Color(0xFFE8E8E8)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.event_busy_rounded, color: Color(0xFFE53935), size: 80),
+              const SizedBox(height: 24),
+              const Text(
+                'REGISTRATIONS UNAVAILABLE',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0XFF232930),
+                  fontFamily: 'Univers',
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Official registrations for Guwahati Half Marathon 2026 are currently unavailable from the app.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 15,
+                  color: const Color(0xFF6D7985),
+                  height: 1.5,
+                  fontFamily: 'General Sans',
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
@@ -492,7 +583,6 @@ class _GHMRegistrationScreenState extends State<GHMRegistrationScreen> {
           'Mediaform': sourceOfInfo,
         };
 
-        // Make API call
         final response = await http.post(
           Uri.parse('$baseUrl/api/ghm/ghmregister'),
           headers: {'Content-Type': 'application/json'},
@@ -501,152 +591,115 @@ class _GHMRegistrationScreenState extends State<GHMRegistrationScreen> {
 
         if (response.statusCode == 201) {
           final responseData = jsonDecode(response.body);
-          debugPrint("GHM Response: $responseData");
           final String ghmId = responseData['GHM_ID'] ?? "UNKNOWN";
           final String? paymentUrl = responseData['paymentUrl'];
-          debugPrint("Detected Payment URL: $paymentUrl");
           final bool isGloryRun = marathonCategory == "21km";
 
           if (!mounted) return;
 
           if (isGloryRun && paymentUrl != null && paymentUrl.isNotEmpty) {
-            // Option B: Direct Payment Flow
             Navigator.push(
               context,
               MaterialPageRoute(
                 builder: (context) => GHMPaymentScreen(
                   paymentUrl: paymentUrl,
                   onPaymentSuccess: () {
-                    Navigator.pop(context); // Close Payment WebView
-                    _showGHMSuccessDialog(ghmId, isGloryRun,
-                        paymentCompleted: true);
+                    Navigator.pop(context);
+                    _showGHMSuccessDialog(ghmId, isGloryRun, paymentCompleted: true);
                   },
                 ),
               ),
             );
           } else {
-            // Option A: Instruction Flow (or fallback for missing URL)
             _showGHMSuccessDialog(ghmId, isGloryRun);
           }
-        } else if (response.statusCode == 409) {
-          if (!mounted) return;
-          _showGHMErrorDialog("Already Registered",
-              "You are already registered for this category.");
-        } else if (response.statusCode == 400) {
-          if (!mounted) return;
-          _showGHMErrorDialog(
-              "Invalid Category", "Please select a valid race category.");
         } else {
-          if (!mounted) return;
-          _showGHMErrorDialog("Server Error",
-              "Something went wrong on our end. Please try again later.");
+          _showGHMErrorDialog("Registration Failed", "Something went wrong. Please check your data or try again later.");
         }
       } catch (e) {
-        if (!mounted) return;
-        _showGHMErrorDialog("Connection Error",
-            "Could not connect to the server. Please check your internet.");
+        _showGHMErrorDialog("Connection Error", "Check your internet connection and try again.");
       }
     }
   }
 
-  void _showGHMSuccessDialog(String ghmId, bool isGloryRun,
-      {bool paymentCompleted = false}) {
+  void _showGHMSuccessDialog(String ghmId, bool isGloryRun, {bool paymentCompleted = false}) {
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
-          backgroundColor: const Color(0xFF1A1D24),
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               const SizedBox(height: 10),
               Container(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: (isGloryRun && !paymentCompleted)
-                      ? Colors.orange.withOpacity(0.1)
-                      : Colors.green.withOpacity(0.1),
+                  color: const Color(0xFFE1EBFF),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
-                    (isGloryRun && !paymentCompleted)
-                        ? Icons.payment
-                        : Icons.check_circle,
-                    color: const Color(0xFF00E5FF),
-                    size: 60),
+                  (isGloryRun && !paymentCompleted) ? Icons.payment_rounded : Icons.check_circle_rounded,
+                  color: const Color(0xFF002B5B),
+                  size: 60,
+                ),
               ),
               const SizedBox(height: 24),
               Text(
-                (isGloryRun && !paymentCompleted)
-                    ? 'REGISTRATION INITIATED'
-                    : 'REGISTRATION SUCCESSFUL',
+                (isGloryRun && !paymentCompleted) ? 'REGISTRATION INITIATED' : 'REGISTRATION SUCCESSFUL',
                 textAlign: TextAlign.center,
-                style: GoogleFonts.orbitron(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                  letterSpacing: 1,
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                  fontFamily: 'Univers',
+                  color: Color(0XFF232930),
                 ),
               ),
               const SizedBox(height: 16),
               if (!isGloryRun || paymentCompleted)
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.05),
+                    color: const Color(0xFFF8F9FA),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(
-                        "GHM ID: ",
-                        style: TextStyle(color: Colors.grey[400], fontSize: 14),
-                      ),
-                      Text(
-                        ghmId,
-                        style: const TextStyle(
-                          color: Color(0xFF00E5FF),
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+                      const Text("GHM ID: ", style: TextStyle(color: Color(0xFF6D7985), fontSize: 14, fontFamily: 'General Sans', height: 1.2, fontWeight: FontWeight.w400)),
+                      Text(ghmId, style: const TextStyle(color: Color(0xFF002B5B), fontSize: 14, fontWeight: FontWeight.w600, fontFamily: 'General Sans', height: 1.2)),
                     ],
                   ),
                 ),
-              if (!isGloryRun || paymentCompleted) const SizedBox(height: 20),
+              const SizedBox(height: 20),
               Text(
                 (isGloryRun && !paymentCompleted)
                     ? "Please check your email to complete the payment for the 21km Glory Run."
-                    : (isGloryRun && paymentCompleted)
-                        ? "Payment successful! Your 21km Glory Run registration is now confirmed. See you at the finish line!"
-                        : "Official confirmation has been sent to your email. We look forward to seeing you at the Spirit Run!",
+                    : "Official confirmation has been sent to your email. We look forward to seeing you at the marathon!",
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                    color: Colors.grey[300], fontSize: 14, height: 1.5),
+                style: const TextStyle(color: Color(0xFF6D7985), fontSize: 14, height: 1.5, fontFamily: 'General Sans'),
               ),
               const SizedBox(height: 32),
               SizedBox(
                 width: double.infinity,
+                height: 50,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF00E5FF),
-                    foregroundColor: Colors.black,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12)),
+                    backgroundColor: const Color(0xFF002B5B),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
-                  child: Text(
-                    "GREAT!",
-                    style: GoogleFonts.orbitron(fontWeight: FontWeight.bold),
-                  ),
+                  child: const Text("GREAT!", 
+                    style: TextStyle(
+                      color: Colors.white, 
+                      fontWeight: FontWeight.w600, 
+                      fontFamily: 'General Sans',
+                      height: 1.2,
+                    )),
                   onPressed: () {
-                    Navigator.pop(context); // Close dialog
-                    Navigator.pop(context); // Go back to Home/Previous
+                    Navigator.pop(context);
+                    Navigator.pop(context);
                   },
                 ),
               ),
@@ -662,21 +715,13 @@ class _GHMRegistrationScreenState extends State<GHMRegistrationScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          backgroundColor: const Color(0xFF1A1D24),
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: Text(
-            title,
-            style: GoogleFonts.orbitron(color: Colors.redAccent, fontSize: 18),
-          ),
-          content: Text(
-            message,
-            style: TextStyle(color: Colors.grey[300], fontSize: 14),
-          ),
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: Text(title, style: const TextStyle(color: Color(0xFFE53935), fontSize: 18, fontFamily: 'Univers', fontWeight: FontWeight.w700, height: 1.2)),
+          content: Text(message, style: const TextStyle(color: Color(0xFF6D7985), fontSize: 14, fontFamily: 'General Sans', height: 1.2)),
           actions: [
             TextButton(
-              child: const Text("RETRY",
-                  style: TextStyle(color: Color(0xFF00E5FF))),
+              child: const Text("RETRY", style: TextStyle(color: Color(0xFF002B5B), fontWeight: FontWeight.w600, fontFamily: 'General Sans', height: 1.2)),
               onPressed: () => Navigator.of(context).pop(),
             ),
           ],

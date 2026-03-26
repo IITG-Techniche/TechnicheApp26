@@ -4,17 +4,12 @@ import 'package:flutter_svg/flutter_svg.dart';
 import '../../providers/marathon_provider.dart';
 import '../../model/marathon_models.dart';
 import 'package:intl/intl.dart';
+import '../../constant/appTheme.dart';
+import 'dart:ui';
 
-// ── Design Tokens (exact match to reference screenshot) ───────────────────────
-const _pageBg    = Color(0xFFECEEF4); // light blue-grey page background
-const _card      = Color(0xFFDDE2F0); // stat card — light blue-grey
-const _valueBg   = Color(0xFF1C2340); // dark navy value chip (NOT bright blue)
-const _accent    = Color(0xFF1E56C5); // blue accent — bars, "See All", KM value
-const _textPrim  = Color(0xFF1C2340); // very dark navy labels
-const _textSec   = Color(0xFF9499BB); // muted grey-blue text
-const _barColor  = Color(0xFF3B6FE8); // bar fill (same solid blue, faded for non-today)
-const _barFaded  = Color(0xFFB8BFF0); // faded bar for non-today days
-const _chartBg   = Color(0xFFF0F1F6); // chart card background (light grey)
+// ── Design Tokens ──────────────────────────────────────────────────────────
+const _cardGray = Color(0xFFE8ECEF);
+const _barFaded = Color(0xFFB8BFF0); // faded bar for non-today days
 const _iconCircle = Color(0xFF2C3349); // dark circle behind run icon
 
 const _cardShadow = [
@@ -27,14 +22,15 @@ class MarathonDashboardTab extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final progressAsync   = ref.watch(progressStatsProvider);
+    final progressAsync = ref.watch(progressStatsProvider);
     final recentRunsAsync = ref.watch(recentRunsProvider);
+    final currentUser = ref.watch(marathonUsernameProvider);
 
     return Scaffold(
-      backgroundColor: _pageBg,
+      backgroundColor: AppTheme.backgroundGray,
       body: progressAsync.when(
         data: (stats) => RefreshIndicator(
-          color: _accent,
+          color: AppTheme.primaryBlue,
           onRefresh: () async {
             ref.invalidate(progressStatsProvider);
             ref.invalidate(recentRunsProvider);
@@ -45,24 +41,22 @@ class MarathonDashboardTab extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // ── 1. SVG Header (track illustration) ─────────────────────
-                _DashboardHeader(),
+                const _DashboardHeader(),
 
                 // ── 2. "DASHBOARD" title BELOW the image ───────────────────
                 Container(
                   width: double.infinity,
                   color: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 14),
-                  child: const Text(
-                    'DASHBOARD',
+                  child: Text(
+                    currentUser.isEmpty ? 'Dashboard' : currentUser,
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      color: Color(0XFF000000), // dark navy — consistent with all other labels
+                      color: AppTheme.textMain,
                       fontSize: 24,
                       fontWeight: FontWeight.w700,
-                      letterSpacing: 0,
-                      height: 1.3,
-                      fontFamily: 'Univers',
-
+                      fontFamily: AppTheme.fontUnivers,
+                      height: 1.2,
                     ),
                   ),
                 ),
@@ -92,20 +86,10 @@ class MarathonDashboardTab extends ConsumerWidget {
                           const Text(
                             'Last 5 Runs',
                             style: TextStyle(
-                              color: _textPrim,
+                              color: AppTheme.textMain,
                               fontSize: 17,
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
-                          GestureDetector(
-                            onTap: () {},
-                            child: const Text(
-                              'See All',
-                              style: TextStyle(
-                                color: _accent,
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                              ),
+                              fontWeight: FontWeight.w700,
+                              fontFamily: AppTheme.fontUnivers,
                             ),
                           ),
                         ],
@@ -118,17 +102,18 @@ class MarathonDashboardTab extends ConsumerWidget {
                           if (runs.isEmpty) {
                             return Container(
                               width: double.infinity,
-                              padding:
-                              const EdgeInsets.symmetric(vertical: 40),
+                              padding: const EdgeInsets.symmetric(vertical: 40),
                               decoration: BoxDecoration(
-                                color: _pageBg,
+                                color: AppTheme.backgroundGray,
                                 borderRadius: BorderRadius.circular(16),
                               ),
                               child: const Center(
                                 child: Text(
                                   'No runs logged yet.',
                                   style: TextStyle(
-                                      color: _textSec, fontSize: 14),
+                                      color: AppTheme.textSecondary,
+                                      fontSize: 14,
+                                      fontFamily: AppTheme.fontGeneralSans),
                                 ),
                               ),
                             );
@@ -139,23 +124,20 @@ class MarathonDashboardTab extends ConsumerWidget {
                                   .format(run.createdAt.toLocal());
                               final timeStr = DateFormat('hh:mm a')
                                   .format(run.createdAt.toLocal());
-                              final int mm =
-                              run.durationMinutes.floor();
+                              final int mm = run.durationMinutes.floor();
                               final int ss =
-                              ((run.durationMinutes - mm) * 60)
-                                  .round();
+                                  ((run.durationMinutes - mm) * 60).round();
                               final String durStr =
                                   '${mm.toString().padLeft(2, '0')}:${ss.toString().padLeft(2, '0')}';
                               return Padding(
-                                padding:
-                                const EdgeInsets.only(bottom: 12),
+                                padding: const EdgeInsets.only(bottom: 12),
                                 child: _RunCard(
                                   distanceKm: run.distanceKm,
                                   dateStr: dateStr,
                                   timeStr: timeStr,
                                   durStr: durStr,
-                                  paceStr:
-                                  '${run.avgPace.toStringAsFixed(2)}/KM',
+                                  speedStr:
+                                      '${run.avgSpeed.toStringAsFixed(1)} km/h',
                                 ),
                               );
                             }).toList(),
@@ -165,11 +147,10 @@ class MarathonDashboardTab extends ConsumerWidget {
                           padding: EdgeInsets.all(32),
                           child: Center(
                               child: CircularProgressIndicator(
-                                  color: _accent)),
+                                  color: AppTheme.primaryBlue)),
                         ),
                         error: (e, _) => Text('Error: $e',
-                            style: const TextStyle(
-                                color: Colors.redAccent)),
+                            style: const TextStyle(color: Colors.redAccent)),
                       ),
                     ],
                   ),
@@ -179,7 +160,7 @@ class MarathonDashboardTab extends ConsumerWidget {
           ),
         ),
         loading: () => const Center(
-            child: CircularProgressIndicator(color: _accent)),
+            child: CircularProgressIndicator(color: AppTheme.primaryBlue)),
         error: (e, _) => Center(
           child: Text('Error: $e',
               style: const TextStyle(color: Colors.redAccent)),
@@ -189,10 +170,6 @@ class MarathonDashboardTab extends ConsumerWidget {
   }
 }
 
-// ─────────────────────────────────────────────
-// SVG HEADER — track illustration only,
-// back button overlaid top-left.
-// "DASHBOARD" is rendered BELOW this widget.
 // ─────────────────────────────────────────────
 class _DashboardHeader extends StatelessWidget {
   const _DashboardHeader();
@@ -205,10 +182,7 @@ class _DashboardHeader extends StatelessWidget {
       child: Stack(
         fit: StackFit.expand,
         children: [
-          // Track illustration
           SvgPicture.asset('assets/ghm/frame03.svg', fit: BoxFit.cover),
-
-          // Back button — white circle, top-left
           SafeArea(
             child: Align(
               alignment: Alignment.topLeft,
@@ -223,8 +197,8 @@ class _DashboardHeader extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: Colors.white,
                       shape: BoxShape.circle,
-                      border: Border.all(
-                          color: const Color(0xFFDEE9FE), width: 1),
+                      border:
+                          Border.all(color: const Color(0xFFDEE9FE), width: 1),
                     ),
                     child: const Icon(
                       Icons.chevron_left,
@@ -243,8 +217,6 @@ class _DashboardHeader extends StatelessWidget {
 }
 
 // ─────────────────────────────────────────────
-// 2×2 STATS GRID
-// ─────────────────────────────────────────────
 class _StatsGrid extends StatelessWidget {
   final ProgressStats stats;
   const _StatsGrid({required this.stats});
@@ -259,14 +231,12 @@ class _StatsGrid extends StatelessWidget {
             children: [
               Expanded(
                   child: _StatCard(
-                      label: 'Streak',
-                      value: '${stats.streak} Days')),
+                      label: 'Streak', value: '${stats.streak} Days')),
               const SizedBox(width: 16),
               Expanded(
                   child: _StatCard(
                       label: 'This Week',
-                      value:
-                      '${stats.weeklyKm.toStringAsFixed(2)} KM')),
+                      value: '${stats.weeklyKm.toStringAsFixed(2)} KM')),
             ],
           ),
         ),
@@ -277,13 +247,13 @@ class _StatsGrid extends StatelessWidget {
             children: [
               Expanded(
                   child: _StatCard(
-                      label: 'Avg Pace',
-                      value: stats.weeklyPace.toStringAsFixed(2))),
+                      label: 'Avg Speed',
+                      value: '${stats.weeklySpeed.toStringAsFixed(1)} km/h')),
               const SizedBox(width: 16),
               Expanded(
                   child: _StatCard(
                       label: 'Improvement',
-                      value: '+${stats.improvement}%')),
+                      value: '${stats.improvement > 0 ? '+' : ''}${stats.improvement.round()}%')),
             ],
           ),
         ),
@@ -292,11 +262,6 @@ class _StatsGrid extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────
-// STAT CARD
-// Light blue-grey card (#DDE2F0), bold black
-// label, dark navy (#1C2340) value chip.
-// Exactly matches the reference screenshot.
 // ─────────────────────────────────────────────
 class _StatCard extends StatelessWidget {
   final String label, value;
@@ -307,33 +272,31 @@ class _StatCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.fromLTRB(8, 16, 8, 16),
       decoration: BoxDecoration(
-        color: _card,                         // #DDE2F0 light blue-grey
-        borderRadius: BorderRadius.circular(8),
+        color: const Color(0xFFdee9fe),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE8E8E8)),
         boxShadow: _cardShadow,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // Bold dark label
           Text(
             label,
             style: const TextStyle(
-              color: Color(0XFF000000),
-              fontSize: 20,
-              fontWeight: FontWeight.w500,
-              height: 1.3,
-              fontFamily: 'General Sans',
+              color: AppTheme.textMain,
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+              fontFamily: AppTheme.fontUnivers,
+              height: 1.2,
             ),
           ),
           const SizedBox(height: 12),
-          // Dark navy value chip
           Container(
             width: double.infinity,
-            padding: EdgeInsets.fromLTRB(8, 16, 8, 16),
-
+            padding: const EdgeInsets.symmetric(vertical: 14),
             decoration: BoxDecoration(
-              color: Color(0XFF002661),               // #1C2340 dark navy
+              color: AppTheme.primaryBlue,
               borderRadius: BorderRadius.circular(8),
             ),
             child: Text(
@@ -341,10 +304,10 @@ class _StatCard extends StatelessWidget {
               textAlign: TextAlign.center,
               style: const TextStyle(
                 color: Colors.white,
-                fontSize: 20,
+                fontSize: 18,
                 fontWeight: FontWeight.w700,
+                fontFamily: AppTheme.fontGeneralSans,
                 letterSpacing: 0.3,
-                fontFeatures: [FontFeature.tabularFigures()],
               ),
             ),
           ),
@@ -355,11 +318,6 @@ class _StatCard extends StatelessWidget {
 }
 
 // ─────────────────────────────────────────────
-// DAILY DISTANCE CHART CARD
-// Light grey background card. "Daily Distance"
-// label in blue, KM value large blue. Bars:
-// faded blue for non-today, accent blue today.
-// ─────────────────────────────────────────────
 class _ChartCard extends StatelessWidget {
   final ProgressStats stats;
   const _ChartCard({required this.stats});
@@ -368,49 +326,48 @@ class _ChartCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final daily = stats.dailyStats;
     double maxVal =
-    daily.map((e) => e.distance).fold(0.0, (a, b) => a > b ? a : b);
+        daily.map((e) => e.distance).fold(0.0, (a, b) => a > b ? a : b);
     if (maxVal == 0) maxVal = 1.0;
 
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
       decoration: BoxDecoration(
-        color: _chartBg,                      // light grey — matches screenshot
-        borderRadius: BorderRadius.circular(18),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE8E8E8)),
         boxShadow: _cardShadow,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // "Daily Distance" — blue, small
           const Text(
             'Daily Distance',
             style: TextStyle(
-              color: _accent,
+              color: AppTheme.primaryBlue,
               fontSize: 13,
-              fontWeight: FontWeight.w600,
+              fontWeight: FontWeight.w700,
+              fontFamily: AppTheme.fontUnivers,
             ),
           ),
           const SizedBox(height: 4),
-          // Large KM value — bold blue
           Text(
             '${stats.weeklyKm.toStringAsFixed(2)} KM',
             style: const TextStyle(
-              color: _accent,
+              color: AppTheme.primaryBlue,
               fontSize: 28,
-              fontWeight: FontWeight.w900,
+              fontWeight: FontWeight.w800,
+              fontFamily: AppTheme.fontUnivers,
               letterSpacing: -0.5,
             ),
           ),
           const SizedBox(height: 18),
-
-          // Bar chart
           SizedBox(
             height: 120,
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: daily.map((stat) {
                 final double barH =
-                ((stat.distance / maxVal) * 90).clamp(4.0, 90.0);
+                    ((stat.distance / maxVal) * 90).clamp(4.0, 90.0);
                 final bool isToday = stat.isToday;
                 return Expanded(
                   child: Column(
@@ -422,10 +379,9 @@ class _ChartCard extends StatelessWidget {
                         width: 28,
                         height: barH,
                         decoration: BoxDecoration(
-                          // Today = solid accent, others = faded
-                          color: isToday ? _accent : _barFaded,
+                          color: isToday ? AppTheme.primaryBlue : _barFaded,
                           borderRadius: const BorderRadius.only(
-                            topLeft:  Radius.circular(5),
+                            topLeft: Radius.circular(5),
                             topRight: Radius.circular(5),
                           ),
                         ),
@@ -434,11 +390,13 @@ class _ChartCard extends StatelessWidget {
                       Text(
                         stat.dayName[0],
                         style: TextStyle(
-                          color: isToday ? _accent : _textSec,
+                          color: isToday
+                              ? AppTheme.primaryBlue
+                              : AppTheme.textSecondary,
                           fontSize: 11,
-                          fontWeight: isToday
-                              ? FontWeight.w800
-                              : FontWeight.w500,
+                          fontWeight:
+                              isToday ? FontWeight.w800 : FontWeight.w500,
+                          fontFamily: AppTheme.fontGeneralSans,
                         ),
                       ),
                     ],
@@ -454,35 +412,30 @@ class _ChartCard extends StatelessWidget {
 }
 
 // ─────────────────────────────────────────────
-// RUN HISTORY CARD
-// Dark circle icon | "Practice Run" | distance
-// Row2: date | time
-// Row3: duration | pace
-// ─────────────────────────────────────────────
 class _RunCard extends StatelessWidget {
   final double distanceKm;
-  final String dateStr, timeStr, durStr, paceStr;
+  final String dateStr, timeStr, durStr, speedStr;
   const _RunCard({
     required this.distanceKm,
     required this.dateStr,
     required this.timeStr,
     required this.durStr,
-    required this.paceStr,
+    required this.speedStr,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(14, 14, 14, 14),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE8E8E8)),
         boxShadow: _cardShadow,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Row 1: icon | label | distance
           Row(
             children: [
               Container(
@@ -496,29 +449,29 @@ class _RunCard extends StatelessWidget {
                     color: Colors.white, size: 20),
               ),
               const SizedBox(width: 10),
-              const Expanded(
+              Expanded(
                 child: Text(
                   'Practice Run',
                   style: TextStyle(
-                    color: _textPrim,
+                    color: AppTheme.textMain,
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
+                    fontFamily: AppTheme.fontUnivers,
                   ),
                 ),
               ),
               Text(
                 '${distanceKm.toStringAsFixed(2)} KM',
-                style: const TextStyle(
-                  color: _textPrim,
+                style: TextStyle(
+                  color: AppTheme.textMain,
                   fontSize: 14,
                   fontWeight: FontWeight.w800,
+                  fontFamily: AppTheme.fontGeneralSans,
                 ),
               ),
             ],
           ),
           const SizedBox(height: 10),
-
-          // Row 2: date | time
           Row(
             children: [
               _InfoChip(icon: Icons.calendar_today_outlined, text: dateStr),
@@ -527,13 +480,11 @@ class _RunCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 6),
-
-          // Row 3: duration | pace
           Row(
             children: [
               _InfoChip(icon: Icons.timer_outlined, text: durStr),
               const SizedBox(width: 20),
-              _InfoChip(icon: Icons.speed_outlined, text: paceStr),
+              _InfoChip(icon: Icons.speed_outlined, text: speedStr),
             ],
           ),
         ],
@@ -544,7 +495,7 @@ class _RunCard extends StatelessWidget {
 
 class _InfoChip extends StatelessWidget {
   final IconData icon;
-  final String   text;
+  final String text;
   const _InfoChip({required this.icon, required this.text});
 
   @override
@@ -552,14 +503,15 @@ class _InfoChip extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, color: _accent, size: 14),
+        Icon(icon, color: AppTheme.accentBlue, size: 14),
         const SizedBox(width: 5),
         Text(
           text,
           style: const TextStyle(
-            color: _textSec,
+            color: AppTheme.textSecondary,
             fontSize: 12,
             fontWeight: FontWeight.w500,
+            fontFamily: AppTheme.fontGeneralSans,
           ),
         ),
       ],

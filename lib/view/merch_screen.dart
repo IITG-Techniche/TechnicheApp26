@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../constant/appTheme.dart';
 import 'package:animated_glitch/animated_glitch.dart';
 import 'package:model_viewer_plus/model_viewer_plus.dart';
 
@@ -108,7 +109,7 @@ class _MerchScreenState extends State<MerchScreen> {
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     return Scaffold(
-      backgroundColor: Colors.transparent,
+      backgroundColor: AppTheme.backgroundGray,
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         systemOverlayStyle: const SystemUiOverlayStyle(
@@ -122,7 +123,7 @@ class _MerchScreenState extends State<MerchScreen> {
           child: Image.asset(
             'assets/logo_withoutBG.png',
             fit: BoxFit.contain,
-            color: Colors.white,
+            color: AppTheme.primaryBlue,
           ),
         ),
         elevation: 0,
@@ -142,7 +143,7 @@ class _MerchScreenState extends State<MerchScreen> {
                     style: TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      color: AppTheme.textMain,
                       letterSpacing: 1.2,
                     ),
                   ),
@@ -151,7 +152,7 @@ class _MerchScreenState extends State<MerchScreen> {
                     'Roam around the campus in style! Browse and buy official Techniche merchandise.',
                     style: TextStyle(
                       fontSize: 16,
-                      color: Colors.white.withOpacity(0.7),
+                      color: AppTheme.textSecondary,
                     ),
                   ),
                   const SizedBox(height: 5),
@@ -240,7 +241,7 @@ class _MerchScreenState extends State<MerchScreen> {
               style: const TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: Colors.white,
+                color: AppTheme.textMain,
                 letterSpacing: 0.5,
               ),
             ),
@@ -249,7 +250,7 @@ class _MerchScreenState extends State<MerchScreen> {
               price,
               style: const TextStyle(
                 fontSize: 18,
-                color: Colors.white,
+                color: AppTheme.primaryBlue,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -259,7 +260,7 @@ class _MerchScreenState extends State<MerchScreen> {
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 15,
-                color: Colors.white.withOpacity(0.8),
+                color: AppTheme.textSecondary,
                 fontWeight: FontWeight.w400,
                 height: 1.3,
               ),
@@ -328,10 +329,10 @@ class _AnimatedGradientBackgroundState
   late AnimationController _controller;
   late Animation<double> _animation;
   final List<List<Color>> gradients = [
-    [Color(0xFF181A20), Color(0xFF23242B), Color(0xFF35363C)],
-    [Color(0xFF23242B), Color(0xFF35363C), Color(0xFF181A20)],
-    [Color(0xFF35363C), Color(0xFF23242B), Color(0xFF181A20)],
-    [Color(0xFF181A20), Color(0xFF35363C), Color(0xFF23242B)],
+    [Color(0xFFB0BEC5), Color(0xFFCFD8DC), Color(0xFFECEFF1)],
+    [Color(0xFFCFD8DC), Color(0xFFECEFF1), Color(0xFFB0BEC5)],
+    [Color(0xFFECEFF1), Color(0xFFCFD8DC), Color(0xFFB0BEC5)],
+    [Color(0xFFB0BEC5), Color(0xFFECEFF1), Color(0xFFCFD8DC)],
   ];
   int _currentGradient = 0;
 

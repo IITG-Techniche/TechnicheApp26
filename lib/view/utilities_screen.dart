@@ -1,15 +1,13 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:techniche26/utils/animate_gradient_background.dart';
+import 'package:techniche26/utils/app_drawer.dart';
+import '../constant/appTheme.dart';
 
 class UtilitiesScreen extends StatefulWidget {
   static const String routeName = '/utilities-screen';
   const UtilitiesScreen({Key? key}) : super(key: key);
- 
 
   @override
   State<UtilitiesScreen> createState() => _UtilitiesScreenState();
@@ -17,26 +15,39 @@ class UtilitiesScreen extends StatefulWidget {
 
 class _UtilitiesScreenState extends State<UtilitiesScreen> {
   bool showFAQ = false;
-  
-  final Color neonCyan = const Color(0xFF00FFFF);
 
   void _showContactsModal(String title, List<_Contact> contacts) {
     showModalBottomSheet(
       context: context,
+      backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       builder: (context) => Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(20.0),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Container(
+              width: 40,
+              height: 4,
+              margin: const EdgeInsets.only(bottom: 20),
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(2),
+              ),
+              alignment: Alignment.center,
+            ),
             Text(title,
-                style:
-                    const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 12),
+                style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
+                    fontFamily: AppTheme.fontUnivers,
+                    color: AppTheme.textMain)),
+            const SizedBox(height: 16),
             ...contacts.map((c) => _ContactListTile(contact: c)),
+            const SizedBox(height: 20),
           ],
         ),
       ),
@@ -78,156 +89,167 @@ class _UtilitiesScreenState extends State<UtilitiesScreen> {
     ];
 
     return Scaffold(
-      body: Stack(
+      backgroundColor: AppTheme.backgroundGray,
+      drawer: const AppDrawer(),
+      body: Column(
         children: [
-          const AnimatedGradientBackground(),
-          SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: ListView(
-                children: [
-                        AnimatedTextKit(
-                  animatedTexts: [
-                    TypewriterAnimatedText(
-                      'Utilities &  Contacts',
-                      textStyle: GoogleFonts.orbitron(
-                        color: neonCyan,
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      speed: const Duration(milliseconds: 80),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                  totalRepeatCount: 1,
-                  isRepeatingAnimation: false,
-                  displayFullTextOnTap: true,
-                  pause: const Duration(milliseconds: 500),
-                ),
-                  const SizedBox(height: 12),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+          Expanded(
+            child: ListView(
+              padding: EdgeInsets.zero,
+              children: [
+                _buildHeader(context),
+                Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: Column(
                     children: [
-                      _ModalUtilityIcon(
-                        icon: Icons.local_hospital,
-                        label: 'IITG Hospital',
-                        contacts: hospitalContacts,
-                        onTap: () => _showContactsModal(
-                            'IITG Hospital', hospitalContacts),
-                      ),
-                      _ModalUtilityIcon(
-                        icon: Icons.local_shipping,
-                        label: 'Transport',
-                        contacts: transportContacts,
-                        onTap: () =>
-                            _showContactsModal('Transport', transportContacts),
-                      ),
-                      _ModalUtilityIcon(
-                        icon: Icons.hotel,
-                        label: 'Hospitality',
-                        contacts: hospitalityContacts,
-                        onTap: () => _showContactsModal(
-                            'Hospitality', hospitalityContacts),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 24),
-                  ListTile(
-                    leading: const Icon(Icons.people_alt),
-                    title: const Text('Team'),
-                    trailing: const Icon(Icons.chevron_right),
-                    onTap: () => Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => const TeamImageCarouselScreen(),
-                      ),
-                    ),
-                  ),
-                  ListTile(
-                    leading: const Icon(Icons.group),
-                    title: const Text('Developers'),
-                    trailing: const Icon(Icons.chevron_right),
-                    onTap: _openTeamCarousel,
-                  ),
-                  ListTile(
-                    leading: const Icon(Icons.question_answer),
-                    title: const Text('FAQ'),
-                    trailing:
-                        Icon(showFAQ ? Icons.expand_less : Icons.expand_more),
-                    onTap: () => setState(() => showFAQ = !showFAQ),
-                  ),
-                  if (showFAQ) ...[
-                    const _FAQList(),
-                    const Divider(),
-                  ],
-
-                  // Quick Links Section
-                  const SizedBox(height: 18),
-                  const Padding(
-                    padding:
-                        EdgeInsets.symmetric(vertical: 4.0, horizontal: 2.0),
-                    child: Text('Quick Links',
+                      const Text(
+                        'Utilities & Contacts',
+                        textAlign: TextAlign.center,
                         style: TextStyle(
-                          fontSize: 17,
-                          fontWeight: FontWeight.bold,
-                        )),
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      _QuickLinkIcon(
-                        assetIconPath: 'assets/instagram.png',
-                        color: Colors.pinkAccent,
-                        url:
-                            'https://www.instagram.com/techniche_iitguwahati/?hl=en',
-                        label: 'Instagram',
+                          color: AppTheme.textMain,
+                          fontSize: 24,
+                          fontWeight: FontWeight.w700,
+                          fontFamily: AppTheme.fontUnivers,
+                        ),
                       ),
-                      _QuickLinkIcon(
-                        assetIconPath: 'assets/linkedin.png',
-                        color: Colors.blue,
-                        url: 'https://in.linkedin.com/company/techniche-iitg',
-                        label: 'LinkedIn',
+                      const SizedBox(height: 24),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: [
+                          _ModalUtilityIcon(
+                            icon: Icons.local_hospital_rounded,
+                            label: 'Hospital',
+                            color: const Color(0xFFE53935),
+                            onTap: () => _showContactsModal(
+                                'IITG Hospital', hospitalContacts),
+                          ),
+                          _ModalUtilityIcon(
+                            icon: Icons.local_shipping_rounded,
+                            label: 'Transport',
+                            color: const Color(0xFF1E88E5),
+                            onTap: () => _showContactsModal(
+                                'Transport', transportContacts),
+                          ),
+                          _ModalUtilityIcon(
+                            icon: Icons.hotel_rounded,
+                            label: 'Hospitality',
+                            color: const Color(0xFF43A047),
+                            onTap: () => _showContactsModal(
+                                'Hospitality', hospitalityContacts),
+                          ),
+                        ],
                       ),
-                      _QuickLinkIcon(
-                        assetIconPath: 'assets/social-media.png',
-                        color: Colors.lightBlue,
-                        url: 'https://twitter.com/Techniche_IITG',
-                        label: 'X.com',
+                      const SizedBox(height: 32),
+                      _buildSectionTile(
+                        icon: Icons.people_alt_rounded,
+                        title: 'Meet the Team',
+                        onTap: () => Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const TeamImageCarouselScreen(),
+                          ),
+                        ),
                       ),
-                      _QuickLinkIcon(
-                        assetIconPath: 'assets/youtube.png',
-                        color: Colors.red,
-                        url: 'https://www.youtube.com/c/techniche',
-                        label: 'YouTube',
+                      _buildSectionTile(
+                        icon: Icons.code_rounded,
+                        title: 'App Developers',
+                        onTap: _openTeamCarousel,
                       ),
-                      _QuickLinkIcon(
-                        assetIconPath: 'assets/medium.png',
-                        color: Colors.deepPurple,
-                        url: 'https://media-techniche.medium.com/',
-                        label: 'Medium',
+                      _buildSectionTile(
+                        icon: Icons.help_outline_rounded,
+                        title: 'Frequently Asked Questions',
+                        trailing: Icon(
+                          showFAQ
+                              ? Icons.keyboard_arrow_up_rounded
+                              : Icons.keyboard_arrow_down_rounded,
+                          color: const Color(0xFF6D7985),
+                        ),
+                        onTap: () => setState(() => showFAQ = !showFAQ),
+                      ),
+                      if (showFAQ) ...[
+                        const _FAQList(),
+                        // const SizedBox(height: 12),
+                      ],
+                      const SizedBox(height: 10),
+                      const Text(
+                        'Quick Links',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                          fontFamily: AppTheme.fontUnivers,
+                          color: AppTheme.textMain,
+                        ),
+                      ),
+                      const SizedBox(height: 30),
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: [
+                            _QuickLinkIcon(
+                              assetIconPath: 'assets/instagram.png',
+                              color: const Color(0xFFE4405F),
+                              url:
+                                  'https://www.instagram.com/techniche_iitguwahati/?hl=en',
+                              label: 'Instagram',
+                            ),
+                            const SizedBox(width: 20),
+                            _QuickLinkIcon(
+                              assetIconPath: 'assets/linkedin.png',
+                              color: const Color(0xFF0077B5),
+                              url:
+                                  'https://in.linkedin.com/company/techniche-iitg',
+                              label: 'LinkedIn',
+                            ),
+                            const SizedBox(width: 20),
+                            _QuickLinkIcon(
+                              assetIconPath: 'assets/x.png',
+                              color: const Color(0xFF1DA1F2),
+                              url: 'https://twitter.com/Techniche_IITG',
+                              label: 'X.com',
+                            ),
+                            const SizedBox(width: 20),
+                            _QuickLinkIcon(
+                              assetIconPath: 'assets/youtube.png',
+                              color: const Color(0xFFFF0000),
+                              url: 'https://www.youtube.com/c/techniche',
+                              label: 'YouTube',
+                            ),
+                            const SizedBox(width: 20),
+                            _QuickLinkIcon(
+                              assetIconPath: 'assets/facebook.png',
+                              color: const Color(0xFF1877F2),
+                              url:
+                                  'https://www.facebook.com/techniche.iitguwahati/',
+                              label: 'Facebook',
+                            ),
+                            const SizedBox(width: 20),
+                            _QuickLinkIcon(
+                              assetIconPath: 'assets/medium.png',
+                              color: const Color(0xFF000000),
+                              url: 'https://media-techniche.medium.com/',
+                              label: 'Medium',
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 18),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
-          Positioned(
-            bottom: 45,
-            left: 0,
-            right: 0,
-            child: Container(
-              height: 25,
-              color: const Color.fromARGB(255, 39, 39, 39), // dark grey
-              child: const MarqueeText(
-                text: 'Made with '
-                    '❤'
-                    ' by Techniche DevOps IITG',
-                style: TextStyle(
-                  color: Color.fromARGB(255, 84, 84, 84),
-                  fontSize: 16,
-                ),
+          Container(
+            height: 65,
+            padding: const EdgeInsets.only(bottom: 35),
+            width: double.infinity,
+            color: AppTheme.backgroundGray,
+            alignment: Alignment.center,
+            child: const MarqueeText(
+              text: 'Made with ❤️ by Techniche DevOps IITG • ',
+              style: TextStyle(
+                color: AppTheme.textSecondary,
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+                fontFamily: AppTheme.fontGeneralSans,
               ),
             ),
           ),
@@ -235,9 +257,120 @@ class _UtilitiesScreenState extends State<UtilitiesScreen> {
       ),
     );
   }
-}
 
-/// ----------------- Helper widgets & models (top-level) -----------------
+  Widget _buildSectionTile({
+    required IconData icon,
+    required String title,
+    required VoidCallback onTap,
+    Widget? trailing,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8F9FA),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE8E8E8)),
+      ),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+        leading: Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: const Color(0xFFE1EBFF),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Icon(icon, color: const Color(0xFF002B5B), size: 24),
+        ),
+        title: Text(
+          title,
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w700,
+            fontFamily: AppTheme.fontGeneralSans,
+            height: 1.2,
+            color: AppTheme.textMain,
+          ),
+        ),
+        trailing: trailing ??
+            const Icon(Icons.chevron_right_rounded, color: Color(0xFF6D7985)),
+        onTap: onTap,
+      ),
+    );
+  }
+
+  Widget _buildHeader(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      decoration: const BoxDecoration(
+        color: Color(0xFF002B5B),
+        image: DecorationImage(
+          image: AssetImage('assets/ghm/frame3.png'),
+          fit: BoxFit.cover,
+        ),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 25),
+      child: SafeArea(
+        bottom: false,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              decoration: ShapeDecoration(
+                color: Colors.white,
+                shape: RoundedRectangleBorder(
+                  side: const BorderSide(
+                    width: 1,
+                    color: Color(0xFFAFAFAF),
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                shadows: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Builder(
+                    builder: (BuildContext innerContext) {
+                      return GestureDetector(
+                        onTap: () {
+                          Scaffold.of(innerContext).openDrawer();
+                        },
+                        child: SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: Image.asset(
+                            'assets/ghm/menu.png',
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                  SizedBox(
+                    height: 24.0,
+                    child: Image.asset(
+                      'assets/ghm/logo3.png',
+                      fit: BoxFit.contain,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
 
 class _QuickLinkIcon extends StatelessWidget {
   final String assetIconPath;
@@ -261,31 +394,26 @@ class _QuickLinkIcon extends StatelessWidget {
             final uri = Uri.parse(url);
             if (await canLaunchUrl(uri)) {
               await launchUrl(uri, mode: LaunchMode.externalApplication);
-            } else {
-              if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Cannot open $label')),
-                );
-              }
             }
           },
-          borderRadius: BorderRadius.circular(32),
+          borderRadius: BorderRadius.circular(30),
           child: Container(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: color.withOpacity(0.13),
+              color: color.withOpacity(0.08),
+              borderRadius: BorderRadius.circular(18),
             ),
             child:
-                Image.asset(assetIconPath, width: 32, height: 32, color: color),
+                Image.asset(assetIconPath, width: 28, height: 28, color: color),
           ),
         ),
-        const SizedBox(height: 6),
+        const SizedBox(height: 8),
         Text(label,
-            style: TextStyle(
-              fontSize: 12,
-              color: color,
-              fontWeight: FontWeight.w600,
+            style: const TextStyle(
+              fontSize: 11,
+              color: AppTheme.textSecondary,
+              fontWeight: FontWeight.w700,
+              fontFamily: AppTheme.fontGeneralSans,
             )),
       ],
     );
@@ -295,15 +423,15 @@ class _QuickLinkIcon extends StatelessWidget {
 class _ModalUtilityIcon extends StatelessWidget {
   final IconData icon;
   final String label;
-  final List<_Contact> contacts;
   final VoidCallback onTap;
+  final Color color;
 
   const _ModalUtilityIcon({
     Key? key,
     required this.icon,
     required this.label,
-    required this.contacts,
     required this.onTap,
+    required this.color,
   }) : super(key: key);
 
   @override
@@ -312,18 +440,26 @@ class _ModalUtilityIcon extends StatelessWidget {
       children: [
         InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(40),
+          borderRadius: BorderRadius.circular(20),
           child: Container(
-            padding: const EdgeInsets.all(16),
-            decoration: const BoxDecoration(
-              shape: BoxShape.circle,
-              color: Color(0x1A448AFF), // blueAccent with opacity
+            padding: const EdgeInsets.all(18),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(20),
             ),
-            child: Icon(icon, size: 32, color: Colors.blueAccent),
+            child: Icon(icon, size: 30, color: color),
           ),
         ),
-        const SizedBox(height: 8),
-        Text(label, style: const TextStyle(fontWeight: FontWeight.w600)),
+        const SizedBox(height: 10),
+        Text(
+          label,
+          style: const TextStyle(
+            fontWeight: FontWeight.w600,
+            fontSize: 13,
+            color: AppTheme.textMain,
+            fontFamily: AppTheme.fontGeneralSans,
+          ),
+        ),
       ],
     );
   }
@@ -335,24 +471,51 @@ class _ContactListTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      leading: const Icon(Icons.contact_phone),
-      title: Text(contact.name),
-      subtitle: Text(contact.number),
-      trailing: IconButton(
-        icon: const Icon(Icons.call),
-        onPressed: () async {
-          final Uri url = Uri.parse('tel:${contact.number}');
-          if (await canLaunchUrl(url)) {
-            await launchUrl(url);
-          } else {
-            if (context.mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Cannot launch dialer')),
-              );
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8F9FA),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        leading: Container(
+          padding: const EdgeInsets.all(10),
+          decoration: const BoxDecoration(
+            color: Color(0xFFE1EBFF),
+            shape: BoxShape.circle,
+          ),
+          child: const Icon(Icons.phone_rounded,
+              color: Color(0xFF002B5B), size: 22),
+        ),
+        title: Text(contact.name,
+            style: const TextStyle(
+                fontWeight: FontWeight.w700,
+                fontSize: 16,
+                fontFamily: AppTheme.fontGeneralSans,
+                color: AppTheme.textMain)),
+        subtitle: Text(contact.number,
+            style: const TextStyle(
+                color: AppTheme.textSecondary,
+                fontSize: 13,
+                fontFamily: AppTheme.fontGeneralSans)),
+        trailing: IconButton(
+          icon: Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: const Color(0xFF43A047).withOpacity(0.1),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(Icons.call_rounded,
+                color: Color(0xFF43A047), size: 18),
+          ),
+          onPressed: () async {
+            final Uri url = Uri.parse('tel:${contact.number}');
+            if (await canLaunchUrl(url)) {
+              await launchUrl(url);
             }
-          }
-        },
+          },
+        ),
       ),
     );
   }
@@ -367,37 +530,24 @@ class ContactsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(title)),
+      backgroundColor: AppTheme.backgroundGray,
+      appBar: AppBar(
+        title: Text(title,
+            style: const TextStyle(
+                fontFamily: AppTheme.fontUnivers, fontWeight: FontWeight.bold)),
+        backgroundColor: Colors.white,
+        foregroundColor: AppTheme.textMain,
+        elevation: 0,
+      ),
       body: ListView.separated(
         padding: const EdgeInsets.all(16),
         itemCount: contacts.length,
-        separatorBuilder: (_, __) => const Divider(),
+        separatorBuilder: (_, __) => const SizedBox(height: 12),
         itemBuilder: (_, i) {
-          final c = contacts[i];
-          return ListTile(
-            leading: const Icon(Icons.contact_phone),
-            title: Text(c.name),
-            subtitle: Text(c.number),
-            trailing: IconButton(
-              icon: const Icon(Icons.call),
-              onPressed: () => _callNumber(context, c.number),
-            ),
-          );
+          return _ContactListTile(contact: contacts[i]);
         },
       ),
     );
-  }
-
-  Future<void> _callNumber(BuildContext context, String number) async {
-    final Uri url = Uri.parse('tel:$number');
-    if (await canLaunchUrl(url)) {
-      await launchUrl(url);
-    } else {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Cannot launch dialer')));
-      }
-    }
   }
 }
 
@@ -430,26 +580,53 @@ class _FAQList extends StatelessWidget {
     return ListView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      padding: const EdgeInsets.all(0),
+      padding: EdgeInsets.zero,
       itemCount: faqs.length,
       itemBuilder: (_, i) {
         final f = faqs[i];
-        return ExpansionTile(
-          title: Text(f.question),
-          children: [
-            Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-              child: Text(f.answer),
-            )
-          ],
+        return Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF8F9FA),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: const Color(0xFFE8E8E8).withOpacity(0.5)),
+          ),
+          child: Theme(
+            data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+            child: ExpansionTile(
+              tilePadding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              title: Text(
+                f.question,
+                style: const TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 14,
+                    fontFamily: AppTheme.fontGeneralSans,
+                    color: AppTheme.textMain),
+              ),
+              iconColor: const Color(0xFF002B5B),
+              collapsedIconColor: const Color(0xFF6D7985),
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                  child: Text(
+                    f.answer,
+                    style: const TextStyle(
+                        color: AppTheme.textSecondary,
+                        fontSize: 13,
+                        fontFamily: AppTheme.fontGeneralSans,
+                        height: 1.4),
+                  ),
+                )
+              ],
+            ),
+          ),
         );
       },
     );
   }
 }
 
-/// ---------- Team Carousel Screen (retro-futuristic, halo aligned) ----------
 class TeamCarouselScreen extends StatefulWidget {
   const TeamCarouselScreen({Key? key}) : super(key: key);
 
@@ -461,7 +638,6 @@ class _TeamCarouselScreenState extends State<TeamCarouselScreen>
     with SingleTickerProviderStateMixin {
   final PageController _pageController =
       PageController(viewportFraction: 0.78, initialPage: 0);
-  late AnimationController _ringController;
   Timer? _autoPlayTimer;
   int _currentIndex = 0;
 
@@ -499,11 +675,6 @@ class _TeamCarouselScreenState extends State<TeamCarouselScreen>
   @override
   void initState() {
     super.initState();
-
-    _ringController =
-        AnimationController(vsync: this, duration: const Duration(seconds: 4))
-          ..repeat();
-
     _resumeAutoPlay();
   }
 
@@ -527,7 +698,6 @@ class _TeamCarouselScreenState extends State<TeamCarouselScreen>
   void dispose() {
     _autoPlayTimer?.cancel();
     _pageController.dispose();
-    _ringController.dispose();
     super.dispose();
   }
 
@@ -535,55 +705,87 @@ class _TeamCarouselScreenState extends State<TeamCarouselScreen>
     return showDialog<void>(
       context: context,
       builder: (_) => Dialog(
-        backgroundColor: Colors.black87,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.all(24.0),
           child: IntrinsicHeight(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                ClipOval(
-                  child: Image.asset(
-                    m.imageUrl,
-                    width: 140,
-                    height: 140,
-                    fit: BoxFit.cover,
-                    errorBuilder: (c, e, s) => Container(
-                      width: 140,
-                      height: 140,
-                      color: Colors.grey[800],
-                      child: const Icon(Icons.person,
-                          size: 64, color: Colors.white24),
+                Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFE1EBFF),
+                    shape: BoxShape.circle,
+                  ),
+                  child: ClipOval(
+                    child: Image.asset(
+                      m.imageUrl,
+                      width: 130,
+                      height: 130,
+                      fit: BoxFit.cover,
+                      errorBuilder: (c, e, s) => Container(
+                        width: 130,
+                        height: 130,
+                        color: Colors.grey[200],
+                        child: const Icon(Icons.person,
+                            size: 64, color: Color(0xFF6D7985)),
+                      ),
                     ),
                   ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 16),
                 Text(m.name,
                     style: const TextStyle(
-                        fontSize: 20, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 6),
-                Text(m.role, style: const TextStyle(color: Colors.white70)),
-                const SizedBox(height: 12),
-                const Divider(),
+                        fontSize: 22,
+                        fontWeight: FontWeight.w700,
+                        fontFamily: AppTheme.fontUnivers,
+                        color: AppTheme.textMain)),
+                const SizedBox(height: 4),
+                Text(m.role,
+                    style: const TextStyle(
+                        color: AppTheme.textSecondary,
+                        fontWeight: FontWeight.w500,
+                        fontFamily: AppTheme.fontGeneralSans)),
+                const SizedBox(height: 16),
+                const Divider(color: Color(0xFFE8E8E8)),
+                const SizedBox(height: 8),
                 ...m.facts.map((f) => Padding(
                       padding: const EdgeInsets.symmetric(vertical: 6.0),
                       child: Row(
                         children: [
-                          const Icon(Icons.star,
-                              size: 18, color: Colors.cyanAccent),
-                          const SizedBox(width: 8),
-                          Expanded(child: Text(f)),
+                          const Icon(Icons.stars_rounded,
+                              size: 20, color: Color(0xFF002B5B)),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              f,
+                              style: const TextStyle(
+                                  color: AppTheme.textMain,
+                                  fontFamily: AppTheme.fontGeneralSans,
+                                  fontSize: 14),
+                            ),
+                          ),
                         ],
                       ),
                     )),
-                const SizedBox(height: 12),
-                ElevatedButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.cyanAccent),
-                  child: const Text('Close',
-                      style: TextStyle(color: Colors.black)),
+                const SizedBox(height: 20),
+                SizedBox(
+                  width: double.infinity,
+                  height: 48,
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF002B5B),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
+                      elevation: 0,
+                    ),
+                    child: const Text('Close',
+                        style: TextStyle(
+                            color: Colors.white, fontWeight: FontWeight.bold)),
+                  ),
                 )
               ],
             ),
@@ -593,41 +795,15 @@ class _TeamCarouselScreenState extends State<TeamCarouselScreen>
     );
   }
 
-  Color _neonColor() => Colors.cyanAccent.shade200;
-
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
 
     return Scaffold(
-      backgroundColor: Colors.black.withOpacity(0.88),
+      backgroundColor: const Color(0xFFF8F9FA),
       body: SafeArea(
         child: Stack(
           children: [
-            // faint gradient background
-            Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Colors.black, Colors.blueGrey.shade900],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-              ),
-            ),
-
-            // scanlines overlay
-            const IgnorePointer(
-              ignoring: true,
-              child: Opacity(
-                opacity: 0.06,
-                child: CustomPaint(
-                  painter: ScanlinePainter(),
-                  size: Size.infinite,
-                ),
-              ),
-            ),
-
-            // header & close
             Positioned(
               top: 18,
               left: 16,
@@ -635,26 +811,30 @@ class _TeamCarouselScreenState extends State<TeamCarouselScreen>
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Row(children: [
-                    const SizedBox(width: 12),
-                    Text('Meet the Developers',
-                        style: TextStyle(
-                            color: Colors.white.withOpacity(0.9),
-                            fontSize: 18,
-                            fontWeight: FontWeight.w700)),
-                  ]),
+                  const Text('Meet the Developers',
+                      style: TextStyle(
+                          color: AppTheme.textMain,
+                          fontSize: 20,
+                          fontFamily: AppTheme.fontUnivers,
+                          fontWeight: FontWeight.w700)),
                   IconButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    icon: const Icon(Icons.close, color: Colors.white70),
+                    icon: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: const BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.close_rounded,
+                          color: Color(0xFF6D7985), size: 24),
+                    ),
                   ),
                 ],
               ),
             ),
-
-            // Carousel center - AnimatedBuilder listens to PageController to avoid global setState on scroll
             Center(
               child: SizedBox(
-                height: size.height * 0.68,
+                height: size.height * 0.62,
                 child: AnimatedBuilder(
                   animation: _pageController,
                   builder: (context, _) {
@@ -670,187 +850,103 @@ class _TeamCarouselScreenState extends State<TeamCarouselScreen>
                       itemBuilder: (context, i) {
                         final delta = (i - page).abs().clamp(0.0, 1.0);
                         final double scale = 1.0 - (delta * 0.12);
-                        final double rotate = (i - page) * 0.06;
-                        final double opacity = 1.0 - (delta * 0.45);
+                        final double opacity = 1.0 - (delta * 0.4);
 
                         final m = members[i];
 
-                        return Transform.translate(
-                          offset: Offset(0, delta * 12),
-                          child: Transform.rotate(
-                            angle: rotate,
-                            child: Opacity(
-                              opacity: opacity,
-                              child: Transform.scale(
-                                scale: scale,
-                                child: GestureDetector(
-                                  onTap: () {
-                                    _pauseAutoPlay();
-                                    _openMemberDialog(m)
-                                        .then((_) => _resumeAutoPlay());
-                                  },
-                                  child: Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 8, vertical: 12),
-                                    child: Container(
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(20),
-                                        gradient: LinearGradient(
-                                          colors: [
-                                            Colors.white.withOpacity(0.02),
-                                            Colors.white.withOpacity(0.01)
-                                          ],
-                                          begin: Alignment.topLeft,
-                                          end: Alignment.bottomRight,
-                                        ),
-                                        border: Border.all(
-                                          color: _neonColor().withOpacity(
-                                              i == _currentIndex ? 0.45 : 0.12),
-                                          width: i == _currentIndex ? 1.8 : 1.0,
-                                        ),
+                        return Opacity(
+                          opacity: opacity,
+                          child: Transform.scale(
+                            scale: scale,
+                            child: GestureDetector(
+                              onTap: () {
+                                _pauseAutoPlay();
+                                _openMemberDialog(m)
+                                    .then((_) => _resumeAutoPlay());
+                              },
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 12),
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(24),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.05),
+                                        blurRadius: 15,
+                                        offset: const Offset(0, 8),
                                       ),
-                                      child: Center(
-                                        child: SizedBox(
-                                          width: 220,
-                                          child: Column(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              // halo + avatar - small AnimatedBuilder for ring only
-                                              Stack(
-                                                alignment: Alignment.center,
-                                                children: [
-                                                  AnimatedBuilder(
-                                                    animation: _ringController,
-                                                    builder: (_, __) {
-                                                      // subtle pulsing - small subtree only
-                                                      final phase = Curves
-                                                          .easeInOut
-                                                          .transform(
-                                                              _ringController
-                                                                  .value);
-                                                      final haloScale = 0.96 +
-                                                          0.08 *
-                                                              (0.5 +
-                                                                  0.5 * phase);
-                                                      final haloOpacity = 0.08 +
-                                                          0.06 *
-                                                              (1 -
-                                                                  (phase - 0.5)
-                                                                          .abs() *
-                                                                      2);
-
-                                                      return Transform.scale(
-                                                        scale: haloScale,
-                                                        child: Opacity(
-                                                          opacity: haloOpacity *
-                                                              (i == _currentIndex
-                                                                  ? 1.0
-                                                                  : 0.5),
-                                                          child: Container(
-                                                            width: 160,
-                                                            height: 160,
-                                                            decoration:
-                                                                BoxDecoration(
-                                                              shape: BoxShape
-                                                                  .circle,
-                                                              gradient:
-                                                                  RadialGradient(
-                                                                colors: [
-                                                                  Colors.cyanAccent
-                                                                      .withOpacity(0.14 *
-                                                                          (i == _currentIndex
-                                                                              ? 1
-                                                                              : 0.6)),
-                                                                  Colors.cyanAccent
-                                                                      .withOpacity(0.04 *
-                                                                          (i == _currentIndex
-                                                                              ? 1
-                                                                              : 0.4)),
-                                                                  Colors
-                                                                      .transparent,
-                                                                ],
-                                                                stops: const [
-                                                                  0.0,
-                                                                  0.6,
-                                                                  1.0
-                                                                ],
-                                                              ),
-                                                              border:
-                                                                  Border.all(
-                                                                color: Colors
-                                                                    .cyanAccent
-                                                                    .withOpacity(i ==
-                                                                            _currentIndex
-                                                                        ? 0.9
-                                                                        : 0.2),
-                                                                width: i ==
-                                                                        _currentIndex
-                                                                    ? 2.2
-                                                                    : 0.9,
-                                                              ),
-                                                            ),
-                                                          ),
-                                                        ),
-                                                      );
-                                                    },
-                                                  ),
-                                                  ClipOval(
-                                                    child: Image.asset(
-                                                      m.imageUrl,
-                                                      width: 140,
-                                                      height: 140,
-                                                      fit: BoxFit.cover,
-                                                      errorBuilder: (c, e, s) =>
-                                                          Container(
-                                                        width: 140,
-                                                        height: 140,
-                                                        color: Colors.grey[800],
-                                                        child: const Icon(
-                                                            Icons.person,
-                                                            size: 56,
-                                                            color:
-                                                                Colors.white24),
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-
-                                              const SizedBox(height: 12),
-                                              Text(m.name,
-                                                  style: const TextStyle(
-                                                      color: Colors.white,
-                                                      fontSize: 18,
-                                                      fontWeight:
-                                                          FontWeight.bold)),
-                                              const SizedBox(height: 6),
-                                              Text(m.role,
-                                                  style: const TextStyle(
-                                                      color: Colors.white70)),
-                                              const SizedBox(height: 8),
-                                              Opacity(
-                                                opacity: i == _currentIndex
-                                                    ? 1.0
-                                                    : 0.0,
-                                                child: Padding(
-                                                  padding: const EdgeInsets
-                                                      .symmetric(
-                                                      horizontal: 20.0),
-                                                  child: Text(
-                                                      'Tap avatar for fun facts',
-                                                      style: TextStyle(
-                                                          color: Colors
-                                                              .cyanAccent
-                                                              .withOpacity(0.9),
-                                                          fontSize: 12)),
-                                                ),
-                                              ),
-                                              const SizedBox(height: 12),
-                                            ],
+                                    ],
+                                    border: Border.all(
+                                      color: i == _currentIndex
+                                          ? const Color(0xFF002B5B)
+                                              .withOpacity(0.1)
+                                          : Colors.transparent,
+                                      width: 1.5,
+                                    ),
+                                  ),
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.all(4),
+                                        decoration: BoxDecoration(
+                                          color: i == _currentIndex
+                                              ? const Color(0xFFE1EBFF)
+                                              : Colors.grey[100],
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: ClipOval(
+                                          child: Image.asset(
+                                            m.imageUrl,
+                                            width: 150,
+                                            height: 150,
+                                            fit: BoxFit.cover,
+                                            errorBuilder: (c, e, s) =>
+                                                Container(
+                                              width: 150,
+                                              height: 150,
+                                              color: Colors.white,
+                                              child: const Icon(Icons.person,
+                                                  size: 60,
+                                                  color: Color(0xFF6D7985)),
+                                            ),
                                           ),
                                         ),
                                       ),
-                                    ),
+                                      const SizedBox(height: 24),
+                                      Text(m.name,
+                                          style: const TextStyle(
+                                              color: Color(0XFF232930),
+                                              fontSize: 20,
+                                              fontFamily: 'Univers',
+                                              fontWeight: FontWeight.bold)),
+                                      const SizedBox(height: 8),
+                                      Text(m.role,
+                                          style: const TextStyle(
+                                              color: Color(0xFF6D7985),
+                                              fontFamily: 'General Sans',
+                                              fontWeight: FontWeight.w500)),
+                                      const SizedBox(height: 16),
+                                      if (i == _currentIndex)
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 16, vertical: 6),
+                                          decoration: BoxDecoration(
+                                            color: const Color(0xFFE1EBFF),
+                                            borderRadius:
+                                                BorderRadius.circular(20),
+                                          ),
+                                          child: const Text(
+                                            'Tap for fun facts',
+                                            style: TextStyle(
+                                                color: Color(0xFF002B5B),
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.w600),
+                                          ),
+                                        ),
+                                    ],
                                   ),
                                 ),
                               ),
@@ -863,41 +959,27 @@ class _TeamCarouselScreenState extends State<TeamCarouselScreen>
                 ),
               ),
             ),
-
-            // bottom dots + role hint
             Positioned(
-              bottom: 28,
+              bottom: 40,
               left: 0,
               right: 0,
-              child: Column(
-                children: [
-                  SizedBox(
-                    height: 12,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: List.generate(members.length, (i) {
-                        final selected = i == _currentIndex;
-                        return AnimatedContainer(
-                          duration: const Duration(milliseconds: 300),
-                          margin: const EdgeInsets.symmetric(horizontal: 6),
-                          width: selected ? 26 : 10,
-                          height: 8,
-                          decoration: BoxDecoration(
-                            color: selected ? _neonColor() : Colors.white12,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                        );
-                      }),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(members.length, (i) {
+                  final selected = i == _currentIndex;
+                  return AnimatedContainer(
+                    duration: const Duration(milliseconds: 300),
+                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                    width: selected ? 24 : 8,
+                    height: 8,
+                    decoration: BoxDecoration(
+                      color: selected
+                          ? const Color(0xFF002B5B)
+                          : const Color(0xFFD1D1D1),
+                      borderRadius: BorderRadius.circular(8),
                     ),
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    members[_currentIndex].role,
-                    style: TextStyle(
-                        color: Colors.white.withOpacity(0.85),
-                        fontWeight: FontWeight.w600),
-                  ),
-                ],
+                  );
+                }),
               ),
             ),
           ],
@@ -907,28 +989,6 @@ class _TeamCarouselScreenState extends State<TeamCarouselScreen>
   }
 }
 
-/// Simple scanline painter reused for the retro look
-class ScanlinePainter extends CustomPainter {
-  const ScanlinePainter();
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = Colors.white.withOpacity(0.02)
-      ..strokeWidth = 0.6
-      ..isAntiAlias = false;
-
-    const double spacing = 5.5;
-    for (double y = 0; y < size.height; y += spacing) {
-      canvas.drawLine(Offset(0, y), Offset(size.width, y), paint);
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}
-
-// Lightweight model classes
 class _Contact {
   final String name;
   final String number;
@@ -953,7 +1013,6 @@ class _TeamMember {
       required this.facts});
 }
 
-/// Simple lightweight image carousel screen (13 members)
 class TeamImageCarouselScreen extends StatelessWidget {
   const TeamImageCarouselScreen({Key? key}) : super(key: key);
 
@@ -1029,35 +1088,10 @@ class TeamImageCarouselScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
     return Scaffold(
-      backgroundColor:
-          Colors.black.withOpacity(0.88), // match developers background
+      backgroundColor: const Color(0xFFF8F9FA),
       body: SafeArea(
         child: Stack(
           children: [
-            // same faint gradient background as developers
-            Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Colors.black, Colors.blueGrey.shade900],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-              ),
-            ),
-
-            // scanlines overlay
-            const IgnorePointer(
-              ignoring: true,
-              child: Opacity(
-                opacity: 0.06,
-                child: CustomPaint(
-                  painter: ScanlinePainter(),
-                  size: Size.infinite,
-                ),
-              ),
-            ),
-
-            // 'Meet the Team' text at top left, close button at top right
             Positioned(
               top: 18,
               left: 18,
@@ -1065,27 +1099,33 @@ class TeamImageCarouselScreen extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
+                  const Text(
                     'Meet the Team',
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.9),
-                      fontSize: 18,
+                      color: Color(0XFF232930),
+                      fontSize: 20,
+                      fontFamily: 'Univers',
                       fontWeight: FontWeight.w700,
                     ),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.close,
-                        color: Colors.white70, size: 28),
+                    icon: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: const BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.close_rounded,
+                          color: Color(0xFF6D7985), size: 24),
+                    ),
                     onPressed: () => Navigator.of(context).pop(),
-                    tooltip: 'Close',
                   ),
                 ],
               ),
             ),
-
             Center(
               child: SizedBox(
-                height: size.height * 0.55,
+                height: size.height * 0.6,
                 child: PageView.builder(
                   itemCount: teamMembers.length,
                   controller: PageController(viewportFraction: 0.82),
@@ -1093,100 +1133,78 @@ class TeamImageCarouselScreen extends StatelessWidget {
                     final m = teamMembers[i];
                     return Padding(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 18),
-                      child: Card(
-                        color: Colors.blueGrey.shade800,
-                        elevation: 6,
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(22)),
+                          horizontal: 12, vertical: 12),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(28),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.05),
+                              blurRadius: 15,
+                              offset: const Offset(0, 10),
+                            ),
+                          ],
+                        ),
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            GestureDetector(
-                              onTap: () async {
-                                final url = Uri.parse(m.linkedinUrl);
-                                if (await canLaunchUrl(url)) {
-                                  await launchUrl(url,
-                                      mode: LaunchMode.externalApplication);
-                                } else {
-                                  if (context.mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                          content: Text(
-                                              'Cannot open LinkedIn profile')),
-                                    );
-                                  }
-                                }
-                              },
+                            Container(
+                              padding: const EdgeInsets.all(4),
+                              decoration: const BoxDecoration(
+                                color: Color(0xFFE1EBFF),
+                                shape: BoxShape.circle,
+                              ),
                               child: ClipOval(
-                                child: Container(
-                                  width: 175,
-                                  height: 175,
-                                  color: Colors.grey[800],
-                                  child: Center(
-                                    child: Image.asset(
-                                      m.imageUrl,
-                                      width: 175,
-                                      height: 175,
-                                      fit: BoxFit.cover,
-                                      alignment: Alignment.center,
-                                      errorBuilder: (c, e, s) => const Icon(
-                                        Icons.person,
-                                        size: 80,
-                                        color: Colors.white24,
-                                      ),
+                                child: SizedBox(
+                                  width: 170,
+                                  height: 170,
+                                  child: Image.asset(
+                                    m.imageUrl,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (c, e, s) => const Icon(
+                                      Icons.person,
+                                      size: 80,
+                                      color: Color(0xFF6D7985),
                                     ),
                                   ),
                                 ),
                               ),
                             ),
-                            const SizedBox(height: 18),
+                            const SizedBox(height: 24),
                             Text(m.name,
                                 style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 20,
+                                    color: Color(0XFF232930),
+                                    fontSize: 22,
+                                    fontFamily: 'Univers',
                                     fontWeight: FontWeight.bold)),
                             const SizedBox(height: 8),
                             Text(m.designation,
                                 style: const TextStyle(
-                                    color: Colors.cyanAccent,
-                                    fontSize: 15,
+                                    color: Color(0xFF6D7985),
+                                    fontSize: 16,
+                                    fontFamily: 'General Sans',
                                     fontWeight: FontWeight.w500)),
-                            const SizedBox(height: 10),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                IconButton(
-                                  icon: const Icon(Icons.link,
-                                      color: Colors.cyanAccent, size: 28),
-                                  tooltip: 'Open LinkedIn',
-                                  onPressed: () async {
-                                    final url = Uri.parse(m.linkedinUrl);
-                                    if (await canLaunchUrl(url)) {
-                                      await launchUrl(url,
-                                          mode: LaunchMode.externalApplication);
-                                    } else {
-                                      if (context.mounted) {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(
-                                          const SnackBar(
-                                              content: Text(
-                                                  'Cannot open LinkedIn profile')),
-                                        );
-                                      }
-                                    }
-                                  },
-                                ),
-                                const SizedBox(width: 6),
-                                Text(
-                                  'LinkedIn',
-                                  style: TextStyle(
-                                    color: Colors.cyanAccent,
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ],
+                            const SizedBox(height: 24),
+                            ElevatedButton.icon(
+                              onPressed: () async {
+                                final url = Uri.parse(m.linkedinUrl);
+                                if (await canLaunchUrl(url)) {
+                                  await launchUrl(url,
+                                      mode: LaunchMode.externalApplication);
+                                }
+                              },
+                              icon: const Icon(Icons.link_rounded, size: 18),
+                              label: const Text('LinkedIn'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFFE1EBFF),
+                                foregroundColor: const Color(0xFF002B5B),
+                                elevation: 0,
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 20, vertical: 12),
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12)),
+                              ),
                             ),
                           ],
                         ),

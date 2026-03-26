@@ -1,23 +1,24 @@
 import 'package:techniche26/view/auth/ca_auth_screen.dart';
 import 'package:techniche26/utils/app_drawer.dart';
-import 'package:techniche26/view/workshops_screen.dart';
+// import 'package:techniche26/view/workshops_screen.dart';
 import 'package:techniche26/view/techno/papers_display.dart';
+import 'package:techniche26/view/ghm/ghm_registration.dart';
 import 'package:techniche26/view/marathon/marathon_main.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:techniche26/utils/ca_bottom_nav_bar.dart';
-import 'package:techniche26/view/map_screen.dart';
+import 'package:techniche26/view/techniche_screen.dart';
 import 'package:techniche26/view/utilities_screen.dart';
 import 'package:techniche26/view/legacy_screen.dart';
 import 'package:techniche26/controller/riverpod_controller/ca_auth_riverpod_controller.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:techniche26/utils/bottom_nav_bar.dart';
 import 'package:upgrader/upgrader.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:techniche26/services/notification_service.dart';
-import 'package:flutter/services.dart';
-import 'package:techniche26/view/schedule_screen.dart';
-import 'package:techniche26/utils/animate_gradient_background.dart';
+import 'package:techniche26/constant/appTheme.dart';
+// import 'package:techniche26/utils/animate_gradient_background.dart';
+
+import 'package:techniche26/providers/navigation_provider.dart';
 
 class LandingScreen extends ConsumerStatefulWidget {
   static const String routeName = '/landing-screen';
@@ -124,14 +125,16 @@ class ScanlinePainter extends CustomPainter {
 }
 
 class _LandingScreenState extends ConsumerState<LandingScreen> {
-  late int _selectedIndex;
-
-  final GlobalKey<MapScreenState> _mapKey = GlobalKey<MapScreenState>();
-
   @override
   void initState() {
     super.initState();
-    _selectedIndex = widget.initialTab;
+    Future.microtask(() {
+      if (mounted) {
+        ref.read(bottomNavSelectedIndexProvider.notifier).state =
+            widget.initialTab;
+      }
+    });
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (kDebugMode) {
         print("LandingScreen: Triggering notification setup.");
@@ -141,10 +144,8 @@ class _LandingScreenState extends ConsumerState<LandingScreen> {
   }
 
   void _onItemTapped(int index) {
-    if (_selectedIndex == index) return;
-    setState(() {
-      _selectedIndex = index;
-    });
+    if (ref.read(bottomNavSelectedIndexProvider) == index) return;
+    ref.read(bottomNavSelectedIndexProvider.notifier).state = index;
   }
 
   Future<void> _handleAuthNavigation(BuildContext context) async {
@@ -155,7 +156,7 @@ class _LandingScreenState extends ConsumerState<LandingScreen> {
         builder: (_) => const Center(child: CircularProgressIndicator()),
       );
       bool isAuth =
-      await ref.read(caAuthControllerProvider).isCaUserAuthenticated();
+          await ref.read(caAuthControllerProvider).isCaUserAuthenticated();
       if (context.mounted) Navigator.of(context).pop();
       if (isAuth) {
         bool valid = await ref
@@ -183,16 +184,17 @@ class _LandingScreenState extends ConsumerState<LandingScreen> {
   @override
   Widget build(BuildContext context) {
     final List<Widget> screens = <Widget>[
-      MapScreen(key: _mapKey, initialVenue: widget.initialVenue),
+      const EventsScreen(isTab: true),
       LegacyPage(),
       _buildHomeContent(context),
-      const SchedulePage(),
+      const GHMRegistrationScreen(isTab: true),
       const UtilitiesScreen(),
     ];
 
+    final selectedIndex = ref.watch(bottomNavSelectedIndexProvider);
     return UpgradeAlert(
       child: Scaffold(
-        backgroundColor: Colors.transparent,
+        backgroundColor: Colors.white,
         body: AnimatedSwitcher(
           duration: const Duration(milliseconds: 420),
           switchInCurve: Curves.easeOutCubic,
@@ -210,206 +212,193 @@ class _LandingScreenState extends ConsumerState<LandingScreen> {
             return RetroTransition(animation: animation, child: child);
           },
           child: KeyedSubtree(
-            key: ValueKey<int>(_selectedIndex),
-            child: screens.elementAt(_selectedIndex),
+            key: ValueKey<int>(selectedIndex),
+            child: screens.elementAt(selectedIndex),
           ),
         ),
         bottomNavigationBar: SafeArea(
           child: GlowingBottomNavBar(
-            currentIndex: _selectedIndex,
+            currentIndex: selectedIndex,
             onTap: _onItemTapped,
             items: [
-              GlowingBottomNavBarItem(icon: Icons.map_sharp, label: 'Map'),
+              GlowingBottomNavBarItem(
+                  icon: Icons.event_note_sharp, label: 'Events'),
               GlowingBottomNavBarItem(icon: Icons.history_edu, label: 'Legacy'),
               GlowingBottomNavBarItem(icon: Icons.home_filled, label: 'Home'),
-              GlowingBottomNavBarItem(icon: Icons.schedule, label: 'Schedule'),
+              GlowingBottomNavBarItem(
+                  icon: Icons.app_registration_sharp, label: 'GHM'),
               GlowingBottomNavBarItem(
                   icon: Icons.workspace_premium_sharp, label: 'Utilities'),
             ],
           ),
         ),
+        drawer: const AppDrawer(),
       ),
     );
   }
 
   Widget _buildHomeContent(BuildContext context) {
-    final screenWidth = MediaQuery
-        .of(context)
-        .size
-        .width;
-    final double gridSpacing = screenWidth * 0.04;
+    final screenWidth = MediaQuery.of(context).size.width;
 
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: Stack(
-        children: [
-          Container(
-            width: double.infinity,
-            height: double.infinity,
-            color: const Color(0xFFF5F5F5), // 👈 change this to any color
-          ),
-          SafeArea(
-            top: true,
-            bottom: false,
-            child: Column(
-              children: [
-                // ── TOP BLUE CONTAINER (replaces Lottie + AppBar) ──
-                Container(
-                  width: double.infinity, // Maintains full width of screen
-                  decoration: const BoxDecoration(
-                    color: Color(0xFF002B5B),
-                    image: DecorationImage(
-                      image: AssetImage('assets/ghm/frame3.png'),
-                      fit: BoxFit.cover,
-                    ),
+    return Stack(
+      children: [
+        Container(
+          width: double.infinity,
+          height: double.infinity,
+          color: AppTheme.backgroundGray,
+        ),
+        SafeArea(
+          top: true,
+          bottom: false,
+          child: Column(
+            children: [
+              Container(
+                width: double.infinity,
+                decoration: const BoxDecoration(
+                  color: Color(0xFF002B5B),
+                  image: DecorationImage(
+                    image: AssetImage('assets/ghm/frame3.png'),
+                    fit: BoxFit.cover,
                   ),
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                ),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(16),
+                      decoration: ShapeDecoration(
+                        color: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          side: const BorderSide(
+                            width: 1,
+                            color: Color(0xFFAFAFAF),
+                          ),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        shadows: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.05),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Builder(
+                            builder: (BuildContext innerContext) {
+                              return GestureDetector(
+                                onTap: () {
+                                  Scaffold.of(innerContext).openDrawer();
+                                },
+                                child: SizedBox(
+                                  width: 24,
+                                  height: 24,
+                                  child: Image.asset(
+                                    'assets/ghm/menu.png',
+                                    color: Colors.grey[600],
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                          SizedBox(
+                            width: 118.06,
+                            height: 20.01,
+                            child: Image.asset(
+                              'assets/ghm/logo3.png',
+                              fit: BoxFit.contain,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: EdgeInsets.all(screenWidth * 0.04),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // The Integrated Navbar Bar
-                      Container(
-                        width: double.infinity, // Use infinity for responsiveness, or 353 for fixed
-                        padding: const EdgeInsets.all(16), // Matching "correct layout" padding
-                        decoration: ShapeDecoration(
-                          color: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            side: const BorderSide(
-                              width: 1,
-                              color: Color(0xFFAFAFAF),
-                            ),
-                            borderRadius: BorderRadius.circular(12), // Updated to 12
-                          ),
-                          shadows: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.05),
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            // Hamburger Menu Icon (Inside the 24x24 constraint)
-                            Builder(
-                              builder: (BuildContext innerContext) {
-                                return GestureDetector(
-                                  onTap: () {
-                                    Scaffold.of(innerContext).openDrawer();
-                                  },
-                                  child: SizedBox(
-                                    width: 24,
-                                    height: 24,
-                                    child: Image.asset(
-                                      'assets/ghm/menu.png',
-                                      color: Colors.grey[600],
-                                    ),
-                                  ),
-                                );
-                              },
-                            ),
-                            // Techniche Logo (Inside the 118x20 constraint)
-                            SizedBox(
-                              width: 118.06,
-                              height: 20.01,
-                              child: Image.asset(
-                                'assets/ghm/logo3.png',
-                                fit: BoxFit.contain,
-                              ),
-                            ),
-                          ],
-                        ),
+                      Text(
+                        '  Explore',
+                        style: TextStyle(
+                            color: Color(0XFF232930),
+                            fontSize: 20,
+                            fontWeight: FontWeight.w700,
+                            height: 1.2,
+                            fontFamily: AppTheme.fontUnivers),
                       ),
-                      const SizedBox(height: 12),
-                      // "Explore" label would go here
+                      SizedBox(height: 20),
+                      _gridItem(
+                        context: context,
+                        title: 'GHM Registration',
+                        description:
+                            'Register for the biggest student organised marathon of india',
+                        imagePath: 'assets/ghm/ghm2.png',
+                        onTap: () => ref
+                            .read(bottomNavSelectedIndexProvider.notifier)
+                            .state = 3,
+                        logo_image: 'assets/ghm/shoes.png',
+                        logo_color: const Color(0xFF7C3EC3),
+                        logo_name: 'Register',
+                      ),
+                      SizedBox(height: screenWidth * 0.04),
+                      _gridItem(
+                        context: context,
+                        title: 'Practice Run',
+                        description:
+                            'Track your runs and join the leaderboard!',
+                        imagePath: 'assets/ghm/practicerun2.png',
+                        onTap: () => Navigator.pushNamed(
+                            context, MarathonMainScreen.routeName),
+                        logo_image: 'assets/ghm/runline.png',
+                        logo_color: const Color(0xFF175BCC),
+                        logo_name: 'Track',
+                      ),
+                      SizedBox(height: screenWidth * 0.04),
+                      _gridItem(
+                        context: context,
+                        title: 'Upcoming Events',
+                        description:
+                            'Stay updated with the latest fest information.',
+                        imagePath: 'assets/ghm/techniche2.png',
+                        onTap: () => ref
+                            .read(bottomNavSelectedIndexProvider.notifier)
+                            .state = 0,
+                        logo_image: 'assets/ghm/technichelogo.png',
+                        logo_color: const Color(0xFF175BCC),
+                        logo_name: 'Check Out',
+                      ),
+                      SizedBox(height: screenWidth * 0.04),
+                      _gridItem(
+                        context: context,
+                        title: 'Techno PYQs',
+                        description: 'Practice past year papers.',
+                        imagePath: 'assets/ghm/techno2.png',
+                        onTap: () => Navigator.pushNamed(
+                            context, TechnothlonScreen.routeName),
+                        logo_image: 'assets/ghm/technichelogo.png',
+                        logo_color: const Color(0xFF23242B),
+                        logo_name: 'Check Out',
+                      ),
+                      SizedBox(height: 20),
                     ],
                   ),
                 ),
-                // ── SCROLLABLE GRID CONTENT ──
-                // Replace your Flexible > GridView.count block with this:
-
-                Expanded(
-                  child: SingleChildScrollView(
-                    padding: EdgeInsets.all(screenWidth * 0.04),
-
-
-
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-
-                        // In your SingleChildScrollView > Column, add at the TOP:
-
-                          // 👈 control position with left/top/bottom
-                          Text(
-                            '  Explore',
-                            style: TextStyle(
-                              color: Color(0XFF232930),
-                              fontSize: 20,
-                              fontWeight: FontWeight.w700,
-                              height : 1.2,
-                              fontFamily: 'Univers'
-                            ),
-                          ),
-
-// then your _gridItem cards below...
-                        SizedBox(height: 20),
-                        _gridItem(
-                          context: context,
-                          title: 'GHM Registration',
-                          description: 'Register for the biggest student organised marathon of india',
-                          imagePath: 'assets/ghm/ghm2.png',
-                          onTap: () => Navigator.pushNamed(context, '/ghm-registration'),
-                          logo_image: 'assets/ghm/shoes.png',
-                          logo_color: const Color(0xFF7C3EC3),
-                          logo_name: 'Register',
-                        ),
-                        SizedBox(height: screenWidth * 0.04),
-                        _gridItem(
-                          context: context,
-                          title: 'Practice Run',
-                          description: 'Track your runs and join the leaderboard!',
-                          imagePath: 'assets/ghm/practicerun2.png',
-                          onTap: () => Navigator.pushNamed(context, MarathonMainScreen.routeName),
-                          logo_image: 'assets/ghm/runline.png',
-                          logo_color: const Color(0xFF175BCC),
-                          logo_name: 'Track',
-                        ),
-                        SizedBox(height: screenWidth * 0.04),
-                        _gridItem(
-                          context: context,
-                          title: 'Upcoming Events',
-                          description: 'Stay updated with the latest fest information.',
-                          imagePath: 'assets/ghm/techniche2.png',
-                          onTap: () => Navigator.pushNamed(context, '/events-screen'),
-                          logo_image: 'assets/ghm/technichelogo.png',
-                          logo_color: const Color(0xFF175BCC),
-                          logo_name: 'Check Out',
-                        ),
-                        SizedBox(height: screenWidth * 0.04),
-                        _gridItem(
-                          context: context,
-                          title: 'Techno PYQs',
-                          description: 'Practice past year papers.',
-                          imagePath: 'assets/ghm/techno2.png',
-                          onTap: () => Navigator.pushNamed(context, TechnothlonScreen.routeName),
-                          logo_image: 'assets/ghm/technichelogo.png',
-                          logo_color: const Color(0xFF23242B),
-                          logo_name: 'Check Out',
-                        ),
-                        SizedBox(height: 20),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
-      ),
-      drawer: const AppDrawer(),
+        ),
+      ],
     );
   }
 
@@ -429,7 +418,7 @@ class _LandingScreenState extends ConsumerState<LandingScreen> {
         width: double.infinity,
         padding: const EdgeInsets.all(10),
         decoration: ShapeDecoration(
-          color: const Color(0xFFE8E8E8),
+          color: AppTheme.backgroundGray,
           shape: RoundedRectangleBorder(
             side: const BorderSide(
               width: 1,
@@ -485,7 +474,7 @@ class _LandingScreenState extends ConsumerState<LandingScreen> {
                         style: const TextStyle(
                           color: Colors.black,
                           fontSize: 24,
-                          fontFamily: 'Univers',
+                          fontFamily: AppTheme.fontUnivers,
                           fontWeight: FontWeight.w700,
                           height: 1.07,
                         ),
@@ -539,7 +528,7 @@ class _LandingScreenState extends ConsumerState<LandingScreen> {
                         style: const TextStyle(
                           color: Color(0xFFEDEFF0),
                           fontSize: 16,
-                          fontFamily: 'General Sans',
+                          fontFamily: AppTheme.fontGeneralSans,
                           fontWeight: FontWeight.w600,
                           height: 1.20,
                         ),
@@ -552,103 +541,6 @@ class _LandingScreenState extends ConsumerState<LandingScreen> {
           ],
         ),
       ),
-    );
-  }
-}
-
-class _ImageCarousel extends StatefulWidget {
-  const _ImageCarousel();
-  @override
-  State<_ImageCarousel> createState() => _ImageCarouselState();
-}
-
-class _ImageCarouselState extends State<_ImageCarousel> {
-  final List<String> imageUrls = [
-    'assets/ghm.png',
-  ];
-  final List<String> links = [
-    'https://techniche.org.in/ghm/register',
-  ];
-  int _current = 0;
-  late PageController _controller;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = PageController(initialPage: 0);
-    _cycleImages();
-  }
-
-  void _cycleImages() async {
-    await Future.delayed(const Duration(seconds: 4));
-    if (!mounted) return;
-    int next = (_current + 1) % imageUrls.length;
-    _controller.animateToPage(
-      next,
-      duration: const Duration(milliseconds: 400),
-      curve: Curves.easeInOut,
-    );
-    if (mounted) _cycleImages();
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Stack(
-      alignment: Alignment.bottomCenter,
-      children: [
-        PageView.builder(
-          controller: _controller,
-          itemCount: imageUrls.length,
-          onPageChanged: (i) => setState(() => _current = i),
-          itemBuilder: (context, i) => GestureDetector(
-            onTap: () async {
-              try {
-                final uri = Uri.parse(links[i]);
-                if (await canLaunchUrl(uri)) {
-                  await launchUrl(uri);
-                } else {
-                  throw 'Could not launch $uri';
-                }
-              } catch (e) {
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Failed to launch URL: $e')),
-                  );
-                }
-              }
-            },
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(16),
-              child: AspectRatio(
-                aspectRatio: 1,
-                child: Image.asset(
-                  imageUrls[i],
-                  fit: BoxFit.fill,
-                  width: double.infinity,
-                  height: double.infinity,
-                ),
-              ),
-            ),
-          ),
-        ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: List.generate(
-            imageUrls.length,
-                (i) => Container(
-              margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
-              width: 8,
-              height: 8,
-            ),
-          ),
-        ),
-      ],
     );
   }
 }

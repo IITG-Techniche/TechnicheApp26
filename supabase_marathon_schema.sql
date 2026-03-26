@@ -85,7 +85,8 @@ DECLARE
   v_streak INT := 0;
   v_weekly_km NUMERIC := 0;
   v_weekly_pace NUMERIC := 0;
-  v_prev_weekly_km NUMERIC := 0;
+  v_today_km NUMERIC := 0;
+  v_yesterday_km NUMERIC := 0;
   v_improvement NUMERIC := 0;
   v_daily_stats jsonb;
 BEGIN
@@ -115,26 +116,34 @@ BEGIN
   v_streak := COALESCE(v_streak, 0);
  
    -- Get this week's stats (Total across last 7 days)
-   SELECT COALESCE(SUM(distance_km), 0), COALESCE(AVG(avg_pace), 0)
+   SELECT COALESCE(SUM(distance_km), 0),
+          CASE WHEN SUM(duration_minutes) > 0 THEN (SUM(distance_km) * 60.0) / SUM(duration_minutes) ELSE 0 END
    INTO v_weekly_km, v_weekly_pace
    FROM practice_logs
    WHERE username = p_username AND created_at >= NOW() - INTERVAL '7 days';
    
-   -- Get PREVIOUS week's distance to calculate improvement
+   -- Get today's and yesterday's distance to calculate daily improvement
    SELECT COALESCE(SUM(distance_km), 0)
-   INTO v_prev_weekly_km
+   INTO v_today_km
    FROM practice_logs
-   WHERE username = p_username AND created_at >= NOW() - INTERVAL '14 days' AND created_at < NOW() - INTERVAL '7 days';
+   WHERE username = p_username AND DATE_TRUNC('day', created_at AT TIME ZONE 'Asia/Kolkata') = (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Kolkata')::date;
+
+   SELECT COALESCE(SUM(distance_km), 0)
+   INTO v_yesterday_km
+   FROM practice_logs
+   WHERE username = p_username AND DATE_TRUNC('day', created_at AT TIME ZONE 'Asia/Kolkata') = (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Kolkata')::date - INTERVAL '1 day';
  
-   -- Calculate improvement %
-   IF v_prev_weekly_km > 0 THEN
-     v_improvement := ((v_weekly_km - v_prev_weekly_km) / v_prev_weekly_km) * 100;
-   ELSIF v_weekly_km > 0 THEN
-     v_improvement := 100; -- Ran this week but not last week
+   -- Calculate improvement % (Capped at 100% for UI sanity)
+   IF v_yesterday_km > 0 THEN
+     v_improvement := ((v_today_km - v_yesterday_km) / v_yesterday_km) * 100;
+     v_improvement := LEAST(GREATEST(v_improvement, -100), 100);
+   ELSIF v_today_km > 0 THEN
+     v_improvement := 100; -- Ran today but not yesterday
+   ELSE
+     v_improvement := 0; -- No run today, no run yesterday
    END IF;
    
-   -- Get daily stats for last 7 days
-   -- Note: We use 'Asia/Kolkata' for local date context
+   -- Get daily stats for last 7 days (Speed km/h)
    SELECT jsonb_agg(daily_data)
    INTO v_daily_stats
    FROM (
@@ -144,7 +153,7 @@ BEGIN
      SELECT 
        TO_CHAR(days.d, 'Dy') as day_name,
        COALESCE(SUM(l.distance_km), 0) as distance,
-       COALESCE(AVG(l.avg_pace), 0) as pace,
+       CASE WHEN SUM(l.duration_minutes) > 0 THEN (SUM(l.distance_km) * 60.0) / SUM(l.duration_minutes) ELSE 0 END as pace, -- Still called 'pace' for JSON compatibility, but is Speed
        (days.d = (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Kolkata')::date) as is_today
      FROM days
      LEFT JOIN practice_logs l ON DATE_TRUNC('day', l.created_at AT TIME ZONE 'Asia/Kolkata')::date = days.d AND l.username = p_username
@@ -156,7 +165,7 @@ BEGIN
     'streak', v_streak,
     'weekly_km', ROUND(v_weekly_km, 2),
     'weekly_pace', ROUND(v_weekly_pace, 2),
-    'improvement', ROUND(v_improvement, 2),
+    'improvement', ROUND(v_improvement, 0), -- Rounded to integer as requested
     'daily_stats', v_daily_stats
   );
 END;

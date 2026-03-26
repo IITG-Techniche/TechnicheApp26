@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:techniche26/providers/navigation_provider.dart';
 import 'package:techniche26/view/marathon/marathon_main.dart';
 import 'package:techniche26/view/ghm/ghm_registration.dart';
 import 'package:techniche26/view/techniche_screen.dart';
@@ -6,76 +8,92 @@ import 'package:techniche26/view/techno/papers_display.dart';
 import 'package:techniche26/view/utilities_screen.dart';
 import 'package:techniche26/view/workshops_screen.dart';
 
-class AppDrawer extends StatelessWidget {
+class AppDrawer extends ConsumerWidget {
   const AppDrawer({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Drawer(
-      backgroundColor: const Color(0xFF181A20),
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.only(
+          topRight: Radius.circular(0),
+          bottomRight: Radius.circular(0),
+        ),
+      ),
       child: Column(
         children: [
           _buildDrawerHeader(),
           Expanded(
             child: ListView(
-              padding: EdgeInsets.zero,
+              padding: const EdgeInsets.symmetric(vertical: 8),
               children: [
+                _buildSectionTitle('Fest Events'),
                 _buildDrawerItem(
                   context: context,
-                  icon: Icons.event,
+                  icon: Icons.event_note_rounded,
                   title: 'Events',
                   routeName: EventsScreen.routeName,
+                  isTab: true,
+                  tabIndex: 0,
+                  ref: ref,
                 ),
                 _buildDrawerItem(
                   context: context,
-                  icon: Icons.work,
+                  icon: Icons.build_circle_rounded,
                   title: 'Workshops',
                   routeName: WorkshopsScreen.routeName,
                 ),
                 _buildDrawerItem(
                   context: context,
-                  icon: Icons.article,
+                  icon: Icons.quiz_rounded,
                   title: 'Technothlon PYQs',
                   routeName: TechnothlonScreen.routeName,
                 ),
                 _buildDrawerItem(
                   context: context,
-                  icon: Icons.app_registration,
+                  icon: Icons.how_to_reg_rounded,
                   title: 'Techno Registration',
                   routeName: '/techno-registration',
                 ),
-                const Divider(color: Colors.white24, height: 2),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                  child: Divider(color: Color(0xFFE8E8E8), height: 1),
+                ),
                 _buildDrawerItem(
                   context: context,
-                  icon: Icons.app_registration,
+                  icon: Icons.app_registration_rounded,
                   title: 'GHM Registration',
                   routeName: GHMRegistrationScreen.routeName,
+                  isTab: true,
+                  tabIndex: 3,
+                  ref: ref,
                 ),
-             
                 _buildDrawerItem(
                   context: context,
-                  icon: Icons.directions_run,
+                  icon: Icons.directions_run_rounded,
                   title: 'Marathon Practice',
                   routeName: MarathonMainScreen.routeName,
                 ),
-                const Divider(color: Colors.white24, height: 2),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                  child: Divider(color: Color(0xFFE8E8E8), height: 1),
+                ),
+                _buildSectionTitle('More'),
                 _buildDrawerItem(
                   context: context,
-                  icon: Icons.shopping_bag,
+                  icon: Icons.shopping_bag_rounded,
                   title: 'Merchandise',
                   routeName: '/merch',
                 ),
                 _buildDrawerItem(
                   context: context,
-                  icon: Icons.schedule,
-                  title: 'Schedule',
-                  routeName: '/schedule',
-                ),
-                _buildDrawerItem(
-                  context: context,
-                  icon: Icons.build,
+                  icon: Icons.settings_suggest_rounded,
                   title: 'Utilities',
                   routeName: UtilitiesScreen.routeName,
+                  isTab: true,
+                  tabIndex: 4,
+                  ref: ref,
                 ),
               ],
             ),
@@ -88,23 +106,54 @@ class AppDrawer extends StatelessWidget {
 
   Widget _buildDrawerHeader() {
     return Container(
-      padding: const EdgeInsets.fromLTRB(20, 50, 20, 20),
+      width: double.infinity,
       decoration: const BoxDecoration(
-        color: Color(0xFF23242B),
-        border: Border(bottom: BorderSide(color: Colors.white10)),
+        color: Color(0xFF002B5B),
+        image: DecorationImage(
+          image: AssetImage('assets/ghm/frame3.png'),
+          fit: BoxFit.cover,
+        ),
       ),
-      child: Row(
+      padding: const EdgeInsets.fromLTRB(20, 60, 20, 30),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'TECHNICHE',
+          SizedBox(
+            width: 200,
+            child: Image.asset(
+              'assets/white_logo.png',
+              fit: BoxFit.contain,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'Enriching Minds, Inspiring Innovation',
             style: TextStyle(
-              color: Colors.white,
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 2,
+              color: Colors.white.withOpacity(0.8),
+              fontSize: 12,
+              fontFamily: 'General Sans',
+              fontWeight: FontWeight.w400,
+              height: 1.2,
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildSectionTitle(String title) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(24, 16, 24, 8),
+      child: Text(
+        title.toUpperCase(),
+        style: TextStyle(
+          color: Colors.black.withOpacity(0.4),
+          fontSize: 11,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 1.2,
+          fontFamily: 'General Sans',
+          height: 1.2,
+        ),
       ),
     );
   }
@@ -114,33 +163,74 @@ class AppDrawer extends StatelessWidget {
     required IconData icon,
     required String title,
     required String routeName,
+    bool isTab = false,
+    int? tabIndex,
+    WidgetRef? ref,
   }) {
-    return ListTile(
-      leading: Icon(icon, color: Colors.blueAccent),
-      title: Text(
-        title,
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 16,
-          fontWeight: FontWeight.w500,
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+      child: ListTile(
+        leading: Icon(icon, color: const Color(0xFF002B5B), size: 22),
+        title: Text(
+          title,
+          style: const TextStyle(
+            color: Color(0XFF232930),
+            fontSize: 15,
+            fontWeight: FontWeight.w600,
+            fontFamily: 'Univers',
+            height: 1.2,
+          ),
         ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        dense: true,
+        hoverColor: const Color(0xFFF5F5F5),
+        onTap: () {
+          Navigator.pop(context); // Close the drawer
+          if (isTab && tabIndex != null && ref != null) {
+            ref.read(bottomNavSelectedIndexProvider.notifier).state = tabIndex;
+            // Pop until we are back on LandingScreen to see the tab switch
+            Navigator.popUntil(context, (route) {
+              return route.settings.name == '/landing-screen' || route.isFirst;
+            });
+          } else {
+            Navigator.pushNamed(context, routeName);
+          }
+        },
       ),
-      onTap: () {
-        Navigator.pop(context); // Close the drawer
-        Navigator.pushNamed(context, routeName);
-      },
     );
   }
 
   Widget _buildFooter() {
-    return Padding(
-      padding: const EdgeInsets.all(20.0),
-      child: Text(
-        '© Techniche 2026',
-        style: TextStyle(
-          color: Colors.white.withOpacity(0.4),
-          fontSize: 12,
-        ),
+    return Container(
+      padding: const EdgeInsets.all(24.0),
+      width: double.infinity,
+      decoration: const BoxDecoration(
+        border: Border(top: BorderSide(color: Color(0xFFE8E8E8))),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'IIT Guwahati',
+            style: TextStyle(
+              color: Colors.black.withOpacity(0.6),
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+              fontFamily: 'Univers',
+              height: 1.2,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            '© Techniche 2026',
+            style: TextStyle(
+              color: Colors.black.withOpacity(0.4),
+              fontSize: 12,
+              fontFamily: 'General Sans',
+          height: 1.2,
+            ),
+          ),
+        ],
       ),
     );
   }

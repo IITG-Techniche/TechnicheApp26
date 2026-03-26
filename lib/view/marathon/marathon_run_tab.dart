@@ -1,248 +1,230 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import '../../providers/marathon_provider.dart';
+import '../../constant/appTheme.dart';
+import 'widgets/live_run_map.dart';
+import 'widgets/run_summary_dialog.dart';
 
-// ── Colour tokens ─────────────────────────────────────────────────────────────
-const _digitOuter  = Color(0xFF6DAAFB);
-const _digitInner  = Color(0xFF266EF1);
-const _metricOuter = Color(0xFFEEF1FA);
-const _metricCard  = Color(0xFFDEE9FE);
-const _chipBg      = Color(0xFF002661);
-const _chipText    = Color(0xFFDFE8F4);
-const _labelColor  = Color(0xFF002661);
-const _btnColor    = Color(0xFF1E56C5);
+const _statCardBg   = Color(0xFF002661);
+const _statCardText = Color(0xFFDFE8F4);
+const _btnColor     = AppTheme.primaryBlue;
 
-// Height of the SVG header section
-const double _headerH = 200.0;
-
-// ─────────────────────────────────────────────────────────────────────────────
-class MarathonRunTab extends ConsumerWidget {
+class MarathonRunTab extends ConsumerStatefulWidget {
   const MarathonRunTab({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final runState  = ref.watch(liveRunProvider);
+  ConsumerState<MarathonRunTab> createState() => _MarathonRunTabState();
+}
+
+class _MarathonRunTabState extends ConsumerState<MarathonRunTab> {
+  @override
+  void initState() {
+    super.initState();
+    // Request permissions and start tracking immediately when the Run Tab is opened
+    Future.microtask(() {
+      ref.read(liveRunProvider.notifier).enableTrackingIfPermitted();
+    });
+  }
+
+  /// Trigger haptic feedback reliably using the platform channel
+  Future<void> _hapticLong() async {
+    await SystemChannels.platform.invokeMethod('HapticFeedback.vibrate', 'HapticFeedbackType.heavyImpact');
+  }
+
+  Future<void> _hapticShort() async {
+    await SystemChannels.platform.invokeMethod('HapticFeedback.vibrate', 'HapticFeedbackType.lightImpact');
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final runState = ref.watch(liveRunProvider);
     final isRunning = runState.isRunning;
 
-    final int m = runState.elapsedSeconds ~/ 60;
-    final int s = runState.elapsedSeconds % 60;
-    final String timeFormatted =
-        '${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
+    // Listen for errors and show SnackBar
+    ref.listen<String?>(
+      liveRunProvider.select((s) => s.errorMessage),
+      (previous, next) {
+        if (next != null && next.isNotEmpty) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(next), backgroundColor: Colors.redAccent),
+          );
+        }
+      },
+    );
 
-    final String distStr =
-    runState.distanceKm.toStringAsFixed(2).replaceAll('.', '');
-    final List<String> digits = distStr.padLeft(4, '0').split('');
+    return Column(
+      children: [
+        // ── Live Map ────────────────────────────────────────────────────
+        Expanded(
+          child: ClipRRect(
+            borderRadius: const BorderRadius.only(
+              bottomLeft: Radius.circular(20),
+              bottomRight: Radius.circular(20),
+            ),
+            child: LiveRunMap(
+              routePoints: runState.routePoints,
+              currentLocation: runState.currentLocation,
+              hasGpsFix: runState.hasGpsFix,
+              isRunning: isRunning,
+              currentHeading: runState.currentHeading,
+            ),
+          ),
+        ),
 
-    // ── The trick: wrap everything in a Stack.
-    //    Layer 0 (bottom): ScrollView with enough top padding so content
-    //                      starts BELOW the header.
-    //    Layer 1 (top):    The SVG header + back button, Positioned at top.
-    //                      It floats above the scroll and NEVER moves.
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: SingleChildScrollView(
-        physics: const ClampingScrollPhysics(),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-
-            // ── Header — scrolls with the page ──────────────────────────
-            SizedBox(
-              height: _headerH,
-              child: Stack(
-                fit: StackFit.expand,
+        // ── Stats + Controls panel ──────────────────────────────────────
+        Container(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 10,
+                offset: const Offset(0, -5),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // ── Stats row ──────────────────────────────────────────────
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  SvgPicture.asset(
-                    'assets/ghm/frame03.svg',
-                    fit: BoxFit.cover,
+                  _StatPill(
+                    icon: Icons.speed,
+                    label: 'SPEED',
+                    value: '${runState.avgSpeed.toStringAsFixed(1)} km/h',
                   ),
-                  SafeArea(
-                    child: Align(
-                      alignment: Alignment.topLeft,
-                      child: Padding(
-                        padding: const EdgeInsets.only(left: 16, top: 10),
-                        child: GestureDetector(
-                          onTap: () => Navigator.of(context).pop(),
-                          child: Container(
-                            width: 44,
-                            height: 44,
-                            alignment: Alignment.center,
-                            decoration: const BoxDecoration(
-                              color: Colors.white,
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(
-                              Icons.chevron_left,
-                              color: Color(0xFF1C2340),
-                              size: 26,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
+                  const SizedBox(width: 8),
+                  _StatPill(
+                    icon: Icons.timer_outlined,
+                    label: 'TIME',
+                    value: _formatDuration(runState.elapsedSeconds),
+                  ),
+                  const SizedBox(width: 8),
+                  _StatPill(
+                    icon: Icons.local_fire_department_outlined,
+                    label: 'CALORIES',
+                    value: runState.calories.toString(),
                   ),
                 ],
               ),
-            ),
+              const SizedBox(height: 20),
 
-            // ── Rest of content ──────────────────────────────────────────
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 24, 16, 24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
+              // ── Main Distance ──────────────────────────────────────────
+              Text(
+                '${runState.distanceKm.toStringAsFixed(2)} km',
+                style: const TextStyle(
+                  fontSize: 32,
+                  fontWeight: FontWeight.w800,
+                  fontFamily: AppTheme.fontGeneralSans,
+                  color: Color(0xFF002661),
+                ),
+              ),
+              const SizedBox(height: 16),
 
-                  // ── "DISTANCE : KM" ───────────────────────────────────
-                  const Text(
-                    'DISTANCE : KM',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontSize: 22,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 1.0,
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-
-                  // ── Digit block ────────────────────────────────────────
-                  LayoutBuilder(
-                    builder: (context, constraints) {
-                      // 8px padding each side + 6px gap within each pair + 28px colon zone
-                      final double available = constraints.maxWidth - 16 - 12 - 28;
-                      final double digitW = (available / 4).floorToDouble();
-                      final double digitH = (digitW * 1.28).floorToDouble();
-
-                      return Container(
-                        width: double.infinity,
-                        height: digitH + 16,
-                        padding: const EdgeInsets.all(8),
-                        decoration: ShapeDecoration(
-                          color: _digitOuter,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            _DigitPair(
-                              left: digits[0], right: digits[1],
-                              digitW: digitW,  digitH: digitH,
-                            ),
-                            _ColonSeparator(height: digitH),
-                            _DigitPair(
-                              left: digits[2], right: digits[3],
-                              digitW: digitW,  digitH: digitH,
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 24),
-
-                  // ── Metric grid ────────────────────────────────────────
-                  Container(
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                      color: _metricOuter,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        IntrinsicHeight(
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              Expanded(
-                                child: _MetricCard(
-                                  svgPath: 'assets/ghm/icon1.svg',
-                                  label: 'Current Pace',
-                                  value: '${runState.currentPace.toStringAsFixed(2)} /KM',
-                                ),
-                              ),
-                              const SizedBox(width: 14),
-                              Expanded(
-                                child: _MetricCard(
-                                  svgPath: 'assets/ghm/icon2.svg',
-                                  label: 'Total Steps',
-                                  value: '${runState.stepCount}',
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 14),
-                        IntrinsicHeight(
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              Expanded(
-                                child: _MetricCard(
-                                  svgPath: 'assets/ghm/icon3.svg',
-                                  label: 'Calories',
-                                  value: '${(runState.stepCount * 0.04).toInt()}',
-                                ),
-                              ),
-                              const SizedBox(width: 14),
-                              Expanded(
-                                child: _MetricCard(
-                                  svgPath: 'assets/ghm/icon4.svg',
-                                  label: 'Time',
-                                  value: timeFormatted,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 28),
-
-                  // ── Action buttons ─────────────────────────────────────
-                  if (isRunning) ...[
-                    Row(
+              // ── Controls ───────────────────────────────────────────────
+              Padding(
+                padding: const EdgeInsets.only(bottom: 20),
+                child: isRunning
+                  ? Row(
                       children: [
                         Expanded(
                           child: _ActionButton(
-                            onPressed: () => runState.isPaused
-                                ? ref.read(liveRunProvider.notifier).resumeRun()
-                                : ref.read(liveRunProvider.notifier).pauseRun(),
-                            label: runState.isPaused ? 'RESUME' : 'STOP RUN',
+                            onPressed: () {
+                              _hapticShort();
+                              if (runState.isPaused) {
+                                ref.read(liveRunProvider.notifier).resumeRun();
+                              } else {
+                                ref.read(liveRunProvider.notifier).pauseRun();
+                              }
+                            },
+                            label: runState.isPaused ? 'RESUME' : 'PAUSE',
                             color: _btnColor,
                           ),
                         ),
                         const SizedBox(width: 12),
                         Expanded(
                           child: _ActionButton(
-                            onPressed: () =>
-                                ref.read(liveRunProvider.notifier).stopRun(),
-                            label: 'STOP',
+                            onPressed: () async {
+                              _hapticLong();
+                              final finalState = runState;
+                              await ref.read(liveRunProvider.notifier).stopRun();
+                              if (context.mounted) {
+                                Navigator.of(context).push(
+                                  PageRouteBuilder(
+                                    pageBuilder: (context, animation, secondaryAnimation) =>
+                                        RunSummaryDialog(
+                                      routePoints: finalState.routePoints,
+                                      distanceKm: finalState.distanceKm,
+                                      totalSeconds: finalState.elapsedSeconds,
+                                      avgSpeed: finalState.avgSpeed,
+                                      calories: finalState.calories,
+                                    ),
+                                    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                                      final tween = Tween(begin: const Offset(0, 1), end: Offset.zero)
+                                          .chain(CurveTween(curve: Curves.easeOutCubic));
+                                      return SlideTransition(
+                                        position: animation.drive(tween),
+                                        child: child,
+                                      );
+                                    },
+                                    transitionDuration: const Duration(milliseconds: 400),
+                                  ),
+                                );
+                              }
+                            },
+                            label: 'FINISH',
                             color: Colors.redAccent,
                           ),
                         ),
                       ],
-                    ),
-                  ] else ...[
-                    _ActionButton(
-                      onPressed: () =>
-                          ref.read(liveRunProvider.notifier).startRun(),
+                    )
+                  : _ActionButton(
+                      onPressed: () {
+                        _hapticLong();
+                        ref.read(liveRunProvider.notifier).startRun();
+                      },
                       label: 'START RUN',
                       color: _btnColor,
-
-
                     ),
-                  ],
-
-                ],
               ),
-            ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
 
+  String _formatDuration(int seconds) {
+    final m = (seconds ~/ 60).toString().padLeft(2, '0');
+    final s = (seconds % 60).toString().padLeft(2, '0');
+    return '$m:$s';
+  }
+}
+
+class _StatPill extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String value;
+  const _StatPill({required this.icon, required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 6),
+        decoration: BoxDecoration(color: _statCardBg, borderRadius: BorderRadius.circular(10)),
+        child: Column(
+          children: [
+            Icon(icon, color: _statCardText, size: 16),
+            const SizedBox(height: 4),
+            Text(value, style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w700, height: 1.0)),
+            const SizedBox(height: 2),
+            Text(label, style: TextStyle(color: _statCardText.withOpacity(0.7), fontSize: 9, fontWeight: FontWeight.w600)),
           ],
         ),
       ),
@@ -250,195 +232,25 @@ class MarathonRunTab extends ConsumerWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// DIGIT PAIR
-// ─────────────────────────────────────────────────────────────────────────────
-class _DigitPair extends StatelessWidget {
-  final String left, right;
-  final double digitW, digitH;
-  const _DigitPair({
-    required this.left, required this.right,
-    required this.digitW, required this.digitH,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        _tile(left),
-        const SizedBox(width: 6),
-        _tile(right),
-      ],
-    );
-  }
-
-  Widget _tile(String digit) {
-    final double fontSize = (digitW * 0.70).clamp(24.0, 72.0);
-    return Container(
-      width: digitW,
-      height: digitH,
-      decoration: ShapeDecoration(
-        color: _digitInner,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-        ),
-      ),
-      alignment: Alignment.center,
-      child: Text(
-        digit,
-        style: TextStyle(
-          color: Colors.white,
-          fontSize: fontSize,
-          fontFamily: 'TT Interphases Pro Mono Trl',
-          fontWeight: FontWeight.w800,
-          height: 1.0,
-        ),
-      ),
-    );
-  }
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// COLON SEPARATOR
-// ─────────────────────────────────────────────────────────────────────────────
-class _ColonSeparator extends StatelessWidget {
-  final double height;
-  const _ColonSeparator({required this.height});
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: 28,
-      height: height,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [_dot(), const SizedBox(height: 10), _dot()],
-      ),
-    );
-  }
-
-  Widget _dot() => Container(
-    width: 12,
-    height: 12,
-    decoration: const BoxDecoration(
-      color: Colors.white,
-      shape: BoxShape.circle,
-    ),
-    alignment: Alignment.center,
-    child: Container(
-      width: 5,
-      height: 5,
-      decoration: const BoxDecoration(
-        color: _digitInner,
-        shape: BoxShape.circle,
-      ),
-    ),
-  );
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// METRIC CARD
-// ─────────────────────────────────────────────────────────────────────────────
-class _MetricCard extends StatelessWidget {
-  final String svgPath, label, value;
-  const _MetricCard({
-    required this.svgPath,
-    required this.label,
-    required this.value,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: _metricCard,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SvgPicture.asset(svgPath, width: 22, height: 22),
-              const SizedBox(height: 8),
-              Text(
-                label,
-                style: const TextStyle(
-                  color: _labelColor,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  height: 1.25,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 10),
-            decoration: BoxDecoration(
-              color: _chipBg,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Text(
-              value,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: _chipText,
-                fontSize: 17,
-                fontFamily: 'TT Interphases Pro Mono Trl',
-                fontWeight: FontWeight.w600,
-                height: 1.0,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// ACTION BUTTON
-// ─────────────────────────────────────────────────────────────────────────────
 class _ActionButton extends StatelessWidget {
   final VoidCallback onPressed;
   final String label;
   final Color color;
-  const _ActionButton({
-    required this.onPressed,
-    required this.label,
-    required this.color,
-  });
+  const _ActionButton({required this.onPressed, required this.label, required this.color});
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
       width: double.infinity,
-      height: 58,
+      height: 50,
       child: ElevatedButton(
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
           backgroundColor: color,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           elevation: 0,
         ),
-        child: Text(
-          label,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 17,
-            fontWeight: FontWeight.w800,
-            letterSpacing: 1.5,
-          ),
-        ),
+        child: Text(label, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
       ),
     );
   }
