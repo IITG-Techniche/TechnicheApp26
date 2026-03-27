@@ -35,7 +35,7 @@ class _LiveRunMapState extends State<LiveRunMap> {
   bool _compassLocked = true;
 
   /// Show the north-reset FAB only when user has manually rotated
-  bool _showNorthButton = false;
+  bool _showNorthButton = true;
 
   bool _hasCenteredOnFirstFix = false;
 
@@ -77,8 +77,7 @@ class _LiveRunMapState extends State<LiveRunMap> {
 
     // Proactive tile seeding if moved >500m
     if (_lastSeededLocation == null ||
-        const Distance()
-                .as(LengthUnit.Meter, _lastSeededLocation!, lastPoint) >
+        const Distance().as(LengthUnit.Meter, _lastSeededLocation!, lastPoint) >
             500) {
       _seedLoc(lastPoint);
     }
@@ -169,8 +168,7 @@ class _LiveRunMapState extends State<LiveRunMap> {
           ),
           children: [
             TileLayer(
-              urlTemplate:
-                  'https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',
+              urlTemplate: 'https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',
               userAgentPackageName: 'com.techniche.techniche26',
               maxZoom: 20,
               keepBuffer: 8,
@@ -190,8 +188,7 @@ class _LiveRunMapState extends State<LiveRunMap> {
                   ),
                 ],
               ),
-            if (widget.currentLocation != null ||
-                widget.routePoints.isNotEmpty)
+            if (widget.currentLocation != null || widget.routePoints.isNotEmpty)
               MarkerLayer(
                 markers: [
                   Marker(
@@ -244,9 +241,7 @@ class _LiveRunMapState extends State<LiveRunMap> {
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                color: _compassLocked
-                    ? const Color(0xFF002661)
-                    : Colors.white,
+                color: _compassLocked ? const Color(0xFF002661) : Colors.white,
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
@@ -257,9 +252,7 @@ class _LiveRunMapState extends State<LiveRunMap> {
               ),
               child: Icon(
                 Icons.my_location,
-                color: _compassLocked
-                    ? Colors.white
-                    : const Color(0xFF002661),
+                color: _compassLocked ? Colors.white : const Color(0xFF002661),
                 size: 22,
               ),
             ),

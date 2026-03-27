@@ -1,7 +1,9 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:techniche26/utils/app_drawer.dart';
 import '../constant/appTheme.dart';
 
@@ -15,6 +17,176 @@ class UtilitiesScreen extends StatefulWidget {
 
 class _UtilitiesScreenState extends State<UtilitiesScreen> {
   bool showFAQ = false;
+  bool isLoading = true;
+
+  List<_Contact> hospitalContacts = const [
+    _Contact(name: 'Emergency', number: '102'),
+    _Contact(name: 'Hospital Reception', number: '+91-361-2582099'),
+  ];
+  List<_Contact> transportContacts = const [
+    _Contact(name: 'E-Rickshaw 1', number: '+91-600-1440472'),
+    _Contact(name: 'E-Rickshaw 2', number: '+91-789-6513761'),
+    _Contact(name: 'E-Rickshaw 3', number: '+91-848-6664856'),
+  ];
+  List<_Contact> hospitalityContacts = const [
+    _Contact(name: 'Hospitality Head (Uday)', number: '+91-90754-38210'),
+    _Contact(name: 'Hospitality Head (Raghav)', number: '+91-98173-37227'),
+    _Contact(name: 'Hospitality Head (Vibha)', number: '+91-92161-95181'),
+  ];
+  List<_TeamMember> devTeamMembers = const [
+    _TeamMember(
+        name: 'Dhruv', role: 'DevOps Head', imageUrl: 'assets/dhruv-app.jpg'),
+    _TeamMember(
+        name: 'Arya', role: 'DevOps Head', imageUrl: 'assets/arya-app.jpg'),
+    _TeamMember(
+        name: 'Ayush',
+        role: 'Core Developer',
+        imageUrl: 'assets/ayush-app.jpg'),
+    _TeamMember(
+        name: 'Divyansh',
+        role: 'Developer (Organizer)',
+        imageUrl: 'assets/divyansh-app.jpg'),
+  ];
+  List<_TeamMemberSimple> heads = const [
+    _TeamMemberSimple(
+        name: 'Rachit Shah',
+        designation: 'Convenor',
+        imageUrl: 'assets/rachit-app.jpg',
+        linkedinUrl: 'https://www.linkedin.com/in/rachit-shah-b5a597255/'),
+    _TeamMemberSimple(
+        name: 'Divyanshu Tiwari',
+        designation: 'Finance Head',
+        imageUrl: 'assets/tiwari-app.jpeg',
+        linkedinUrl: 'https://www.linkedin.com/in/divyanshu-tiwari-925556256/'),
+    _TeamMemberSimple(
+        name: 'Aditya Damani',
+        designation: 'Marketing Head',
+        imageUrl: 'assets/damani-app.jpeg',
+        linkedinUrl: 'https://www.linkedin.com/in/aditya-damani-418302262/'),
+    _TeamMemberSimple(
+        name: 'Yashvardhan Jaiswal',
+        designation: 'Marketing Head',
+        imageUrl: 'assets/vardhan-app.jpeg',
+        linkedinUrl: 'https://www.linkedin.com/in/yashvardhanjaiswal/'),
+    _TeamMemberSimple(
+        name: 'Aarav Chanani',
+        designation: 'Events Head',
+        imageUrl: 'assets/aarav-app.jpeg',
+        linkedinUrl: 'https://www.linkedin.com/in/aarav-chanani218/'),
+    _TeamMemberSimple(
+        name: 'Puja Kumari',
+        designation: 'Events Head',
+        imageUrl: 'assets/puja-app.jpg',
+        linkedinUrl: 'https://www.linkedin.com/in/puja-kumari-544667260/'),
+    _TeamMemberSimple(
+        name: 'Veenas Jaiswal',
+        designation: 'Events Head',
+        imageUrl: 'assets/veenas-app.jpg',
+        linkedinUrl: 'https://www.linkedin.com/in/veenas-jaiswal-93ab70259/'),
+    _TeamMemberSimple(
+        name: 'Rushikesh Pinge',
+        designation: 'Public Relations Head',
+        imageUrl: 'assets/rushi-app.jpg',
+        linkedinUrl: 'https://www.linkedin.com/in/rushikesh-pinge-aa1b33268/'),
+    _TeamMemberSimple(
+        name: 'Aileen Jess',
+        designation: 'Media & Branding Head',
+        imageUrl: 'assets/aileen-app.png',
+        linkedinUrl: 'https://www.linkedin.com/in/aileen-jess-1a018b369/'),
+    _TeamMemberSimple(
+        name: 'Sanskriti Verma',
+        designation: 'Media & Branding Head',
+        imageUrl: 'assets/sanskriti-app.jpeg',
+        linkedinUrl: 'https://www.linkedin.com/in/sanskriti-verma-15781525b/'),
+    _TeamMemberSimple(
+        name: 'Arya Pandey',
+        designation: 'Development Operations Head',
+        imageUrl: 'assets/arya-app.jpg',
+        linkedinUrl: 'https://www.linkedin.com/in/arya-pandey-265204257/'),
+    _TeamMemberSimple(
+        name: 'Dhruv Gupta',
+        designation: 'Development Operations Head',
+        imageUrl: 'assets/dhruv-app.jpg',
+        linkedinUrl: 'https://www.linkedin.com/in/dhruvgupta21iitg/'),
+    _TeamMemberSimple(
+        name: 'Amol Satheesh',
+        designation: 'Creatives Head',
+        imageUrl: 'assets/amol-app.jpg',
+        linkedinUrl: 'https://www.linkedin.com/in/amol-reach/'),
+  ];
+  List<_FAQ> faqs = const [
+    _FAQ(
+        question: 'How do I register for events?',
+        answer:
+            'Visit the official website or instagram profile of Techniche for all events registrations.'),
+    _FAQ(
+        question: 'Where can I find the event schedule?',
+        answer: 'The schedule is available under the Schedule tab.'),
+    _FAQ(
+        question: 'Is accommodation provided?',
+        answer:
+            'Hostel accommodation is limited. Please contact Hospitality Team.'),
+    _FAQ(
+        question: 'Who do I contact in case of emergency?',
+        answer: 'Use the IITG Hospital quick contact above.'),
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadRemoteConfig();
+  }
+
+  Future<void> _loadRemoteConfig() async {
+    try {
+      final rc = FirebaseRemoteConfig.instance;
+      await rc.setConfigSettings(RemoteConfigSettings(
+        fetchTimeout: const Duration(minutes: 1),
+        minimumFetchInterval:
+            const Duration(seconds: 600), // Bypass cache instantly
+      ));
+      await rc.fetchAndActivate();
+      final str = rc.getString('utilities_data');
+      if (str.isNotEmpty) {
+        final data = jsonDecode(str);
+        hospitalContacts = (data['hospital_contacts'] as List? ?? [])
+            .map((e) =>
+                _Contact(name: e['name'] ?? '', number: e['number'] ?? ''))
+            .toList();
+        transportContacts = (data['transport_contacts'] as List? ?? [])
+            .map((e) =>
+                _Contact(name: e['name'] ?? '', number: e['number'] ?? ''))
+            .toList();
+        hospitalityContacts = (data['hospitality_contacts'] as List? ?? [])
+            .map((e) =>
+                _Contact(name: e['name'] ?? '', number: e['number'] ?? ''))
+            .toList();
+        devTeamMembers = (data['dev_team'] as List? ?? [])
+            .map((e) => _TeamMember(
+                name: e['name'] ?? '',
+                role: e['role'] ?? '',
+                imageUrl: e['imageUrl'] ?? ''))
+            .toList();
+        heads = (data['heads'] as List? ?? [])
+            .map((e) => _TeamMemberSimple(
+                name: e['name'] ?? '',
+                designation: e['designation'] ?? '',
+                imageUrl: e['imageUrl'] ?? '',
+                linkedinUrl: e['linkedinUrl'] ?? ''))
+            .toList();
+        faqs = (data['faqs'] as List? ?? [])
+            .map((e) =>
+                _FAQ(question: e['question'] ?? '', answer: e['answer'] ?? ''))
+            .toList();
+      }
+    } catch (e) {
+      debugPrint("Remote config fetch error: $e");
+    } finally {
+      if (mounted) {
+        setState(() => isLoading = false);
+      }
+    }
+  }
 
   void _showContactsModal(String title, List<_Contact> contacts) {
     showModalBottomSheet(
@@ -58,7 +230,8 @@ class _UtilitiesScreenState extends State<UtilitiesScreen> {
     Navigator.of(context).push(
       PageRouteBuilder(
         opaque: false,
-        pageBuilder: (_, __, ___) => const TeamCarouselScreen(),
+        pageBuilder: (_, __, ___) =>
+            TeamCarouselScreen(members: devTeamMembers),
         transitionsBuilder: (_, animation, __, child) {
           final t = Curves.easeInOut.transform(animation.value);
           return Transform.scale(
@@ -73,20 +246,14 @@ class _UtilitiesScreenState extends State<UtilitiesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    const List<_Contact> hospitalContacts = [
-      _Contact(name: 'Emergency', number: '102'),
-      _Contact(name: 'Hospital Reception', number: '+91-361-2582099'),
-    ];
-    const List<_Contact> transportContacts = [
-      _Contact(name: 'E-Rickshaw 1', number: '+91-600-1440472'),
-      _Contact(name: 'E-Rickshaw 2', number: '+91-789-6513761'),
-      _Contact(name: 'E-Rickshaw 3', number: '+91-848-6664856'),
-    ];
-    const List<_Contact> hospitalityContacts = [
-      _Contact(name: 'Hospitality Head (Uday)', number: '+91-90754-38210'),
-      _Contact(name: 'Hospitality Head (Raghav)', number: '+91-98173-37227'),
-      _Contact(name: 'Hospitality Head (Vibha)', number: '+91-92161-95181'),
-    ];
+    if (isLoading) {
+      return Scaffold(
+        backgroundColor: AppTheme.backgroundGray,
+        drawer: const AppDrawer(),
+        body: const Center(
+            child: CircularProgressIndicator(color: Color(0xFF002B5B))),
+      );
+    }
 
     return Scaffold(
       backgroundColor: AppTheme.backgroundGray,
@@ -99,7 +266,7 @@ class _UtilitiesScreenState extends State<UtilitiesScreen> {
               children: [
                 _buildHeader(context),
                 Padding(
-                  padding: const EdgeInsets.all(20.0),
+                  padding: const EdgeInsets.all(16.0),
                   child: Column(
                     children: [
                       const Text(
@@ -145,7 +312,8 @@ class _UtilitiesScreenState extends State<UtilitiesScreen> {
                         title: 'Meet the Team',
                         onTap: () => Navigator.of(context).push(
                           MaterialPageRoute(
-                            builder: (_) => const TeamImageCarouselScreen(),
+                            builder: (_) =>
+                                TeamImageCarouselScreen(teamMembers: heads),
                           ),
                         ),
                       ),
@@ -166,7 +334,7 @@ class _UtilitiesScreenState extends State<UtilitiesScreen> {
                         onTap: () => setState(() => showFAQ = !showFAQ),
                       ),
                       if (showFAQ) ...[
-                        const _FAQList(),
+                        _FAQList(faqs: faqs),
                         // const SizedBox(height: 12),
                       ],
                       const SizedBox(height: 10),
@@ -221,13 +389,6 @@ class _UtilitiesScreenState extends State<UtilitiesScreen> {
                                   'https://www.facebook.com/techniche.iitguwahati/',
                               label: 'Facebook',
                             ),
-                            const SizedBox(width: 20),
-                            _QuickLinkIcon(
-                              assetIconPath: 'assets/medium.png',
-                              color: const Color(0xFF000000),
-                              url: 'https://media-techniche.medium.com/',
-                              label: 'Medium',
-                            ),
                           ],
                         ),
                       ),
@@ -272,7 +433,6 @@ class _UtilitiesScreenState extends State<UtilitiesScreen> {
         border: Border.all(color: const Color(0xFFE8E8E8)),
       ),
       child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
         leading: Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
@@ -397,15 +557,8 @@ class _QuickLinkIcon extends StatelessWidget {
             }
           },
           borderRadius: BorderRadius.circular(30),
-          child: Container(
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.08),
-              borderRadius: BorderRadius.circular(18),
-            ),
-            child:
-                Image.asset(assetIconPath, width: 28, height: 28, color: color),
-          ),
+          child:
+              Image.asset(assetIconPath, width: 38, height: 38, color: color),
         ),
         const SizedBox(height: 8),
         Text(label,
@@ -552,28 +705,8 @@ class ContactsScreen extends StatelessWidget {
 }
 
 class _FAQList extends StatelessWidget {
-  const _FAQList({Key? key}) : super(key: key);
-
-  final List<_FAQ> faqs = const [
-    _FAQ(
-      question: 'How do I register for events?',
-      answer:
-          'Visit the official website or instagram profile of Techniche for all events registrations.',
-    ),
-    _FAQ(
-      question: 'Where can I find the event schedule?',
-      answer: 'The schedule is available under the Schedule tab.',
-    ),
-    _FAQ(
-      question: 'Is accommodation provided?',
-      answer:
-          'Hostel accommodation is limited. Please contact Hospitality Team.',
-    ),
-    _FAQ(
-      question: 'Who do I contact in case of emergency?',
-      answer: 'Use the IITG Hospital quick contact above.',
-    ),
-  ];
+  final List<_FAQ> faqs;
+  const _FAQList({Key? key, required this.faqs}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -628,7 +761,8 @@ class _FAQList extends StatelessWidget {
 }
 
 class TeamCarouselScreen extends StatefulWidget {
-  const TeamCarouselScreen({Key? key}) : super(key: key);
+  final List<_TeamMember> members;
+  const TeamCarouselScreen({Key? key, required this.members}) : super(key: key);
 
   @override
   State<TeamCarouselScreen> createState() => _TeamCarouselScreenState();
@@ -641,36 +775,7 @@ class _TeamCarouselScreenState extends State<TeamCarouselScreen>
   Timer? _autoPlayTimer;
   int _currentIndex = 0;
 
-  final List<_TeamMember> members = const [
-    _TeamMember(
-        name: 'Dhruv',
-        role: 'DevOps Head',
-        imageUrl: 'assets/dhruv-app.jpg',
-        facts: [
-          'Sees bugs as “feature opportunities”',
-          'Kept servers alive in a storm'
-        ]),
-    _TeamMember(
-        name: 'Arya',
-        role: 'DevOps Head',
-        imageUrl: 'assets/arya-app.jpg',
-        facts: ['Builds backend magic', 'Coffee-fueled late nights']),
-    _TeamMember(
-        name: 'Ayush',
-        role: 'Core Developer',
-        imageUrl: 'assets/ayush-app.jpg',
-        facts: ['Coding Wizard', 'ChatGPT is afraid of him']),
-    _TeamMember(
-        name: 'Divyansh',
-        role: 'Developer (Organizer)',
-        imageUrl: 'assets/divyansh-app.jpg',
-        facts: ['Focus on integrations', 'Proud bug hunter']),
-    _TeamMember(
-        name: 'Kashish',
-        role: 'Developer (Organizer)',
-        imageUrl: 'assets/kashish-app.jpg',
-        facts: ['Fixes problems on the spot', 'Turns ideas into experiments']),
-  ];
+  late final List<_TeamMember> members = widget.members;
 
   @override
   void initState() {
@@ -679,11 +784,11 @@ class _TeamCarouselScreenState extends State<TeamCarouselScreen>
   }
 
   void _resumeAutoPlay() {
-    _autoPlayTimer = Timer.periodic(const Duration(seconds: 5), (t) {
+    _autoPlayTimer = Timer.periodic(const Duration(seconds: 3), (t) {
       final next = (_currentIndex + 1) % members.length;
       if (_pageController.hasClients) {
         _pageController.animateToPage(next,
-            duration: const Duration(milliseconds: 600),
+            duration: const Duration(milliseconds: 400),
             curve: Curves.easeInOut);
         setState(() => _currentIndex = next);
       }
@@ -720,19 +825,33 @@ class _TeamCarouselScreenState extends State<TeamCarouselScreen>
                     shape: BoxShape.circle,
                   ),
                   child: ClipOval(
-                    child: Image.asset(
-                      m.imageUrl,
-                      width: 130,
-                      height: 130,
-                      fit: BoxFit.cover,
-                      errorBuilder: (c, e, s) => Container(
-                        width: 130,
-                        height: 130,
-                        color: Colors.grey[200],
-                        child: const Icon(Icons.person,
-                            size: 64, color: Color(0xFF6D7985)),
-                      ),
-                    ),
+                    child: m.imageUrl.startsWith('http')
+                        ? Image.network(
+                            m.imageUrl,
+                            width: 130,
+                            height: 130,
+                            fit: BoxFit.cover,
+                            errorBuilder: (c, e, s) => Container(
+                              width: 130,
+                              height: 130,
+                              color: Colors.grey[200],
+                              child: const Icon(Icons.person,
+                                  size: 64, color: Color(0xFF6D7985)),
+                            ),
+                          )
+                        : Image.asset(
+                            m.imageUrl,
+                            width: 130,
+                            height: 130,
+                            fit: BoxFit.cover,
+                            errorBuilder: (c, e, s) => Container(
+                              width: 130,
+                              height: 130,
+                              color: Colors.grey[200],
+                              child: const Icon(Icons.person,
+                                  size: 64, color: Color(0xFF6D7985)),
+                            ),
+                          ),
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -748,45 +867,7 @@ class _TeamCarouselScreenState extends State<TeamCarouselScreen>
                         color: AppTheme.textSecondary,
                         fontWeight: FontWeight.w500,
                         fontFamily: AppTheme.fontGeneralSans)),
-                const SizedBox(height: 16),
-                const Divider(color: Color(0xFFE8E8E8)),
-                const SizedBox(height: 8),
-                ...m.facts.map((f) => Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 6.0),
-                      child: Row(
-                        children: [
-                          const Icon(Icons.stars_rounded,
-                              size: 20, color: Color(0xFF002B5B)),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Text(
-                              f,
-                              style: const TextStyle(
-                                  color: AppTheme.textMain,
-                                  fontFamily: AppTheme.fontGeneralSans,
-                                  fontSize: 14),
-                            ),
-                          ),
-                        ],
-                      ),
-                    )),
                 const SizedBox(height: 20),
-                SizedBox(
-                  width: double.infinity,
-                  height: 48,
-                  child: ElevatedButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF002B5B),
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12)),
-                      elevation: 0,
-                    ),
-                    child: const Text('Close',
-                        style: TextStyle(
-                            color: Colors.white, fontWeight: FontWeight.bold)),
-                  ),
-                )
               ],
             ),
           ),
@@ -898,21 +979,41 @@ class _TeamCarouselScreenState extends State<TeamCarouselScreen>
                                           shape: BoxShape.circle,
                                         ),
                                         child: ClipOval(
-                                          child: Image.asset(
-                                            m.imageUrl,
-                                            width: 150,
-                                            height: 150,
-                                            fit: BoxFit.cover,
-                                            errorBuilder: (c, e, s) =>
-                                                Container(
-                                              width: 150,
-                                              height: 150,
-                                              color: Colors.white,
-                                              child: const Icon(Icons.person,
-                                                  size: 60,
-                                                  color: Color(0xFF6D7985)),
-                                            ),
-                                          ),
+                                          child: m.imageUrl.startsWith('http')
+                                              ? Image.network(
+                                                  m.imageUrl,
+                                                  width: 150,
+                                                  height: 150,
+                                                  fit: BoxFit.cover,
+                                                  errorBuilder: (c, e, s) =>
+                                                      Container(
+                                                    width: 150,
+                                                    height: 150,
+                                                    color: Colors.white,
+                                                    child: const Icon(
+                                                        Icons.person,
+                                                        size: 60,
+                                                        color:
+                                                            Color(0xFF6D7985)),
+                                                  ),
+                                                )
+                                              : Image.asset(
+                                                  m.imageUrl,
+                                                  width: 150,
+                                                  height: 150,
+                                                  fit: BoxFit.cover,
+                                                  errorBuilder: (c, e, s) =>
+                                                      Container(
+                                                    width: 150,
+                                                    height: 150,
+                                                    color: Colors.white,
+                                                    child: const Icon(
+                                                        Icons.person,
+                                                        size: 60,
+                                                        color:
+                                                            Color(0xFF6D7985)),
+                                                  ),
+                                                ),
                                         ),
                                       ),
                                       const SizedBox(height: 24),
@@ -929,23 +1030,6 @@ class _TeamCarouselScreenState extends State<TeamCarouselScreen>
                                               fontFamily: 'General Sans',
                                               fontWeight: FontWeight.w500)),
                                       const SizedBox(height: 16),
-                                      if (i == _currentIndex)
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 16, vertical: 6),
-                                          decoration: BoxDecoration(
-                                            color: const Color(0xFFE1EBFF),
-                                            borderRadius:
-                                                BorderRadius.circular(20),
-                                          ),
-                                          child: const Text(
-                                            'Tap for fun facts',
-                                            style: TextStyle(
-                                                color: Color(0xFF002B5B),
-                                                fontSize: 12,
-                                                fontWeight: FontWeight.w600),
-                                          ),
-                                        ),
                                     ],
                                   ),
                                 ),
@@ -1005,84 +1089,57 @@ class _TeamMember {
   final String name;
   final String role;
   final String imageUrl;
-  final List<String> facts;
-  const _TeamMember(
-      {required this.name,
-      required this.role,
-      required this.imageUrl,
-      required this.facts});
+  const _TeamMember({
+    required this.name,
+    required this.role,
+    required this.imageUrl,
+  });
 }
 
-class TeamImageCarouselScreen extends StatelessWidget {
-  const TeamImageCarouselScreen({Key? key}) : super(key: key);
+class TeamImageCarouselScreen extends StatefulWidget {
+  final List<_TeamMemberSimple> teamMembers;
+  const TeamImageCarouselScreen({Key? key, required this.teamMembers})
+      : super(key: key);
 
-  static final List<_TeamMemberSimple> teamMembers = [
-    _TeamMemberSimple(
-        name: 'Rachit Shah',
-        designation: 'Convenor',
-        imageUrl: 'assets/rachit-app.jpg',
-        linkedinUrl: 'https://www.linkedin.com/in/rachit-shah-b5a597255/'),
-    _TeamMemberSimple(
-        name: 'Divyanshu Tiwari',
-        designation: 'Finance Head',
-        imageUrl: 'assets/tiwari-app.jpeg',
-        linkedinUrl: 'https://www.linkedin.com/in/divyanshu-tiwari-925556256/'),
-    _TeamMemberSimple(
-        name: 'Aditya Damani',
-        designation: 'Marketing Head',
-        imageUrl: 'assets/damani-app.jpeg',
-        linkedinUrl: 'https://www.linkedin.com/in/aditya-damani-418302262/'),
-    _TeamMemberSimple(
-        name: 'Yashvardhan Jaiswal',
-        designation: 'Marketing Head',
-        imageUrl: 'assets/vardhan-app.jpeg',
-        linkedinUrl: 'https://www.linkedin.com/in/yashvardhanjaiswal/'),
-    _TeamMemberSimple(
-        name: 'Aarav Chanani',
-        designation: 'Events Head',
-        imageUrl: 'assets/aarav-app.jpeg',
-        linkedinUrl: 'https://www.linkedin.com/in/aarav-chanani218/'),
-    _TeamMemberSimple(
-        name: 'Puja Kumari',
-        designation: 'Events Head',
-        imageUrl: 'assets/puja-app.jpg',
-        linkedinUrl: 'https://www.linkedin.com/in/puja-kumari-544667260/'),
-    _TeamMemberSimple(
-        name: 'Veenas Jaiswal',
-        designation: 'Events Head',
-        imageUrl: 'assets/veenas-app.jpg',
-        linkedinUrl: 'https://www.linkedin.com/in/veenas-jaiswal-93ab70259/'),
-    _TeamMemberSimple(
-        name: 'Rushikesh Pinge',
-        designation: 'Public Relations Head',
-        imageUrl: 'assets/rushi-app.jpg',
-        linkedinUrl: 'https://www.linkedin.com/in/rushikesh-pinge-aa1b33268/'),
-    _TeamMemberSimple(
-        name: 'Aileen Jess',
-        designation: 'Media & Branding Head',
-        imageUrl: 'assets/aileen-app.png',
-        linkedinUrl: 'https://www.linkedin.com/in/aileen-jess-1a018b369/'),
-    _TeamMemberSimple(
-        name: 'Sanskriti Verma',
-        designation: 'Media & Branding Head',
-        imageUrl: 'assets/sanskriti-app.jpeg',
-        linkedinUrl: 'https://www.linkedin.com/in/sanskriti-verma-15781525b/'),
-    _TeamMemberSimple(
-        name: 'Arya Pandey',
-        designation: 'Development Operations Head',
-        imageUrl: 'assets/arya-app.jpg',
-        linkedinUrl: 'https://www.linkedin.com/in/arya-pandey-265204257/'),
-    _TeamMemberSimple(
-        name: 'Dhruv Gupta',
-        designation: 'Development Operations Head',
-        imageUrl: 'assets/dhruv-app.jpg',
-        linkedinUrl: 'https://www.linkedin.com/in/dhruvgupta21iitg/'),
-    _TeamMemberSimple(
-        name: 'Amol Satheesh',
-        designation: 'Creatives Head',
-        imageUrl: 'assets/amol-app.jpg',
-        linkedinUrl: 'https://www.linkedin.com/in/amol-reach/'),
-  ];
+  @override
+  State<TeamImageCarouselScreen> createState() =>
+      _TeamImageCarouselScreenState();
+}
+
+class _TeamImageCarouselScreenState extends State<TeamImageCarouselScreen> {
+  final PageController _pageController = PageController(viewportFraction: 0.82);
+  Timer? _autoPlayTimer;
+  int _currentIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _resumeAutoPlay();
+  }
+
+  void _resumeAutoPlay() {
+    _autoPlayTimer = Timer.periodic(const Duration(seconds: 4), (t) {
+      if (widget.teamMembers.isEmpty) return;
+      final next = (_currentIndex + 1) % widget.teamMembers.length;
+      if (_pageController.hasClients) {
+        _pageController.animateToPage(next,
+            duration: const Duration(milliseconds: 600),
+            curve: Curves.easeInOut);
+        setState(() => _currentIndex = next);
+      }
+    });
+  }
+
+  void _pauseAutoPlay() {
+    _autoPlayTimer?.cancel();
+  }
+
+  @override
+  void dispose() {
+    _autoPlayTimer?.cancel();
+    _pageController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -1127,91 +1184,132 @@ class TeamImageCarouselScreen extends StatelessWidget {
               child: SizedBox(
                 height: size.height * 0.6,
                 child: PageView.builder(
-                  itemCount: teamMembers.length,
-                  controller: PageController(viewportFraction: 0.82),
+                  itemCount: widget.teamMembers.length,
+                  controller: _pageController,
+                  onPageChanged: (i) => setState(() => _currentIndex = i),
                   itemBuilder: (context, i) {
-                    final m = teamMembers[i];
+                    final m = widget.teamMembers[i];
                     return Padding(
                       padding: const EdgeInsets.symmetric(
                           horizontal: 12, vertical: 12),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(28),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.05),
-                              blurRadius: 15,
-                              offset: const Offset(0, 10),
-                            ),
-                          ],
-                        ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(4),
-                              decoration: const BoxDecoration(
-                                color: Color(0xFFE1EBFF),
-                                shape: BoxShape.circle,
+                      child: GestureDetector(
+                        onTapDown: (_) => _pauseAutoPlay(),
+                        onTapUp: (_) => _resumeAutoPlay(),
+                        onTapCancel: () => _resumeAutoPlay(),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(28),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.05),
+                                blurRadius: 15,
+                                offset: const Offset(0, 10),
                               ),
-                              child: ClipOval(
-                                child: SizedBox(
-                                  width: 170,
-                                  height: 170,
-                                  child: Image.asset(
-                                    m.imageUrl,
-                                    fit: BoxFit.cover,
-                                    errorBuilder: (c, e, s) => const Icon(
-                                      Icons.person,
-                                      size: 80,
-                                      color: Color(0xFF6D7985),
-                                    ),
+                            ],
+                          ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(4),
+                                decoration: const BoxDecoration(
+                                  color: Color(0xFFE1EBFF),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: ClipOval(
+                                  child: SizedBox(
+                                    width: 170,
+                                    height: 170,
+                                    child: m.imageUrl.startsWith('http')
+                                        ? Image.network(
+                                            m.imageUrl,
+                                            fit: BoxFit.cover,
+                                            errorBuilder: (c, e, s) =>
+                                                const Icon(
+                                              Icons.person,
+                                              size: 80,
+                                              color: Color(0xFF6D7985),
+                                            ),
+                                          )
+                                        : Image.asset(
+                                            m.imageUrl,
+                                            fit: BoxFit.cover,
+                                            errorBuilder: (c, e, s) =>
+                                                const Icon(
+                                              Icons.person,
+                                              size: 80,
+                                              color: Color(0xFF6D7985),
+                                            ),
+                                          ),
                                   ),
                                 ),
                               ),
-                            ),
-                            const SizedBox(height: 24),
-                            Text(m.name,
-                                style: const TextStyle(
-                                    color: Color(0XFF232930),
-                                    fontSize: 22,
-                                    fontFamily: 'Univers',
-                                    fontWeight: FontWeight.bold)),
-                            const SizedBox(height: 8),
-                            Text(m.designation,
-                                style: const TextStyle(
-                                    color: Color(0xFF6D7985),
-                                    fontSize: 16,
-                                    fontFamily: 'General Sans',
-                                    fontWeight: FontWeight.w500)),
-                            const SizedBox(height: 24),
-                            ElevatedButton.icon(
-                              onPressed: () async {
-                                final url = Uri.parse(m.linkedinUrl);
-                                if (await canLaunchUrl(url)) {
-                                  await launchUrl(url,
-                                      mode: LaunchMode.externalApplication);
-                                }
-                              },
-                              icon: const Icon(Icons.link_rounded, size: 18),
-                              label: const Text('LinkedIn'),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFFE1EBFF),
-                                foregroundColor: const Color(0xFF002B5B),
-                                elevation: 0,
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 20, vertical: 12),
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12)),
+                              const SizedBox(height: 24),
+                              Text(m.name,
+                                  style: const TextStyle(
+                                      color: Color(0XFF232930),
+                                      fontSize: 22,
+                                      fontFamily: 'Univers',
+                                      fontWeight: FontWeight.bold)),
+                              const SizedBox(height: 8),
+                              Text(m.designation,
+                                  style: const TextStyle(
+                                      color: Color(0xFF6D7985),
+                                      fontSize: 16,
+                                      fontFamily: 'General Sans',
+                                      fontWeight: FontWeight.w500)),
+                              const SizedBox(height: 24),
+                              ElevatedButton.icon(
+                                onPressed: () async {
+                                  final url = Uri.parse(m.linkedinUrl);
+                                  if (await canLaunchUrl(url)) {
+                                    await launchUrl(url,
+                                        mode: LaunchMode.externalApplication);
+                                  }
+                                },
+                                icon: const Icon(Icons.link_rounded, size: 18),
+                                label: const Text('LinkedIn'),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFFE1EBFF),
+                                  foregroundColor: const Color(0xFF002B5B),
+                                  elevation: 0,
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 20, vertical: 12),
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12)),
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     );
                   },
                 ),
+              ),
+            ),
+            Positioned(
+              bottom: 20,
+              left: 0,
+              right: 0,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(widget.teamMembers.length, (i) {
+                  final selected = i == _currentIndex;
+                  return AnimatedContainer(
+                    duration: const Duration(milliseconds: 300),
+                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                    width: selected ? 24 : 8,
+                    height: 8,
+                    decoration: BoxDecoration(
+                      color: selected
+                          ? const Color(0xFF002B5B)
+                          : const Color(0xFFD1D1D1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  );
+                }),
               ),
             ),
           ],

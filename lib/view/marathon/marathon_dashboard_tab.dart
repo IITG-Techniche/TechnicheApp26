@@ -49,7 +49,7 @@ class MarathonDashboardTab extends ConsumerWidget {
                   color: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   child: Text(
-                    currentUser.isEmpty ? 'Dashboard' : currentUser,
+                   'Dashboard',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: AppTheme.textMain,
@@ -253,7 +253,8 @@ class _StatsGrid extends StatelessWidget {
               Expanded(
                   child: _StatCard(
                       label: 'Improvement',
-                      value: '${stats.improvement > 0 ? '+' : ''}${stats.improvement.round()}%')),
+                      value:
+                          '${stats.improvement > 0 ? '+' : ''}${stats.improvement.round()}%')),
             ],
           ),
         ),

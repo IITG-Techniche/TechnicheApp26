@@ -1,6 +1,5 @@
 import 'package:techniche26/view/auth/ca_auth_screen.dart';
 import 'package:techniche26/utils/app_drawer.dart';
-// import 'package:techniche26/view/workshops_screen.dart';
 import 'package:techniche26/view/techno/papers_display.dart';
 import 'package:techniche26/view/ghm/ghm_registration.dart';
 import 'package:techniche26/view/marathon/marathon_main.dart';
@@ -250,8 +249,9 @@ class _LandingScreenState extends ConsumerState<LandingScreen> {
         SafeArea(
           top: true,
           bottom: false,
-          child: Column(
-            children: [
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
               Container(
                 width: double.infinity,
                 decoration: const BoxDecoration(
@@ -322,12 +322,13 @@ class _LandingScreenState extends ConsumerState<LandingScreen> {
                   ],
                 ),
               ),
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: EdgeInsets.all(screenWidth * 0.04),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
+              // The previous `Expanded` widget is removed, and its child `SingleChildScrollView` is also removed.
+              // The `Padding` widget and its content are now directly inside the outer `Column`.
+              Padding(
+                padding: EdgeInsets.all(screenWidth * 0.04),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
                       Text(
                         '  Explore',
                         style: TextStyle(
@@ -358,8 +359,11 @@ class _LandingScreenState extends ConsumerState<LandingScreen> {
                         description:
                             'Track your runs and join the leaderboard!',
                         imagePath: 'assets/ghm/practicerun2.png',
-                        onTap: () => Navigator.pushNamed(
-                            context, MarathonMainScreen.routeName),
+                        onTap: () {
+                          if (ModalRoute.of(context)?.isCurrent == true) {
+                            Navigator.pushNamed(context, MarathonMainScreen.routeName);
+                          }
+                        },
                         logo_image: 'assets/ghm/runline.png',
                         logo_color: const Color(0xFF175BCC),
                         logo_name: 'Track',
@@ -394,8 +398,8 @@ class _LandingScreenState extends ConsumerState<LandingScreen> {
                     ],
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ],
