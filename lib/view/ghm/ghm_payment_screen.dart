@@ -43,10 +43,10 @@ class _GHMPaymentScreenState extends State<GHMPaymentScreen> {
           },
           onWebResourceError: (WebResourceError error) {},
           onNavigationRequest: (NavigationRequest request) {
-            // Intercept Techniche confirmation URL
+            // Let the user see the website's confirmation page
             if (request.url.contains('techniche.org.in/ghm/21confirm/')) {
               widget.onPaymentSuccess();
-              return NavigationDecision.prevent;
+              return NavigationDecision.navigate;
             }
             return NavigationDecision.navigate;
           },
