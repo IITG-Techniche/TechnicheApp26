@@ -8,6 +8,8 @@ import 'package:techniche26/controller/riverpod_controller/ca_auth_riverpod_cont
 import 'package:techniche26/providers/marathon_provider.dart';
 import 'package:techniche26/view/landing_screen.dart';
 import 'package:techniche26/view/onboarding_screen.dart';
+import 'package:firebase_remote_config/firebase_remote_config.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 class SplashScreen extends ConsumerStatefulWidget {
   static const String routeName = '/splash';
@@ -21,7 +23,27 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
   @override
   void initState() {
     super.initState();
+    // Initialize remote config after app start
+    _setupRemoteConfig();
     _showSplashAndNavigate();
+  }
+
+  Future<void> _setupRemoteConfig() async {
+    if (!kIsWeb) {
+      try {
+        final remoteConfig = FirebaseRemoteConfig.instance;
+        await remoteConfig.setConfigSettings(RemoteConfigSettings(
+          fetchTimeout: const Duration(minutes: 1),
+          minimumFetchInterval: Duration.zero,
+        ));
+        await remoteConfig.setDefaults(const {
+          "marathon_registrations_open": true,
+        });
+        await remoteConfig.fetchAndActivate();
+      } catch (e) {
+        debugPrint("Error initializing Remote Config: $e");
+      }
+    }
   }
 
   Future<void> _showSplashAndNavigate() async {

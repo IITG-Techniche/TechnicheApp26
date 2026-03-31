@@ -14,6 +14,7 @@ import '../model/marathon_models.dart';
 import '../services/marathon_service.dart';
 import '../services/foreground_task_handler.dart';
 import '../services/local_db_service.dart';
+import '../services/map_cache_service.dart';
 
 const String _kPortName = 'marathon_gps_port';
 
@@ -230,6 +231,9 @@ class LiveRunNotifier extends StateNotifier<LiveRunState> {
     // 0. Ensure permissions for sensors/location are requested
     final granted = await requestPermissions();
     if (!granted) return;
+
+    // Initialize map cache only after permissions are granted
+    await MapCacheService.init();
 
     // 1. Instant Compass for the arrow
     _compassSubscription ??= FlutterCompass.events?.listen((event) {

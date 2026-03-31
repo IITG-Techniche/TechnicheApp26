@@ -52,7 +52,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '209325871242',
     projectId: 'techniche-269b1',
     storageBucket: 'techniche-269b1.firebasestorage.app',
-    iosBundleId: 'com.example.amazonClone',
+    iosBundleId: 'com.techniche.techniche-app',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(

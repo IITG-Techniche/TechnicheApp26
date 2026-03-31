@@ -7,6 +7,7 @@ import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'dart:convert';
 import 'package:intl/intl.dart';
 import 'dart:ui';
+import 'package:techniche26/services/map_cache_service.dart';
 
 const Map<String, Map<String, dynamic>> categoryStyles = {
   'Robotics': {'icon': Icons.smart_toy_outlined, 'color': Color(0xff00ffdd)},
@@ -217,10 +218,16 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
     });
 
     final hasPermission = await _handleLocationPermission();
+    
+    // Initialize map cache only after we've handled permissions
+    await MapCacheService.init();
+
     if (!hasPermission) {
-      setState(() {
-        _isLoadingLocation = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isLoadingLocation = false;
+        });
+      }
       _setDefaultLocation();
       return;
     }
