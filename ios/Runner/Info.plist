@@ -28,11 +28,6 @@
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
 	<string>Main</string>
-	<key>NSBluetoothAlwaysUsageDescription</key>
-	<string>This app uses Bluetooth to improve location accuracy during marathon events.</string>
-	<key>NSBluetoothPeripheralUsageDescription</key>
-	<string>This app uses Bluetooth to connect to event-related peripherals.</string>
-
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>This app needs location access to show your position on the marathon map and find nearby events.</string>
 	<key>NSLocationAlwaysUsageDescription</key>

@@ -1,7 +1,7 @@
 name: techniche26
 description: "Techniche Official App 2026"
 publish_to: 'none'
-version: 1.2.6+17
+version: 1.2.7+18
 
 environment:
   sdk: ^3.5.3

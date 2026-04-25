@@ -1,15 +1,14 @@
 /// CA (Campus Ambassador) Tasks Screen
 library;
-
-import 'package:techniche26/constant/global.dart';
+import 'package:techniche26/services/ca_api_service.dart';
 import 'package:techniche26/controller/riverpod_controller/ca_user_provider.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:html/parser.dart' as html_parser;
 import 'package:url_launcher/url_launcher.dart';
+import 'ca_header.dart';
 
 class TasksScreen extends ConsumerStatefulWidget {
   const TasksScreen({super.key});
@@ -19,7 +18,6 @@ class TasksScreen extends ConsumerStatefulWidget {
 }
 
 class _TasksScreenState extends ConsumerState<TasksScreen> {
-  final String baseUrl = GlobalVariables.baseUrl;
   final Map<String, TextEditingController> linkControllers = {};
 
   List pendingTasks = [];
@@ -52,15 +50,7 @@ class _TasksScreenState extends ConsumerState<TasksScreen> {
 
     try {
       final user = ref.read(caUserProvider);
-      final response = await http.post(
-        Uri.parse('$baseUrl/catasksupload/showusertasksupdated'),
-        headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8',
-        },
-        body: jsonEncode({
-          'params': {'email': user.email}
-        }),
-      );
+      final response = await CaApiService.fetchTasks(user.email);
 
       if (!mounted) return;
 
@@ -97,17 +87,8 @@ class _TasksScreenState extends ConsumerState<TasksScreen> {
       final user = ref.read(caUserProvider);
 
       if (isResubmission) {
-        final response = await http.put(
-          Uri.parse('$baseUrl/catasksupload/submitCorrectLinkByUser'),
-          headers: <String, String>{
-            'Content-Type': 'application/json; charset=UTF-8',
-          },
-          body: jsonEncode({
-            'taskId': taskId,
-            'link': link,
-            'email': user.email,
-          }),
-        );
+        final response =
+            await CaApiService.resubmitTask(user.email, taskId, link);
 
         if (response.statusCode != 200) {
           throw Exception('Failed to resubmit task');
@@ -122,36 +103,15 @@ class _TasksScreenState extends ConsumerState<TasksScreen> {
           }
         });
       } else {
-        final submitResponse = await http.post(
-          Uri.parse('$baseUrl/catasksupload/submitTaskByUser'),
-          headers: <String, String>{
-            'Content-Type': 'application/json; charset=UTF-8',
-          },
-          body: jsonEncode({
-            'taskId': taskId,
-            'link': link,
-            'params': {
-              'email': user.email,
-            }
-          }),
-        );
+        final submitResponse =
+            await CaApiService.submitTask(user.email, taskId, link);
 
         if (submitResponse.statusCode != 200) {
           throw Exception('Failed to submit task');
         }
 
-        final updateResponse = await http.put(
-          Uri.parse('$baseUrl/catasksupload/updateDoneInCATask'),
-          headers: <String, String>{
-            'Content-Type': 'application/json; charset=UTF-8',
-          },
-          body: jsonEncode({
-            'taskId': taskId,
-            'params': {
-              'email': user.email,
-            }
-          }),
-        );
+        final updateResponse =
+            await CaApiService.updateTaskStatus(user.email, taskId);
 
         if (updateResponse.statusCode != 200) {
           throw Exception('Failed to update task status');
@@ -204,9 +164,9 @@ class _TasksScreenState extends ConsumerState<TasksScreen> {
       case 'rejected':
         return Colors.red;
       case 'pending':
-        return const Color(0xFFFF00F7);
+        return const Color(0xFF002B5B);
       default:
-        return Colors.blue;
+        return const Color(0xFF6D7985);
     }
   }
 
@@ -214,13 +174,25 @@ class _TasksScreenState extends ConsumerState<TasksScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Submitted!'),
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        title: const Text('Success!',
+            style: TextStyle(
+                fontFamily: 'Univers',
+                fontWeight: FontWeight.bold,
+                color: Color(0XFF232930))),
         content: const Text(
-            'Your task has been submitted and will be verified shortly'),
+            'Your task has been submitted and will be verified shortly.',
+            style: TextStyle(
+                fontFamily: 'General Sans', color: Color(0xFF6D7985))),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('OK'),
+            child: const Text('Got it',
+                style: TextStyle(
+                    fontFamily: 'General Sans',
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF002B5B))),
           ),
         ],
       ),
@@ -229,30 +201,49 @@ class _TasksScreenState extends ConsumerState<TasksScreen> {
 
   void showErrorSnackbar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
+      SnackBar(
+        content:
+            Text(message, style: const TextStyle(fontFamily: 'General Sans')),
+        backgroundColor: Colors.redAccent,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      ),
     );
   }
 
   Widget buildFilterChip(String label, String value) {
     final isSelected = selectedFilter == value;
     return Padding(
-      padding: const EdgeInsets.only(right: 8),
-      child: FilterChip(
-        label: Text(label),
-        selected: isSelected,
-        onSelected: (_) {
-          setState(() => selectedFilter = value);
-        },
-        backgroundColor: Colors.grey.shade200,
-        selectedColor: Theme.of(context).primaryColor.withOpacity(0.2),
-        labelStyle: TextStyle(
-          color: isSelected
-              ? const Color.fromARGB(221, 241, 238, 238)
-              : Colors.black87,
-          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-        ),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
+      padding: const EdgeInsets.only(right: 12),
+      child: GestureDetector(
+        onTap: () => setState(() => selectedFilter = value),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          decoration: BoxDecoration(
+            color: isSelected ? const Color(0xFF002B5B) : Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+                color: isSelected
+                    ? const Color(0xFF002B5B)
+                    : const Color(0xFFE8E8E8)),
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                        color: const Color(0xFF002B5B).withOpacity(0.3),
+                        blurRadius: 8,
+                        offset: const Offset(0, 4))
+                  ]
+                : [],
+          ),
+          child: Text(
+            label,
+            style: TextStyle(
+              color: isSelected ? Colors.white : const Color(0xFF6D7985),
+              fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+              fontFamily: 'General Sans',
+              fontSize: 12,
+            ),
+          ),
         ),
       ),
     );
@@ -262,77 +253,95 @@ class _TasksScreenState extends ConsumerState<TasksScreen> {
     final taskId = task['id'].toString();
     linkControllers.putIfAbsent(taskId, () => TextEditingController());
 
-    return Card(
-      elevation: 2,
-      margin: const EdgeInsets.only(bottom: 12),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: const Color(0xFFE8E8E8)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 15,
+            offset: const Offset(0, 8),
+          ),
+        ],
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Text(
-                    task['task'] ?? '',
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Text(
+                  task['task'] ?? '',
+                  style: const TextStyle(
+                    fontFamily: 'Univers',
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0XFF232930),
                   ),
                 ),
-                TaskPointsBadge(
-                  points: task['points']?.toString() ?? '0',
-                  status: status,
-                  color: _getStatusColor(status),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            if ((task['descriptions'] ?? '').isNotEmpty)
-              _ExpandableHtmlDescription(htmlData: task['descriptions']),
-            const SizedBox(height: 8),
-            Text(
-              'Last Date For Submission: ${task['dateOfSub'] ?? ''}',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 13,
-                color: Colors.grey.shade800,
               ),
-            ),
-            if (status == 'nonsubmitted' || status == 'rejected')
-              TaskSubmissionForm(
-                controller: linkControllers[taskId]!,
-                onSubmit: () {
-                  final link = linkControllers[taskId]?.text.trim();
-                  if (link?.isEmpty ?? true) {
-                    showErrorSnackbar('Please enter a link');
-                    return;
-                  }
-                  submitTask(taskId, link!, status == 'rejected');
-                },
-                isResubmission: status == 'rejected',
-              )
-            else if (status == 'pending')
-              const TaskStatusView(
-                status: 'pending',
-                message: 'Submission under review',
-                statusText: 'Pending Review',
-                statusColor: Color(0xFFFF00F7),
-              )
-            else if (status == 'accepted')
-              const TaskStatusView(
-                status: 'accepted',
-                message: 'Task completed',
-                statusText: 'Verified',
-                statusColor: Colors.green,
-              )
-          ],
-        ),
+              const SizedBox(width: 12),
+              TaskPointsBadge(
+                points: task['points']?.toString() ?? '0',
+                status: status,
+                color: _getStatusColor(status),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          if ((task['descriptions'] ?? '').isNotEmpty)
+            _ExpandableHtmlDescription(htmlData: task['descriptions']),
+          const SizedBox(height: 20),
+          Row(
+            children: [
+              const Icon(Icons.calendar_today_rounded,
+                  size: 14, color: Color(0xFF6D7985)),
+              const SizedBox(width: 8),
+              Text(
+                'Due: ${task['dateOfSub'] ?? 'N/A'}',
+                style: const TextStyle(
+                  fontFamily: 'General Sans',
+                  fontWeight: FontWeight.w600,
+                  fontSize: 13,
+                  color: Color(0xFF6D7985),
+                ),
+              ),
+            ],
+          ),
+          const Divider(height: 32, color: Color(0xFFF5F5F5)),
+          if (status == 'nonsubmitted' || status == 'rejected')
+            TaskSubmissionForm(
+              controller: linkControllers[taskId]!,
+              onSubmit: () {
+                final link = linkControllers[taskId]?.text.trim();
+                if (link?.isEmpty ?? true) {
+                  showErrorSnackbar('Please enter a link');
+                  return;
+                }
+                submitTask(taskId, link!, status == 'rejected');
+              },
+              isResubmission: status == 'rejected',
+            )
+          else if (status == 'pending')
+            const TaskStatusView(
+              status: 'pending',
+              message: 'Submission under review',
+              statusText: 'Under Review',
+              statusColor: Color(0xFF002B5B),
+            )
+          else if (status == 'accepted')
+            const TaskStatusView(
+              status: 'accepted',
+              message: 'Great work! Task validated.',
+              statusText: 'Verified',
+              statusColor: Colors.green,
+            )
+        ],
       ),
     );
   }
@@ -342,59 +351,41 @@ class _TasksScreenState extends ConsumerState<TasksScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.assignment_outlined,
-            size: 70,
-            color: Colors.grey.shade400,
+          Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.03),
+                  blurRadius: 20,
+                )
+              ],
+            ),
+            child: const Icon(
+              Icons.assignment_turned_in_rounded,
+              size: 48,
+              color: Color(0xFFE8E8E8),
+            ),
           ),
-          const SizedBox(height: 16),
-          Text(
-            'No Tasks Available In This Category',
+          const SizedBox(height: 24),
+          const Text(
+            'No tasks found here',
             style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-              color: Colors.grey.shade700,
+              fontFamily: 'Univers',
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Color(0XFF232930),
             ),
           ),
           const SizedBox(height: 8),
           Text(
-            'Check other categories or come back later',
+            'Check other categories or wait for updates',
             style: TextStyle(
+              fontFamily: 'General Sans',
               fontSize: 14,
-              color: Colors.grey.shade600,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget buildErrorState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.error_outline,
-            size: 60,
-            color: Colors.red.shade300,
-          ),
-          const SizedBox(height: 16),
-          Text(
-            errorMessage ?? 'Something went wrong',
-            textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 16),
-          ),
-          const SizedBox(height: 16),
-          ElevatedButton.icon(
-            onPressed: fetchTasks,
-            icon: const Icon(Icons.refresh),
-            label: const Text('Retry'),
-            style: ElevatedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
+              color: const Color(0XFF232930).withOpacity(0.5),
             ),
           ),
         ],
@@ -405,43 +396,30 @@ class _TasksScreenState extends ConsumerState<TasksScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'Tasks',
-          style: TextStyle(fontWeight: FontWeight.w600),
-        ),
-        elevation: 0,
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        foregroundColor: Theme.of(context).textTheme.titleLarge?.color,
-      ),
+      backgroundColor: const Color(0xFFEDF1F5),
       body: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: [
-                  buildFilterChip('ALL TASKS', 'all'),
-                  buildFilterChip('SUCCESS', 'success'),
-                  buildFilterChip('FAILED', 'failed'),
-                  buildFilterChip('PENDING', 'pending'),
-                ],
-              ),
-            ),
-          ),
+          const CAHeader(title: 'TASKS'),
+          _buildFilterBar(),
           Expanded(
             child: isLoading
-                ? const Center(child: CircularProgressIndicator())
+                ? const Center(
+                    child: CircularProgressIndicator(
+                    color: Color(0xFF002B5B),
+                    strokeWidth: 3,
+                  ))
                 : errorMessage != null
-                    ? buildErrorState()
+                    ? _buildErrorState()
                     : RefreshIndicator(
                         onRefresh: fetchTasks,
+                        color: const Color(0xFF002B5B),
                         child: filteredTasks.isEmpty
                             ? buildEmptyState()
                             : ListView.builder(
                                 itemCount: filteredTasks.length,
-                                padding: const EdgeInsets.all(16),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 20, vertical: 10),
+                                physics: const BouncingScrollPhysics(),
                                 itemBuilder: (context, index) {
                                   final task = filteredTasks[index];
                                   String status;
@@ -465,6 +443,106 @@ class _TasksScreenState extends ConsumerState<TasksScreen> {
       ),
     );
   }
+
+  Widget _buildHeader() {
+    return Container(
+      width: double.infinity,
+      decoration: const BoxDecoration(
+        color: Color(0xFF002B5B),
+        image: DecorationImage(
+          image: AssetImage('assets/ghm/frame3.png'),
+          fit: BoxFit.cover,
+        ),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 25),
+      child: SafeArea(
+        bottom: false,
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(16),
+          decoration: ShapeDecoration(
+            color: Colors.white,
+            shape: RoundedRectangleBorder(
+              side: const BorderSide(width: 1, color: Color(0xFFAFAFAF)),
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+          child: const Center(
+            child: Text(
+              'CA TASKS',
+              style: TextStyle(
+                color: Color(0XFF232930),
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                fontFamily: 'Univers',
+                height: 1.2,
+                letterSpacing: 1,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFilterBar() {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 16),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        physics: const BouncingScrollPhysics(),
+        child: Row(
+          children: [
+            buildFilterChip('ALL TASKS', 'all'),
+            buildFilterChip('COMPLETED', 'success'),
+            buildFilterChip('PENDING', 'pending'),
+            buildFilterChip('FAILED', 'failed'),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildErrorState() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.cloud_off_rounded,
+                size: 48, color: Colors.redAccent),
+            const SizedBox(height: 24),
+            Text(
+              errorMessage ?? 'Connection lost',
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontFamily: 'Univers',
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Color(0XFF232930),
+              ),
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton(
+              onPressed: fetchTasks,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF002B5B),
+                foregroundColor: Colors.white,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
+              ),
+              child: const Text('TRY AGAIN',
+                  style: TextStyle(fontFamily: 'Univers')),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 // Modular Widgets
@@ -483,21 +561,27 @@ class TaskPointsBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 10,
-        vertical: 6,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
         color: color.withOpacity(0.1),
         borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withOpacity(0.3)),
       ),
-      child: Text(
-        '$points PTs',
-        style: TextStyle(
-          color: color,
-          fontWeight: FontWeight.bold,
-          fontSize: 13,
-        ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.stars_rounded, color: color, size: 14),
+          const SizedBox(width: 4),
+          Text(
+            '$points PTs',
+            style: TextStyle(
+              color: color,
+              fontWeight: FontWeight.bold,
+              fontFamily: 'Univers',
+              fontSize: 13,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -517,50 +601,54 @@ class TaskSubmissionForm extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          TextField(
-            controller: controller,
-            decoration: InputDecoration(
-              hintText: 'Enter submission link',
-              hintStyle: TextStyle(color: Colors.grey.shade500, fontSize: 14),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(color: Colors.grey.shade300),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(color: Colors.grey.shade300),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(color: Theme.of(context).primaryColor),
-              ),
-              contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        TextField(
+          controller: controller,
+          style: const TextStyle(fontFamily: 'General Sans', fontSize: 14),
+          decoration: InputDecoration(
+            hintText: 'Paste submission link here',
+            hintStyle: TextStyle(
+                color: const Color(0xFF6D7985).withOpacity(0.5), fontSize: 14),
+            filled: true,
+            fillColor: const Color(0xFFF5F5F5),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide.none,
             ),
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           ),
-          const SizedBox(height: 12),
-          Align(
-            alignment: Alignment.centerRight,
-            child: ElevatedButton.icon(
-              onPressed: onSubmit,
-              icon: Icon(isResubmission ? Icons.refresh : Icons.send),
-              label: Text(isResubmission ? 'Resubmit' : 'Submit'),
-              style: ElevatedButton.styleFrom(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
+        ),
+        const SizedBox(height: 16),
+        ElevatedButton(
+          onPressed: onSubmit,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFF002B5B),
+            foregroundColor: Colors.white,
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            elevation: 0,
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(isResubmission ? Icons.refresh_rounded : Icons.send_rounded,
+                  size: 18),
+              const SizedBox(width: 12),
+              Text(
+                isResubmission ? 'RESUBMIT TASK' : 'SUBMIT TASK',
+                style: const TextStyle(
+                    fontFamily: 'Univers',
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 0.5),
               ),
-            ),
+            ],
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
@@ -581,46 +669,52 @@ class TaskStatusView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 16),
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: statusColor.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: statusColor.withOpacity(0.1)),
+      ),
       child: Row(
         children: [
-          Expanded(
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-              decoration: BoxDecoration(
-                color: Colors.grey.shade100,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.grey.shade300),
-              ),
-              child: Text(
-                message,
-                style: TextStyle(color: Colors.grey.shade600),
-              ),
-            ),
-          ),
-          const SizedBox(width: 8),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
               color: statusColor.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
+              shape: BoxShape.circle,
             ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
+            child: Icon(
+              status == 'pending'
+                  ? Icons.hourglass_empty_rounded
+                  : Icons.verified_rounded,
+              size: 20,
+              color: statusColor,
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(
-                  status == 'pending'
-                      ? Icons.hourglass_top
-                      : Icons.check_circle,
-                  size: 16,
-                  color: statusColor,
-                ),
-                const SizedBox(width: 4),
                 Text(
-                  statusText,
+                  statusText.toUpperCase(),
                   style: TextStyle(
-                      color: statusColor, fontWeight: FontWeight.w500),
+                    fontFamily: 'Univers',
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12,
+                    letterSpacing: 1,
+                    color: statusColor,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  message,
+                  style: TextStyle(
+                    fontFamily: 'General Sans',
+                    fontSize: 13,
+                    color: statusColor.withOpacity(0.8),
+                  ),
                 ),
               ],
             ),
@@ -643,7 +737,7 @@ class _ExpandableHtmlDescription extends StatefulWidget {
 class _ExpandableHtmlDescriptionState
     extends State<_ExpandableHtmlDescription> {
   bool expanded = false;
-  static const int previewCharLimit = 100;
+  static const int previewCharLimit = 120;
 
   String get _plainTextPreview {
     final document = html_parser.parse(widget.htmlData);
@@ -658,16 +752,13 @@ class _ExpandableHtmlDescriptionState
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (!expanded)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 4.0),
-            child: Text(
-              _plainTextPreview,
-              style: TextStyle(
-                color: Colors.grey.shade800,
-                fontSize: 14,
-              ),
-              maxLines: 8,
-              overflow: TextOverflow.ellipsis,
+          Text(
+            _plainTextPreview,
+            style: TextStyle(
+              fontFamily: 'General Sans',
+              color: const Color(0XFF232930).withOpacity(0.7),
+              fontSize: 14,
+              height: 1.5,
             ),
           ),
         if (expanded)
@@ -677,8 +768,15 @@ class _ExpandableHtmlDescriptionState
               "body": Style(
                 margin: Margins.zero,
                 padding: HtmlPaddings.zero,
-                color: Colors.grey.shade800,
+                color: const Color(0XFF232930).withOpacity(0.8),
                 fontSize: FontSize(14),
+                fontFamily: 'General Sans',
+                lineHeight: LineHeight.number(1.5),
+              ),
+              "a": Style(
+                color: const Color(0xFF002B5B),
+                textDecoration: TextDecoration.underline,
+                fontWeight: FontWeight.bold,
               ),
             },
             onAnchorTap: (url, attributes, element) {
@@ -690,39 +788,18 @@ class _ExpandableHtmlDescriptionState
               }
             },
           ),
+        const SizedBox(height: 8),
         if ((html_parser.parse(widget.htmlData).body?.text.length ?? 0) >
-                previewCharLimit &&
-            !expanded)
-          GestureDetector(
-            onTap: () => setState(() => expanded = true),
-            child: Padding(
-              padding: const EdgeInsets.only(top: 4.0),
-              child: Text(
-                'Read More',
-                style: TextStyle(
-                  color: Theme.of(context).primaryColor,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 13,
-                  decoration: TextDecoration.underline,
-                ),
-              ),
-            ),
-          ),
-        if (expanded &&
-            (html_parser.parse(widget.htmlData).body?.text.length ?? 0) >
-                previewCharLimit)
-          GestureDetector(
-            onTap: () => setState(() => expanded = false),
-            child: Padding(
-              padding: const EdgeInsets.only(top: 4.0),
-              child: Text(
-                'Show Less',
-                style: TextStyle(
-                  color: Theme.of(context).primaryColor,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 13,
-                  decoration: TextDecoration.underline,
-                ),
+            previewCharLimit)
+          InkWell(
+            onTap: () => setState(() => expanded = !expanded),
+            child: Text(
+              expanded ? 'Show Less ↑' : 'Read More ↓',
+              style: const TextStyle(
+                fontFamily: 'General Sans',
+                color: Color(0xFF002B5B),
+                fontWeight: FontWeight.bold,
+                fontSize: 13,
               ),
             ),
           ),

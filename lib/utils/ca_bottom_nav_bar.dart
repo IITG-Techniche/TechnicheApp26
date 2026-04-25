@@ -3,7 +3,7 @@ import 'package:techniche26/utils/bottom_nav_bar.dart';
 import 'package:techniche26/view/ca/homescreen.dart';
 import 'package:techniche26/view/ca/leaderboard.dart';
 import 'package:techniche26/view/ca/profilescreen.dart';
-import 'package:techniche26/view/ca/taskscreen.dart';
+import 'package:techniche26/view/ca/taskScreen.dart';
 import 'package:flutter/material.dart';
 
 class CaBottomNavBar extends StatefulWidget {

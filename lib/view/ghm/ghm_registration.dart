@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:convert';
@@ -120,7 +119,9 @@ class _GHMRegistrationScreenState extends State<GHMRegistrationScreen> {
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
-                        widget.isTab ? Icons.menu_rounded : Icons.arrow_back_rounded,
+                        widget.isTab
+                            ? Icons.menu_rounded
+                            : Icons.arrow_back_rounded,
                         color: const Color(0xFF6D7985),
                         size: 20,
                       ),
@@ -178,14 +179,17 @@ class _GHMRegistrationScreenState extends State<GHMRegistrationScreen> {
                   _buildTextField(
                     label: "Full Name*",
                     icon: Icons.person_outline_rounded,
-                    validator: (value) => value?.isEmpty ?? true ? "Please enter your name" : null,
+                    validator: (value) => value?.isEmpty ?? true
+                        ? "Please enter your name"
+                        : null,
                     controller: _nameController,
                   ),
                   _buildTextField(
                     label: "Age*",
                     icon: Icons.calendar_today_rounded,
                     keyboardType: TextInputType.number,
-                    validator: (value) => value?.isEmpty ?? true ? "Required" : null,
+                    validator: (value) =>
+                        value?.isEmpty ?? true ? "Required" : null,
                     controller: _ageController,
                   ),
                   _buildDropdown(
@@ -199,7 +203,8 @@ class _GHMRegistrationScreenState extends State<GHMRegistrationScreen> {
                     label: "Organisation*",
                     icon: Icons.business_rounded,
                     controller: _organizationController,
-                    validator: (value) => value?.isEmpty ?? true ? "Required" : null,
+                    validator: (value) =>
+                        value?.isEmpty ?? true ? "Required" : null,
                   ),
                   _buildTextField(
                     label: "Mobile Number*",
@@ -218,33 +223,38 @@ class _GHMRegistrationScreenState extends State<GHMRegistrationScreen> {
                     label: "Email ID*",
                     icon: Icons.email_outlined,
                     keyboardType: TextInputType.emailAddress,
-                    validator: (value) => value?.isEmpty ?? true ? "Required" : null,
+                    validator: (value) =>
+                        value?.isEmpty ?? true ? "Required" : null,
                     controller: _emailController,
                   ),
                   _buildTextField(
                     label: "Country*",
                     icon: Icons.public_rounded,
                     controller: _countryController,
-                    validator: (value) => value?.isEmpty ?? true ? "Required" : null,
+                    validator: (value) =>
+                        value?.isEmpty ?? true ? "Required" : null,
                   ),
                   _buildTextField(
                     label: "State*",
                     icon: Icons.map_rounded,
                     controller: _stateController,
-                    validator: (value) => value?.isEmpty ?? true ? "Required" : null,
+                    validator: (value) =>
+                        value?.isEmpty ?? true ? "Required" : null,
                   ),
                   _buildTextField(
                     label: "City*",
                     icon: Icons.location_city_rounded,
                     controller: _cityController,
-                    validator: (value) => value?.isEmpty ?? true ? "Required" : null,
+                    validator: (value) =>
+                        value?.isEmpty ?? true ? "Required" : null,
                   ),
                   const Divider(height: 32, color: Color(0xFFE8E8E8)),
                   _buildDropdown(
                     label: "Category of Race*",
                     items: ["21km", "6km"],
                     value: marathonCategory,
-                    onChanged: (value) => setState(() => marathonCategory = value),
+                    onChanged: (value) =>
+                        setState(() => marathonCategory = value),
                     prefixIcon: Icons.directions_run_rounded,
                   ),
                   _buildTextField(
@@ -255,7 +265,14 @@ class _GHMRegistrationScreenState extends State<GHMRegistrationScreen> {
                   ),
                   _buildDropdown(
                     label: "How did you hear about us?*",
-                    items: ["Social Media", "Friends/Family", "Website", "News", "Campaign", "Other"],
+                    items: [
+                      "Social Media",
+                      "Friends/Family",
+                      "Website",
+                      "News",
+                      "Campaign",
+                      "Other"
+                    ],
                     value: sourceOfInfo,
                     prefixIcon: Icons.info_outline_rounded,
                     onChanged: (value) => setState(() => sourceOfInfo = value),
@@ -268,11 +285,14 @@ class _GHMRegistrationScreenState extends State<GHMRegistrationScreen> {
                         backgroundColor: const Color(0xFF002B5B),
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 20),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16)),
                         elevation: 0,
                       ),
                       child: Text(
-                        marathonCategory == "6km" ? "REGISTER" : "PAY AND REGISTER",
+                        marathonCategory == "6km"
+                            ? "REGISTER"
+                            : "PAY AND REGISTER",
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
@@ -327,8 +347,8 @@ class _GHMRegistrationScreenState extends State<GHMRegistrationScreen> {
           TextFormField(
             controller: controller,
             style: const TextStyle(
-              color: Color(0XFF232930), 
-              fontSize: 16, 
+              color: Color(0XFF232930),
+              fontSize: 16,
               fontFamily: 'General Sans',
               height: 1.2,
               fontWeight: FontWeight.w600,
@@ -340,8 +360,8 @@ class _GHMRegistrationScreenState extends State<GHMRegistrationScreen> {
             decoration: InputDecoration(
               hintText: hintText ?? "Enter your $label",
               hintStyle: const TextStyle(
-                color: Color(0xFFBDBDBD), 
-                fontSize: 14, 
+                color: Color(0xFFBDBDBD),
+                fontSize: 14,
                 fontFamily: 'General Sans',
                 height: 1.2,
                 fontWeight: FontWeight.w400,
@@ -358,9 +378,11 @@ class _GHMRegistrationScreenState extends State<GHMRegistrationScreen> {
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: Color(0xFF002B5B), width: 1.5),
+                borderSide:
+                    const BorderSide(color: Color(0xFF002B5B), width: 1.5),
               ),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               counterText: "",
             ),
           ),
@@ -402,8 +424,8 @@ class _GHMRegistrationScreenState extends State<GHMRegistrationScreen> {
           DropdownButtonFormField<String>(
             dropdownColor: Colors.white,
             style: const TextStyle(
-              color: Color(0XFF232930), 
-              fontSize: 16, 
+              color: Color(0XFF232930),
+              fontSize: 16,
               fontFamily: 'General Sans',
               height: 1.2,
             ),
@@ -420,20 +442,24 @@ class _GHMRegistrationScreenState extends State<GHMRegistrationScreen> {
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: Color(0xFF002B5B), width: 1.5),
+                borderSide:
+                    const BorderSide(color: Color(0xFF002B5B), width: 1.5),
               ),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             ),
             value: value,
-            items: items.map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+            items: items
+                .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                .toList(),
             onChanged: onChanged,
-            icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Color(0xFF6D7985)),
+            icon: const Icon(Icons.keyboard_arrow_down_rounded,
+                color: Color(0xFF6D7985)),
           ),
         ],
       ),
     );
   }
-
 
   Widget _buildClosedMessage() {
     return Center(
@@ -449,7 +475,8 @@ class _GHMRegistrationScreenState extends State<GHMRegistrationScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.event_busy_rounded, color: Color(0xFFE53935), size: 80),
+              const Icon(Icons.event_busy_rounded,
+                  color: Color(0xFFE53935), size: 80),
               const SizedBox(height: 24),
               const Text(
                 'REGISTRATIONS UNAVAILABLE',
@@ -493,8 +520,8 @@ class _GHMRegistrationScreenState extends State<GHMRegistrationScreen> {
           'State': _stateController.text.trim(),
           'Country': _countryController.text.trim(),
           'CategoryofRace': marathonCategory?.replaceAll('km', '') ?? '',
-          'GeneralChampionship': _referralCodeController.text.trim().isEmpty 
-              ? 'None' 
+          'GeneralChampionship': _referralCodeController.text.trim().isEmpty
+              ? 'None'
               : _referralCodeController.text.trim(),
           'Mediaform': sourceOfInfo,
         };
@@ -518,10 +545,12 @@ class _GHMRegistrationScreenState extends State<GHMRegistrationScreen> {
             _showGHMSuccessDialog(ghmId, isGloryRun);
           }
         } else {
-          _showGHMErrorDialog("Registration Failed", "Something went wrong. Please check your data or try again later.");
+          _showGHMErrorDialog("Registration Failed",
+              "Something went wrong. Please check your data or try again later.");
         }
       } catch (e) {
-        _showGHMErrorDialog("Connection Error", "Check your internet connection and try again.");
+        _showGHMErrorDialog("Connection Error",
+            "Check your internet connection and try again.");
       }
     }
   }
@@ -533,7 +562,8 @@ class _GHMRegistrationScreenState extends State<GHMRegistrationScreen> {
       builder: (BuildContext context) {
         return AlertDialog(
           backgroundColor: Colors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -545,14 +575,18 @@ class _GHMRegistrationScreenState extends State<GHMRegistrationScreen> {
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
-                  isGloryRun ? Icons.payment_rounded : Icons.check_circle_rounded,
+                  isGloryRun
+                      ? Icons.payment_rounded
+                      : Icons.check_circle_rounded,
                   color: const Color(0xFF002B5B),
                   size: 60,
                 ),
               ),
               const SizedBox(height: 24),
               Text(
-                isGloryRun ? 'REGISTRATION INITIATED' : 'REGISTRATION SUCCESSFUL',
+                isGloryRun
+                    ? 'REGISTRATION INITIATED'
+                    : 'REGISTRATION SUCCESSFUL',
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                   fontSize: 20,
@@ -564,7 +598,8 @@ class _GHMRegistrationScreenState extends State<GHMRegistrationScreen> {
               const SizedBox(height: 16),
               if (!isGloryRun && ghmId.isNotEmpty)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                   decoration: BoxDecoration(
                     color: const Color(0xFFF8F9FA),
                     borderRadius: BorderRadius.circular(12),
@@ -572,8 +607,20 @@ class _GHMRegistrationScreenState extends State<GHMRegistrationScreen> {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Text("GHM ID: ", style: TextStyle(color: Color(0xFF6D7985), fontSize: 14, fontFamily: 'General Sans', height: 1.2, fontWeight: FontWeight.w400)),
-                      Text(ghmId, style: const TextStyle(color: Color(0xFF002B5B), fontSize: 14, fontWeight: FontWeight.w600, fontFamily: 'General Sans', height: 1.2)),
+                      const Text("GHM ID: ",
+                          style: TextStyle(
+                              color: Color(0xFF6D7985),
+                              fontSize: 14,
+                              fontFamily: 'General Sans',
+                              height: 1.2,
+                              fontWeight: FontWeight.w400)),
+                      Text(ghmId,
+                          style: const TextStyle(
+                              color: Color(0xFF002B5B),
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              fontFamily: 'General Sans',
+                              height: 1.2)),
                     ],
                   ),
                 ),
@@ -583,7 +630,11 @@ class _GHMRegistrationScreenState extends State<GHMRegistrationScreen> {
                     ? "We will send you a payment link to your registered email shortly. Kindly complete the payment from there to get your GHM ID."
                     : "Official confirmation along with your GHM ID has been sent to your email. We look forward to seeing you at the marathon!",
                 textAlign: TextAlign.center,
-                style: const TextStyle(color: Color(0xFF6D7985), fontSize: 14, height: 1.5, fontFamily: 'General Sans'),
+                style: const TextStyle(
+                    color: Color(0xFF6D7985),
+                    fontSize: 14,
+                    height: 1.5,
+                    fontFamily: 'General Sans'),
               ),
               const SizedBox(height: 32),
               SizedBox(
@@ -592,17 +643,21 @@ class _GHMRegistrationScreenState extends State<GHMRegistrationScreen> {
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF002B5B),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
                   ),
-                  child: const Text("GREAT!", 
-                    style: TextStyle(
-                      color: Colors.white, 
-                      fontWeight: FontWeight.w600, 
-                      fontFamily: 'General Sans',
-                      height: 1.2,
-                    )),
+                  child: const Text("GREAT!",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                        fontFamily: 'General Sans',
+                        height: 1.2,
+                      )),
                   onPressed: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => const LandingScreen()));
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const LandingScreen()));
                   },
                 ),
               ),
@@ -619,12 +674,29 @@ class _GHMRegistrationScreenState extends State<GHMRegistrationScreen> {
       builder: (BuildContext context) {
         return AlertDialog(
           backgroundColor: Colors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: Text(title, style: const TextStyle(color: Color(0xFFE53935), fontSize: 18, fontFamily: 'Univers', fontWeight: FontWeight.w700, height: 1.2)),
-          content: Text(message, style: const TextStyle(color: Color(0xFF6D7985), fontSize: 14, fontFamily: 'General Sans', height: 1.2)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: Text(title,
+              style: const TextStyle(
+                  color: Color(0xFFE53935),
+                  fontSize: 18,
+                  fontFamily: 'Univers',
+                  fontWeight: FontWeight.w700,
+                  height: 1.2)),
+          content: Text(message,
+              style: const TextStyle(
+                  color: Color(0xFF6D7985),
+                  fontSize: 14,
+                  fontFamily: 'General Sans',
+                  height: 1.2)),
           actions: [
             TextButton(
-              child: const Text("RETRY", style: TextStyle(color: Color(0xFF002B5B), fontWeight: FontWeight.w600, fontFamily: 'General Sans', height: 1.2)),
+              child: const Text("RETRY",
+                  style: TextStyle(
+                      color: Color(0xFF002B5B),
+                      fontWeight: FontWeight.w600,
+                      fontFamily: 'General Sans',
+                      height: 1.2)),
               onPressed: () => Navigator.of(context).pop(),
             ),
           ],

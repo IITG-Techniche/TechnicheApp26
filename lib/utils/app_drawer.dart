@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:techniche26/providers/navigation_provider.dart';
 import 'package:techniche26/view/marathon/marathon_main.dart';
-import 'package:techniche26/view/ghm/ghm_registration.dart';
-import 'package:techniche26/view/techniche_screen.dart';
+import 'package:techniche26/view/auth/ca_auth_screen.dart';
+import 'package:techniche26/view/events_screen.dart';
 import 'package:techniche26/view/techno/papers_display.dart';
 import 'package:techniche26/view/utilities_screen.dart';
 import 'package:techniche26/view/workshops_screen.dart';
@@ -48,7 +48,7 @@ class AppDrawer extends ConsumerWidget {
                   context: context,
                   icon: Icons.quiz_rounded,
                   title: 'Technothlon PYQs',
-                  routeName: TechnothlonScreen.routeName,
+                  routeName: TechnothlonPyqScreen.routeName,
                 ),
                 _buildDrawerItem(
                   context: context,
@@ -62,12 +62,9 @@ class AppDrawer extends ConsumerWidget {
                 ),
                 _buildDrawerItem(
                   context: context,
-                  icon: Icons.app_registration_rounded,
-                  title: 'GHM Registration',
-                  routeName: GHMRegistrationScreen.routeName,
-                  isTab: true,
-                  tabIndex: 3,
-                  ref: ref,
+                  icon: Icons.school_rounded,
+                  title: 'Campus Ambassador',
+                  routeName: CaAuthScreen.routeName,
                 ),
                 _buildDrawerItem(
                   context: context,

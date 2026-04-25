@@ -4,7 +4,6 @@ import '../../providers/marathon_provider.dart';
 import 'marathon_dashboard_tab.dart';
 import 'marathon_enrollment_view.dart';
 import 'marathon_run_tab.dart';
- // Fixed typo if needed, ensure path is correct
 import 'marathon_leaderboard_tab.dart';
 import '../../constant/appTheme.dart';
 
@@ -22,9 +21,6 @@ class _MarathonMainScreenState extends ConsumerState<MarathonMainScreen> {
   @override
   void initState() {
     super.initState();
-    // Start GPS acquisition early — when the marathon screen loads,
-    // not just when the Run tab is opened. This gives GPS time to
-    // acquire a fix and cache map tiles before the user starts running.
     Future.microtask(() {
       ref.read(liveRunProvider.notifier).enableTrackingIfPermitted();
     });

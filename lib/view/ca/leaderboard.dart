@@ -1,7 +1,7 @@
-import 'package:techniche26/constant/global.dart';
+import 'package:techniche26/services/ca_api_service.dart';
 import 'package:flutter/material.dart';
 import 'dart:convert';
-import 'package:http/http.dart' as http;
+import 'ca_header.dart';
 
 class LeaderboardScreen extends StatefulWidget {
   const LeaderboardScreen({Key? key}) : super(key: key);
@@ -12,7 +12,6 @@ class LeaderboardScreen extends StatefulWidget {
 
 class _LeaderboardScreenState extends State<LeaderboardScreen> {
   late Future<List<LeaderboardEntry>> _leaderboardFuture;
-  final RefreshController _refreshController = RefreshController();
 
   @override
   void initState() {
@@ -20,18 +19,9 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
     _leaderboardFuture = fetchLeaderboardData();
   }
 
-  @override
-  void dispose() {
-    _refreshController.dispose();
-    super.dispose();
-  }
-
   Future<List<LeaderboardEntry>> fetchLeaderboardData() async {
-    const uri = GlobalVariables.baseUrl;
     try {
-      final response = await http.get(
-        Uri.parse('$uri/catasksupload/leaderboard'),
-      );
+      final response = await CaApiService.fetchLeaderboard();
 
       if (response.statusCode == 200) {
         final List<dynamic> data = json.decode(response.body);
@@ -45,110 +35,169 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
   }
 
   Future<void> _onRefresh() async {
-    try {
-      final newData = await fetchLeaderboardData();
-      setState(() {
-        _leaderboardFuture = Future.value(newData);
-      });
-      _refreshController.refreshCompleted();
-    } catch (e) {
-      _refreshController.refreshFailed();
-    }
+    setState(() {
+      _leaderboardFuture = fetchLeaderboardData();
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(
-        child: FutureBuilder<List<LeaderboardEntry>>(
-          future: _leaderboardFuture,
-          builder: (context, snapshot) {
-            if (snapshot.hasError) {
-              return Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.error_outline, size: 48, color: Colors.red[300]),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Failed to load leaderboard',
-                      style: Theme.of(context).textTheme.titleLarge,
-                    ),
-                    TextButton(
-                      onPressed: _onRefresh,
-                      child: const Text('Retry'),
-                    ),
-                  ],
-                ),
-              );
-            }
+      backgroundColor: const Color(0xFFEDF1F5),
+      body: FutureBuilder<List<LeaderboardEntry>>(
+        future: _leaderboardFuture,
+        builder: (context, snapshot) {
+          return Column(
+            children: [
+              const CAHeader(title: 'LEADERBOARD'),
+              Expanded(child: _buildBody(context, snapshot)),
+            ],
+          );
+        },
+      ),
+    );
+  }
 
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(
-                child: CircularProgressIndicator(),
-              );
-            }
-
-            final leaderboardData = snapshot.data!;
-
-            return RefreshIndicator(
-              onRefresh: _onRefresh,
-              child: CustomScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                slivers: [
-                  SliverAppBar(
-                    floating: true,
-                    snap: true,
-                    centerTitle: true,
-                    title: const Text(
-                      'Leaderboard',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-                  ),
-                  SliverToBoxAdapter(
-                    child: TopThreeWidget(
-                      topThree: leaderboardData.take(3).toList(),
-                    ),
-                  ),
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Text(
-                        'All Rankings',
-                        style: Theme.of(context).textTheme.titleLarge,
-                      ),
-                    ),
-                  ),
-                  SliverList(
-                    delegate: SliverChildBuilderDelegate(
-                      (context, index) {
-                        final entry = leaderboardData[index];
-                        return LeaderboardListTile(
-                          position: index + 1,
-                          entry: entry,
-                        );
-                      },
-                      childCount: leaderboardData.length,
-                    ),
-                  ),
-                ],
+  Widget _buildHeader() {
+    return Container(
+      width: double.infinity,
+      decoration: const BoxDecoration(
+        color: Color(0xFF002B5B),
+        image: DecorationImage(
+          image: AssetImage('assets/ghm/frame3.png'),
+          fit: BoxFit.cover,
+        ),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 25),
+      child: SafeArea(
+        bottom: false,
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(16),
+          decoration: ShapeDecoration(
+            color: Colors.white,
+            shape: RoundedRectangleBorder(
+              side: const BorderSide(width: 1, color: Color(0xFFAFAFAF)),
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+          child: const Center(
+            child: Text(
+              'CA LEADERBOARD',
+              style: TextStyle(
+                color: Color(0XFF232930),
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                fontFamily: 'Univers',
+                height: 1.2,
+                letterSpacing: 1,
               ),
-            );
-          },
+            ),
+          ),
         ),
       ),
     );
   }
-}
 
-class RefreshController {
-  void refreshCompleted() {}
-  void refreshFailed() {}
-  void dispose() {}
+  Widget _buildBody(
+      BuildContext context, AsyncSnapshot<List<LeaderboardEntry>> snapshot) {
+    if (snapshot.hasError) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.cloud_off_rounded,
+                size: 48, color: Colors.redAccent),
+            const SizedBox(height: 16),
+            const Text(
+              'Connection Error',
+              style: TextStyle(
+                fontFamily: 'Univers',
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            TextButton(
+              onPressed: _onRefresh,
+              child: const Text('Retry',
+                  style: TextStyle(color: Color(0xFF002B5B))),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (snapshot.connectionState == ConnectionState.waiting) {
+      return const Center(
+        child: CircularProgressIndicator(
+          color: Color(0xFF002B5B),
+          strokeWidth: 3,
+        ),
+      );
+    }
+
+    final leaderboardData = snapshot.data!;
+
+    return RefreshIndicator(
+      onRefresh: _onRefresh,
+      color: const Color(0xFF002B5B),
+      child: CustomScrollView(
+        physics: const BouncingScrollPhysics(
+            parent: AlwaysScrollableScrollPhysics()),
+        slivers: [
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 24.0),
+              child: TopThreeWidget(
+                topThree: leaderboardData.take(3).toList(),
+              ),
+            ),
+          ),
+          SliverPadding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            sliver: SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 16, left: 4),
+                child: Row(
+                  children: [
+                    const Icon(Icons.format_list_numbered_rounded,
+                        size: 20, color: Color(0xFF6D7985)),
+                    const SizedBox(width: 8),
+                    const Text(
+                      'GLOBAL RANKINGS',
+                      style: TextStyle(
+                        fontFamily: 'Univers',
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 1,
+                        color: Color(0xFF6D7985),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          SliverPadding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            sliver: SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) {
+                  final entry = leaderboardData[index];
+                  return LeaderboardListTile(
+                    position: index + 1,
+                    entry: entry,
+                  );
+                },
+                childCount: leaderboardData.length,
+              ),
+            ),
+          ),
+          const SliverToBoxAdapter(child: SizedBox(height: 32)),
+        ],
+      ),
+    );
+  }
 }
 
 class TopThreeWidget extends StatelessWidget {
@@ -163,15 +212,12 @@ class TopThreeWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final isSmallScreen = constraints.maxWidth < 600;
-        final itemWidth =
-            (constraints.maxWidth - 48) / 3; // Account for padding
+        final itemWidth = (constraints.maxWidth - 40) / 3;
 
-        return Container(
-          padding: const EdgeInsets.all(16.0),
+        return SizedBox(
           width: constraints.maxWidth,
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               if (topThree.length > 1)
@@ -180,7 +226,7 @@ class TopThreeWidget extends StatelessWidget {
                   child: PodiumItem(
                     entry: topThree[1],
                     position: 2,
-                    height: isSmallScreen ? 140.0 : 180.0,
+                    height: 120.0,
                   ),
                 ),
               if (topThree.isNotEmpty)
@@ -189,7 +235,7 @@ class TopThreeWidget extends StatelessWidget {
                   child: PodiumItem(
                     entry: topThree[0],
                     position: 1,
-                    height: isSmallScreen ? 160.0 : 200.0,
+                    height: 160.0,
                   ),
                 ),
               if (topThree.length > 2)
@@ -198,7 +244,7 @@ class TopThreeWidget extends StatelessWidget {
                   child: PodiumItem(
                     entry: topThree[2],
                     position: 3,
-                    height: isSmallScreen ? 120.0 : 160.0,
+                    height: 100.0,
                   ),
                 ),
             ],
@@ -221,62 +267,122 @@ class PodiumItem extends StatelessWidget {
     required this.height,
   }) : super(key: key);
 
-  Color _getPositionColor() {
-    switch (position) {
-      case 1:
-        return Colors.amber;
-      case 2:
-        return Colors.grey.shade300;
-      case 3:
-        return const Color.fromARGB(255, 105, 90, 84);
-      default:
-        return Colors.grey;
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        CircleAvatar(
-          radius: 30,
-          backgroundColor: _getPositionColor(),
+        _buildAvatar(),
+        const SizedBox(height: 12),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4),
           child: Text(
-            '$position',
+            entry.name,
             style: const TextStyle(
-              fontSize: 24,
+              fontFamily: 'Univers',
+              fontSize: 13,
               fontWeight: FontWeight.bold,
-              color: Colors.white,
+              color: Color(0XFF232930),
             ),
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
         ),
-        const SizedBox(height: 8),
-        Text(
-          entry.name,
-          style: Theme.of(context).textTheme.titleMedium,
-          textAlign: TextAlign.center,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
-        const SizedBox(height: 4),
-        Text(
-          '${entry.points} pts',
-          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-        ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 12),
         Container(
-          width: 70, // Reduced width from 80 to 70
+          width: 60,
           height: height,
           decoration: BoxDecoration(
-            color: _getPositionColor(),
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
+            gradient: const LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [Color(0xFF002B5B), Color(0xFF001A3D)],
+            ),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF002B5B).withOpacity(0.2),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              )
+            ],
+          ),
+          child: Center(
+            child: Text(
+              '${entry.points}\nPTS',
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontFamily: 'Univers',
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+                height: 1.2,
+              ),
+            ),
           ),
         ),
       ],
     );
+  }
+
+  Widget _buildAvatar() {
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        Container(
+          padding: const EdgeInsets.all(3),
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(color: _getPositionColor(), width: 2),
+          ),
+          child: CircleAvatar(
+            radius: 24,
+            backgroundColor: const Color(0xFFF5F5F5),
+            child: Text(
+              entry.name.isNotEmpty ? entry.name[0].toUpperCase() : '?',
+              style: const TextStyle(
+                fontFamily: 'Univers',
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF002B5B),
+              ),
+            ),
+          ),
+        ),
+        Positioned(
+          bottom: 0,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+            decoration: BoxDecoration(
+              color: _getPositionColor(),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Text(
+              '#$position',
+              style: const TextStyle(
+                fontFamily: 'Univers',
+                fontSize: 10,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Color _getPositionColor() {
+    switch (position) {
+      case 1:
+        return const Color(0xFFFFD700); // Gold
+      case 2:
+        return const Color(0xFFC0C0C0); // Silver
+      case 3:
+        return const Color(0xFFCD7F32); // Bronze
+      default:
+        return const Color(0xFF002B5B);
+    }
   }
 }
 
@@ -292,39 +398,83 @@ class LeaderboardListTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE8E8E8)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
       child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: Colors.grey.shade200,
-          child: Text(
-            position.toString(),
-            style: const TextStyle(
-              fontWeight: FontWeight.bold,
-              color: Colors.black87,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        leading: Container(
+          width: 36,
+          height: 36,
+          decoration: BoxDecoration(
+            color: position <= 3
+                ? _getPositionColor().withOpacity(0.1)
+                : const Color(0xFFF5F5F5),
+            shape: BoxShape.circle,
+          ),
+          child: Center(
+            child: Text(
+              position.toString(),
+              style: TextStyle(
+                fontFamily: 'Univers',
+                fontWeight: FontWeight.bold,
+                color: position <= 3
+                    ? _getPositionColor()
+                    : const Color(0xFF6D7985),
+              ),
             ),
           ),
         ),
         title: Text(
           entry.name,
-          style: const TextStyle(fontWeight: FontWeight.bold),
+          style: const TextStyle(
+            fontFamily: 'General Sans',
+            fontWeight: FontWeight.w700,
+            color: Color(0XFF232930),
+          ),
         ),
         trailing: Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
-            color: Colors.blue.shade50,
-            borderRadius: BorderRadius.circular(12),
+            color: const Color(0xFF002B5B).withOpacity(0.05),
+            borderRadius: BorderRadius.circular(10),
           ),
           child: Text(
-            '${entry.points} pts',
-            style: TextStyle(
-              color: Colors.blue.shade700,
+            '${entry.points} PTS',
+            style: const TextStyle(
+              fontFamily: 'Univers',
+              color: Color(0xFF002B5B),
               fontWeight: FontWeight.bold,
+              fontSize: 13,
             ),
           ),
         ),
       ),
     );
+  }
+
+  Color _getPositionColor() {
+    switch (position) {
+      case 1:
+        return const Color(0xFFFFD700);
+      case 2:
+        return const Color(0xFFC0C0C0);
+      case 3:
+        return const Color(0xFFCD7F32);
+      default:
+        return const Color(0xFF002B5B);
+    }
   }
 }
 

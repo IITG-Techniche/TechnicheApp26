@@ -23,12 +23,18 @@ class GlowingBottomNavBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       height: kBottomNavigationBarHeight + 15,
-      //margin: const EdgeInsets.only(bottom: 16), // Push navbar up from bottom
       padding: const EdgeInsets.symmetric(horizontal: 10),
       decoration: BoxDecoration(
-        color: const Color(0xFFE8E8E8),
+        color: Colors.white,
+        border: const Border(
+          top: BorderSide(color: Color(0xFFE8E8E8), width: 1),
+        ),
         boxShadow: [
-
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 10,
+            offset: const Offset(0, -4),
+          ),
         ],
       ),
       child: Row(
@@ -37,49 +43,36 @@ class GlowingBottomNavBar extends StatelessWidget {
           final item = items[index];
           final isSelected = index == currentIndex;
 
-          // Make selected item larger, unselected smaller
-          final double iconSize = isSelected ? 22 : 22;
-          final double fontSize = isSelected ? 10: 10;
-          final double verticalPadding = isSelected ? 6 : 6;
-          final double horizontalPadding = isSelected ? 6 : 8;
-
           return Expanded(
-            flex: isSelected ? 1 : 1,
             child: GestureDetector(
               onTap: () => onTap(index),
+              behavior: HitTestBehavior.opaque,
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 250),
-                padding: EdgeInsets.symmetric(
-                  vertical: verticalPadding,
-                  horizontal: horizontalPadding,
-                ),
-
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Icon(
                       item.icon,
-                      size: iconSize,
+                      size: 22,
                       color: isSelected
-                          ? const Color(0xFF000000)
-                          : Color(0XFF5E5E5E),
+                          ? const Color(0xFF002B5B)
+                          : const Color(0XFF6D7985).withOpacity(0.5),
                     ),
-
-                      const SizedBox(height: 2),
-                      Text(
-                        item.label,
-                        style: TextStyle(
-                          color: isSelected
-                              ? const Color(0xFF000000)
-                              : Color(0XFF5E5E5E),
-                          fontWeight: FontWeight.w500,
-                          fontSize: 12,
-                          fontFamily: 'General Sans',
-                          height: 1.33,
-                        ),
+                    const SizedBox(height: 4),
+                    Text(
+                      item.label,
+                      style: TextStyle(
+                        color: isSelected
+                            ? const Color(0xFF002B5B)
+                            : const Color(0XFF6D7985).withOpacity(0.5),
+                        fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+                        fontSize: 11,
+                        fontFamily: 'General Sans',
                       ),
-                    ],
-
+                    ),
+                  ],
                 ),
               ),
             ),

@@ -1,12 +1,12 @@
 import 'package:techniche26/view/auth/ca_auth_screen.dart';
 import 'package:techniche26/utils/app_drawer.dart';
 import 'package:techniche26/view/techno/papers_display.dart';
-import 'package:techniche26/view/ghm/ghm_registration.dart';
+
 import 'package:techniche26/view/marathon/marathon_main.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:techniche26/utils/ca_bottom_nav_bar.dart';
-import 'package:techniche26/view/techniche_screen.dart';
+import 'package:techniche26/view/events_screen.dart';
 import 'package:techniche26/view/utilities_screen.dart';
 import 'package:techniche26/view/legacy_screen.dart';
 import 'package:techniche26/controller/riverpod_controller/ca_auth_riverpod_controller.dart';
@@ -15,8 +15,6 @@ import 'package:techniche26/utils/bottom_nav_bar.dart';
 import 'package:upgrader/upgrader.dart';
 import 'package:techniche26/services/notification_service.dart';
 import 'package:techniche26/constant/appTheme.dart';
-// import 'package:techniche26/utils/animate_gradient_background.dart';
-
 import 'package:techniche26/providers/navigation_provider.dart';
 
 class LandingScreen extends ConsumerStatefulWidget {
@@ -143,38 +141,25 @@ class _LandingScreenState extends ConsumerState<LandingScreen> {
   }
 
   void _onItemTapped(int index) {
+    // Index 3 is Campus Ambassador — navigate directly instead of switching tab
+    if (index == 3) {
+      _handleAuthNavigation(context);
+      return;
+    }
     if (ref.read(bottomNavSelectedIndexProvider) == index) return;
     ref.read(bottomNavSelectedIndexProvider.notifier).state = index;
   }
 
   Future<void> _handleAuthNavigation(BuildContext context) async {
-    try {
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (_) => const Center(child: CircularProgressIndicator()),
-      );
-      bool isAuth =
-          await ref.read(caAuthControllerProvider).isCaUserAuthenticated();
-      if (context.mounted) Navigator.of(context).pop();
+    // Perform a quick local check for stored session
+    bool isAuth = await ref.read(caAuthControllerProvider).isCaUserAuthenticated();
+    
+    if (context.mounted) {
       if (isAuth) {
-        bool valid = await ref
-            .read(caAuthControllerProvider)
-            .validateTokenAndFetchUser(context);
-        if (valid && context.mounted) {
-          Navigator.pushNamed(context, CaBottomNavBar.routeName);
-        } else if (context.mounted) {
-          Navigator.pushNamed(context, CaAuthScreen.routeName);
-        }
-      } else if (context.mounted) {
-        Navigator.pushNamed(context, CaAuthScreen.routeName);
-      }
-    } catch (_) {
-      if (context.mounted) {
-        Navigator.of(context, rootNavigator: true).pop();
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Error accessing CA portal.')),
-        );
+        // Navigate immediately - background sync will happen inside the CA Portal
+        Navigator.pushNamed(context, CaBottomNavBar.routeName);
+      } else {
+        // Go to auth screen if no local session exists
         Navigator.pushNamed(context, CaAuthScreen.routeName);
       }
     }
@@ -186,7 +171,7 @@ class _LandingScreenState extends ConsumerState<LandingScreen> {
       const EventsScreen(isTab: true),
       LegacyPage(),
       _buildHomeContent(context),
-      const GHMRegistrationScreen(isTab: true),
+      const SizedBox.shrink(), // CA — handled via _handleAuthNavigation, never rendered
       const UtilitiesScreen(),
     ];
 
@@ -225,7 +210,7 @@ class _LandingScreenState extends ConsumerState<LandingScreen> {
               GlowingBottomNavBarItem(icon: Icons.history_edu, label: 'Legacy'),
               GlowingBottomNavBarItem(icon: Icons.home_filled, label: 'Home'),
               GlowingBottomNavBarItem(
-                  icon: Icons.app_registration_sharp, label: 'GHM'),
+                  icon: Icons.school_rounded, label: 'CA'),
               GlowingBottomNavBarItem(
                   icon: Icons.workspace_premium_sharp, label: 'Utilities'),
             ],
@@ -238,7 +223,6 @@ class _LandingScreenState extends ConsumerState<LandingScreen> {
 
   Widget _buildHomeContent(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-
     return Stack(
       children: [
         Container(
@@ -322,8 +306,6 @@ class _LandingScreenState extends ConsumerState<LandingScreen> {
                   ],
                 ),
               ),
-              // The previous `Expanded` widget is removed, and its child `SingleChildScrollView` is also removed.
-              // The `Padding` widget and its content are now directly inside the outer `Column`.
               Padding(
                 padding: EdgeInsets.all(screenWidth * 0.04),
                 child: Column(
@@ -341,16 +323,14 @@ class _LandingScreenState extends ConsumerState<LandingScreen> {
                       SizedBox(height: 20),
                       _gridItem(
                         context: context,
-                        title: 'GHM Registration',
+                        title: 'Campus Ambassador',
                         description:
-                            'Register for the biggest student organised marathon of india',
-                        imagePath: 'assets/ghm/ghm2.png',
-                        onTap: () => ref
-                            .read(bottomNavSelectedIndexProvider.notifier)
-                            .state = 3,
-                        logo_image: 'assets/ghm/shoes.png',
-                        logo_color: const Color(0xFF7C3EC3),
-                        logo_name: 'Register',
+                            'Represent Techniche at your campus & win exciting rewards',
+                        imagePath: 'assets/logo_withoutBG.png',
+                        onTap: () => _handleAuthNavigation(context),
+                        logo_image: 'assets/ghm/technichelogo.png',
+                        logo_color: const Color(0xFF002B5B),
+                        logo_name: 'Explore',
                       ),
                       SizedBox(height: screenWidth * 0.04),
                       _gridItem(
@@ -389,7 +369,7 @@ class _LandingScreenState extends ConsumerState<LandingScreen> {
                         description: 'Practice past year papers.',
                         imagePath: 'assets/ghm/techno2.png',
                         onTap: () => Navigator.pushNamed(
-                            context, TechnothlonScreen.routeName),
+                            context, TechnothlonPyqScreen.routeName),
                         logo_image: 'assets/ghm/technichelogo.png',
                         logo_color: const Color(0xFF23242B),
                         logo_name: 'Check Out',
@@ -414,7 +394,7 @@ class _LandingScreenState extends ConsumerState<LandingScreen> {
     required VoidCallback onTap,
     required String logo_image,
     required Color logo_color,
-    required String logo_name,
+    required String logo_name, 
   }) {
     return GestureDetector(
       onTap: onTap,
@@ -451,7 +431,7 @@ class _LandingScreenState extends ConsumerState<LandingScreen> {
                 borderRadius: BorderRadius.circular(8),
                 child: Image.asset(
                   imagePath,
-                  fit: BoxFit.cover,
+                  fit: BoxFit.contain,
                   width: double.infinity,
                   height: double.infinity,
                 ),
