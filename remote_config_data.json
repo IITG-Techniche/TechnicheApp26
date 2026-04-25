@@ -1,0 +1,160 @@
+{
+  "hospital_contacts": [
+    {
+      "name": "Emergency",
+      "number": "102"
+    },
+    {
+      "name": "Hospital Reception",
+      "number": "+91-361-2582099"
+    }
+  ],
+  "transport_contacts": [
+    {
+      "name": "E-Rickshaw 1",
+      "number": "+91-600-1440472"
+    },
+    {
+      "name": "E-Rickshaw 2",
+      "number": "+91-789-6513761"
+    },
+    {
+      "name": "E-Rickshaw 3",
+      "number": "+91-848-6664856"
+    }
+  ],
+  "hospitality_contacts": [
+    {
+      "name": "Hospitality Head (Uday)",
+      "number": "+91-90754-38210"
+    },
+    {
+      "name": "Hospitality Head (Raghav)",
+      "number": "+91-98173-37227"
+    },
+    {
+      "name": "Hospitality Head (Vibha)",
+      "number": "+91-92161-95181"
+    }
+  ],
+  "faqs": [
+    {
+      "question": "How do I register for events?",
+      "answer": "Visit the official website or instagram profile of Techniche for all events registrations."
+    },
+    {
+      "question": "Where can I find the event schedule?",
+      "answer": "The schedule is available under the Schedule tab."
+    },
+    {
+      "question": "Is accommodation provided?",
+      "answer": "Hostel accommodation is limited. Please contact Hospitality Team."
+    },
+    {
+      "question": "Who do I contact in case of emergency?",
+      "answer": "Use the IITG Hospital quick contact above."
+    }
+  ],
+  "dev_team": [
+    {
+      "name": "Dhruv",
+      "role": "DevOps Head",
+      "imageUrl": "assets/dhruv-app.jpg"
+    },
+    {
+      "name": "Arya",
+      "role": "DevOps Head",
+      "imageUrl": "assets/arya-app.jpg"
+    },
+    {
+      "name": "Ayush",
+      "role": "Core Developer",
+      "imageUrl": "assets/ayush-app.jpg"
+    },
+    {
+      "name": "Divyansh",
+      "role": "Developer (Organizer)",
+      "imageUrl": "assets/divyansh-app.jpg"
+    }
+  ],
+  "heads": [
+    {
+      "name": "Rachit Shah",
+      "designation": "Convenor",
+      "imageUrl": "assets/rachit-app.jpg",
+      "linkedinUrl": "https://www.linkedin.com/in/rachit-shah-b5a597255/"
+    },
+    {
+      "name": "Divyanshu Tiwari",
+      "designation": "Finance Head",
+      "imageUrl": "assets/tiwari-app.jpeg",
+      "linkedinUrl": "https://www.linkedin.com/in/divyanshu-tiwari-925556256/"
+    },
+    {
+      "name": "Aditya Damani",
+      "designation": "Marketing Head",
+      "imageUrl": "assets/damani-app.jpeg",
+      "linkedinUrl": "https://www.linkedin.com/in/aditya-damani-418302262/"
+    },
+    {
+      "name": "Yashvardhan Jaiswal",
+      "designation": "Marketing Head",
+      "imageUrl": "assets/vardhan-app.jpeg",
+      "linkedinUrl": "https://www.linkedin.com/in/yashvardhanjaiswal/"
+    },
+    {
+      "name": "Aarav Chanani",
+      "designation": "Events Head",
+      "imageUrl": "assets/aarav-app.jpeg",
+      "linkedinUrl": "https://www.linkedin.com/in/aarav-chanani218/"
+    },
+    {
+      "name": "Puja Kumari",
+      "designation": "Events Head",
+      "imageUrl": "assets/puja-app.jpg",
+      "linkedinUrl": "https://www.linkedin.com/in/puja-kumari-544667260/"
+    },
+    {
+      "name": "Veenas Jaiswal",
+      "designation": "Events Head",
+      "imageUrl": "assets/veenas-app.jpg",
+      "linkedinUrl": "https://www.linkedin.com/in/veenas-jaiswal-93ab70259/"
+    },
+    {
+      "name": "Rushikesh Pinge",
+      "designation": "Public Relations Head",
+      "imageUrl": "assets/rushi-app.jpg",
+      "linkedinUrl": "https://www.linkedin.com/in/rushikesh-pinge-aa1b33268/"
+    },
+    {
+      "name": "Aileen Jess",
+      "designation": "Media & Branding Head",
+      "imageUrl": "assets/aileen-app.png",
+      "linkedinUrl": "https://www.linkedin.com/in/aileen-jess-1a018b369/"
+    },
+    {
+      "name": "Sanskriti Verma",
+      "designation": "Media & Branding Head",
+      "imageUrl": "assets/sanskriti-app.jpeg",
+      "linkedinUrl": "https://www.linkedin.com/in/sanskriti-verma-15781525b/"
+    },
+    {
+      "name": "Arya Pandey",
+      "designation": "Development Operations Head",
+      "imageUrl": "assets/arya-app.jpg",
+      "linkedinUrl": "https://www.linkedin.com/in/arya-pandey-265204257/"
+    },
+    {
+      "name": "Dhruv Gupta",
+      "designation": "Development Operations Head",
+      "imageUrl": "assets/dhruv-app.jpg",
+      "linkedinUrl": "https://www.linkedin.com/in/dhruvgupta21iitg/"
+    },
+    {
+      "name": "Amol Satheesh",
+      "designation": "Creatives Head",
+      "imageUrl": "assets/amol-app.jpg",
+      "linkedinUrl": "https://www.linkedin.com/in/amol-reach/"
+    }
+  ]
+}

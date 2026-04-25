@@ -1,7 +1,7 @@
 name: techniche26
 description: "Techniche Official App 2026"
 publish_to: 'none'
-version: 1.2.4+15
+version: 1.2.7+18
 
 environment:
   sdk: ^3.5.3
@@ -12,10 +12,6 @@ dependencies:
   url_launcher: ^6.3.1
   http: ^1.2.2
   shared_preferences: ^2.3.3
-  pedometer:
-    git:
-      url: https://github.com/DhruvGupta21/flutter-plugins
-      path: packages/pedometer
   permission_handler: ^12.0.1
   flutter_svg: ^2.0.17
   firebase_core: ^4.1.0
@@ -44,7 +40,7 @@ dependencies:
   flutter_staggered_animations: ^1.1.1
   carousel_slider: ^5.0.0
   webview_flutter: ^4.13.0
-  flutter_foreground_task: ^8.14.0   # ← upgraded from ^6.3.1
+  flutter_foreground_task: ^8.14.0
   sqflite: ^2.4.2
   path: ^1.9.1
   flutter_compass: ^0.8.1

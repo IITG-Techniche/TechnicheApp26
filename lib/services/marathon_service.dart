@@ -1,15 +1,8 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
 import '../model/marathon_models.dart';
 
-/// Drop-in replacement for the old MarathonService.
-/// Same class name, same method signatures — only the Supabase table names
-/// and the getUserProgress() implementation changed.
-///
-/// Table changes vs old code:
-///   OLD: marathon_participants  → SAME (no change)
-///   OLD: practice_logs         → SAME (added step_count, calories, category columns)
-///   OLD: distance_leaderboard  → SAME view name (updated to include category)
-///   OLD: get_user_progress RPC → REMOVED — now computed in Dart via ProgressStats.fromLogs()
 class MarathonService {
   final SupabaseClient _supabase = Supabase.instance.client;
 
@@ -70,14 +63,40 @@ class MarathonService {
   // ── Fetch runs ────────────────────────────────────────────────────────────
 
   Future<List<PracticeLog>> getRecentRuns(String username) async {
-    final response = await _supabase
-        .from('practice_logs')
-        .select()
-        .eq('username', username)
-        .order('created_at', ascending: false)
-        .limit(5);
+    final prefs = await SharedPreferences.getInstance();
+    final cacheKey = 'recent_runs_$username';
+    final cacheTimeKey = 'recent_runs_time_$username';
 
-    return (response as List).map((e) => PracticeLog.fromJson(e)).toList();
+    // Check cache first
+    final lastFetch = prefs.getInt(cacheTimeKey) ?? 0;
+    final now = DateTime.now().millisecondsSinceEpoch;
+    final cachedStr = prefs.getString(cacheKey);
+    
+    // If cache is fresh (less than 5 mins old), use it
+    if (cachedStr != null && (now - lastFetch) < 5 * 60 * 1000) {
+      final List decoded = jsonDecode(cachedStr);
+      return decoded.map((e) => PracticeLog.fromJson(e)).toList();
+    }
+
+    try {
+      final response = await _supabase
+          .from('practice_logs')
+          .select()
+          .eq('username', username)
+          .order('created_at', ascending: false)
+          .limit(5);
+
+      final runs = (response as List).map((e) => PracticeLog.fromJson(e)).toList();
+      await prefs.setString(cacheKey, jsonEncode(response));
+      await prefs.setInt(cacheTimeKey, now);
+      return runs;
+    } catch (e) {
+      if (cachedStr != null) {
+        final List decoded = jsonDecode(cachedStr);
+        return decoded.map((e) => PracticeLog.fromJson(e)).toList();
+      }
+      rethrow;
+    }
   }
 
   Future<List<PracticeLog>> getAllRuns(String username) async {
@@ -108,10 +127,34 @@ class MarathonService {
   // ── Progress stats ────────────────────────────────────────────────────────
   /// Uses the get_user_progress RPC on Supabase for data accuracy and performance.
   Future<ProgressStats> getUserProgress(String username) async {
-    final response = await _supabase.rpc('get_user_progress', params: {
-      'p_username': username,
-    });
+    final prefs = await SharedPreferences.getInstance();
+    final cacheKey = 'progress_stats_$username';
+    final cacheTimeKey = 'progress_stats_time_$username';
 
-    return ProgressStats.fromJson(response);
+    // Check cache first
+    final lastFetch = prefs.getInt(cacheTimeKey) ?? 0;
+    final now = DateTime.now().millisecondsSinceEpoch;
+    final cachedStr = prefs.getString(cacheKey);
+
+    // If cache is fresh (less than 5 mins old), use it
+    if (cachedStr != null && (now - lastFetch) < 5 * 60 * 1000) {
+      return ProgressStats.fromJson(jsonDecode(cachedStr));
+    }
+
+    try {
+      final response = await _supabase.rpc('get_user_progress', params: {
+        'p_username': username,
+      });
+
+      final stats = ProgressStats.fromJson(response);
+      await prefs.setString(cacheKey, jsonEncode(response));
+      await prefs.setInt(cacheTimeKey, now);
+      return stats;
+    } catch (e) {
+      if (cachedStr != null) {
+        return ProgressStats.fromJson(jsonDecode(cachedStr));
+      }
+      rethrow;
+    }
   }
 }

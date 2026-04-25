@@ -5,14 +5,14 @@ import '../../constant/techno_city.dart';
 import 'payment_screen.dart';
 import 'package:flutter/services.dart';
 
-class RegistrationScreen extends StatefulWidget {
-  const RegistrationScreen({super.key});
+class TechnoRegistrationScreen extends StatefulWidget {
+  const TechnoRegistrationScreen({super.key});
 
   @override
-  State<RegistrationScreen> createState() => _RegistrationScreenState();
+  State<TechnoRegistrationScreen> createState() => _TechnoRegistrationScreenState();
 }
 
-class _RegistrationScreenState extends State<RegistrationScreen> {
+class _TechnoRegistrationScreenState extends State<TechnoRegistrationScreen> {
   final _formKey = GlobalKey<FormState>();
   final TecnoTeamRegistration _team = TecnoTeamRegistration();
 

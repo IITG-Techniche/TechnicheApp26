@@ -150,6 +150,7 @@ class _MarathonRunTabState extends ConsumerState<MarathonRunTab> {
                         Expanded(
                           child: _ActionButton(
                             onPressed: () async {
+                              if (runState.isSaving) return;
                               _hapticLong();
                               final finalState = runState;
                               await ref.read(liveRunProvider.notifier).stopRun();

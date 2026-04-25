@@ -4,16 +4,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-class TechnothlonScreen extends StatefulWidget {
+class TechnothlonPyqScreen extends StatefulWidget {
   static const routeName = '/technothlon-screen';
 
-  const TechnothlonScreen({super.key});
+  const TechnothlonPyqScreen({super.key});
 
   @override
-  State<TechnothlonScreen> createState() => _TechnothlonScreenState();
+  State<TechnothlonPyqScreen> createState() => _TechnothlonPyqScreenState();
 }
 
-class _TechnothlonScreenState extends State<TechnothlonScreen> {
+class _TechnothlonPyqScreenState extends State<TechnothlonPyqScreen> {
   late Future<List<TechnoPaperModel>> papersFuture;
   final Map<String, bool> expandedMap = {};
 

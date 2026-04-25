@@ -49,8 +49,8 @@ class _SchedulePageState extends State<SchedulePage>
 
   Future<void> _initializeAndFetch() async {
     await _remoteConfig.setConfigSettings(RemoteConfigSettings(
-      fetchTimeout: const Duration(seconds: 10),
-      minimumFetchInterval: Duration.zero,
+      fetchTimeout: const Duration(seconds: 100),
+      minimumFetchInterval: const Duration(seconds: 600),
     ));
     await _remoteConfig.setDefaults(const {
       "is_schedule_live": false,

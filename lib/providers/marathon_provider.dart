@@ -14,6 +14,7 @@ import '../model/marathon_models.dart';
 import '../services/marathon_service.dart';
 import '../services/foreground_task_handler.dart';
 import '../services/local_db_service.dart';
+import '../services/map_cache_service.dart';
 
 const String _kPortName = 'marathon_gps_port';
 
@@ -52,14 +53,14 @@ Future<void> loadMarathonEnrollment(WidgetRef ref) async {
 }
 
 final distanceLeaderboardProvider =
-    FutureProvider.autoDispose<List<DistanceLeaderboardEntry>>((ref) async {
+    FutureProvider<List<DistanceLeaderboardEntry>>((ref) async {
   final service = ref.watch(marathonServiceProvider);
   final category = ref.watch(marathonCategoryProvider);
   return service.getDistanceLeaderboard(category);
 });
 
 final progressStatsProvider =
-    FutureProvider.autoDispose<ProgressStats>((ref) async {
+    FutureProvider<ProgressStats>((ref) async {
   final service = ref.watch(marathonServiceProvider);
   final username = ref.watch(marathonUsernameProvider);
   if (username.isEmpty) return ProgressStats.empty();
@@ -67,7 +68,7 @@ final progressStatsProvider =
 });
 
 final recentRunsProvider =
-    FutureProvider.autoDispose<List<PracticeLog>>((ref) async {
+    FutureProvider<List<PracticeLog>>((ref) async {
   final service = ref.watch(marathonServiceProvider);
   final username = ref.watch(marathonUsernameProvider);
   if (username.isEmpty) return [];
@@ -75,7 +76,7 @@ final recentRunsProvider =
 });
 
 final allRunsProvider =
-    FutureProvider.autoDispose<List<PracticeLog>>((ref) async {
+    FutureProvider<List<PracticeLog>>((ref) async {
   final service = ref.watch(marathonServiceProvider);
   final username = ref.watch(marathonUsernameProvider);
   if (username.isEmpty) return [];
@@ -231,20 +232,20 @@ class LiveRunNotifier extends StateNotifier<LiveRunState> {
     final granted = await requestPermissions();
     if (!granted) return;
 
+    // Initialize map cache only after permissions are granted
+    await MapCacheService.init();
+
     // 1. Instant Compass for the arrow
-    if (_compassSubscription == null) {
-      _compassSubscription = FlutterCompass.events?.listen((event) {
+    _compassSubscription ??= FlutterCompass.events?.listen((event) {
         if (mounted) {
           state = state.copyWith(
               currentHeading: event.heading ?? event.headingForCameraMode);
         }
       });
-    }
 
     // 2. Low-frequency location for the preview dot
     // Note: Always maintain a listener for 'currentLocation' fix
-    if (_uiLocationSubscription == null) {
-      _uiLocationSubscription = Geolocator.getPositionStream(
+    _uiLocationSubscription ??= Geolocator.getPositionStream(
         locationSettings: const LocationSettings(
           accuracy: LocationAccuracy.best,
           distanceFilter: 3,
@@ -328,7 +329,6 @@ class LiveRunNotifier extends StateNotifier<LiveRunState> {
           state = state.copyWith(routePoints: [newLoc]);
         }
       });
-    }
   }
 
   void _setupBulletproofPort() {

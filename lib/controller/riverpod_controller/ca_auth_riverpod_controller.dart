@@ -2,27 +2,17 @@ library;
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:techniche26/constant/global.dart';
 import 'package:techniche26/utils/ca_bottom_nav_bar.dart';
 import 'package:techniche26/utils/errorHandler.dart';
 import 'package:techniche26/controller/riverpod_controller/ca_user_provider.dart';
-import 'package:techniche26/providers/marathon_provider.dart';
+import 'package:techniche26/services/ca_api_service.dart';
 
 /// Provider for accessing CA Authentication Controller
 final caAuthControllerProvider = Provider((ref) => CaAuthController(ref));
 
-/// CA Authentication Controller
-///
-/// Handles all Campus Ambassador authentication flows:
-/// - Sign in with email/password
-/// - Token validation
-/// - User data fetching
-/// - Logout
 class CaAuthController {
   final Ref _ref;
-
   CaAuthController(this._ref);
 
   /// Sign in a CA user with email and password
@@ -32,6 +22,280 @@ class CaAuthController {
     required String password,
   }) async {
     // Show loading dialog
+    _showLoadingDialog(context, "Signing in...");
+
+    try {
+      final response = await CaApiService.signIn(email, password);
+
+      // Hide loading dialog
+      if (context.mounted) Navigator.of(context).pop();
+
+      if (response.statusCode == 200) {
+        final responseData = jsonDecode(response.body);
+        final String name = responseData['name'] ?? '';
+        final String t_id = responseData['t_id']?.toString() ?? '';
+        final String userEmail = responseData['email'] ?? '';
+        final int points = responseData['points'] ?? 0;
+        final String sanitizedHash = responseData['sanitizedHash'] ?? '';
+
+        if (name.isEmpty || t_id.isEmpty) {
+          if (context.mounted) {
+            showMessage(context, "Login failed — unexpected response", isError: true);
+          }
+          return false;
+        }
+
+        // Persist login state
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setBool('isLoggedInCA', true);
+        await prefs.setString('ca_name', name);
+        await prefs.setString('ca_t_id', t_id);
+        await prefs.setString('ca_email', userEmail);
+        await prefs.setInt('ca_points', points);
+        await prefs.setString('ca_sanitizedHash', sanitizedHash);
+
+        // Fetch full profile (institution, city, etc.) before navigating
+        if (context.mounted) {
+          await fetchUserData(context);
+        }
+
+        if (context.mounted) {
+          showMessage(context, "Logged in Successfully!");
+          Navigator.pushNamedAndRemoveUntil(context, CaBottomNavBar.routeName, (route) => false);
+        }
+        return true;
+      } else if (response.statusCode == 403) {
+        if (context.mounted) showMessage(context, "Please verify your email.", isError: true);
+      } else {
+        final body = jsonDecode(response.body);
+        final errorMessage = body['message'] ?? body['error'] ?? 'Login failed';
+        if (context.mounted) showMessage(context, errorMessage, isError: true);
+      }
+      return false;
+    } catch (e) {
+      if (context.mounted) Navigator.of(context).pop();
+      if (context.mounted) showMessage(context, "An error occurred during login", isError: true);
+      await _clearAuthData(context);
+      return false;
+    }
+  }
+
+  /// Register a new CA user
+  Future<bool> registerUser({
+    required BuildContext context,
+    required String name,
+    required String email,
+    required String contact,
+    required String institution,
+    required String city,
+    required String state,
+    required String password,
+  }) async {
+    _showLoadingDialog(context, "Creating account...");
+
+    try {
+      final response = await CaApiService.register(
+        name: name,
+        email: email,
+        contact: contact,
+        institution: institution,
+        city: city,
+        state: state,
+        password: password,
+      );
+
+      if (context.mounted) Navigator.of(context).pop();
+
+      if (response.statusCode == 201 || response.statusCode == 200) {
+        if (context.mounted) {
+          showDialog(
+            context: context,
+            builder: (ctx) => AlertDialog(
+              backgroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+              title: const Text("Success!", style: TextStyle(fontFamily: 'Univers', fontWeight: FontWeight.bold)),
+              content: const Text(
+                  "Registration successful! Please check your email (and spam folder) for a verification link before logging in.",
+                  style: TextStyle(fontFamily: 'General Sans')),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(ctx).pop();
+                    Navigator.of(context).pop(); // Back to login
+                  },
+                  child: const Text("Got it", style: TextStyle(fontFamily: 'Univers', fontWeight: FontWeight.bold, color: Color(0xFF002B5B))),
+                ),
+              ],
+            ),
+          );
+        }
+        return true;
+      } else if (response.statusCode == 409) {
+        if (context.mounted) showMessage(context, "This email is already registered.", isError: true);
+      } else {
+        final body = jsonDecode(response.body);
+        final error = body['message'] ?? body['error'] ?? 'Registration failed';
+        if (context.mounted) showMessage(context, error, isError: true);
+      }
+      return false;
+    } catch (e) {
+      if (context.mounted) Navigator.of(context).pop();
+      if (context.mounted) showMessage(context, "An error occurred during registration", isError: true);
+      return false;
+    }
+  }
+
+  /// Request a password reset link
+  Future<void> requestPasswordReset(BuildContext context, String email) async {
+    _showLoadingDialog(context, "Sending reset link...");
+
+    try {
+      final response = await CaApiService.forgotPassword(email);
+
+      if (context.mounted) Navigator.of(context).pop();
+
+      if (response.statusCode == 200) {
+        if (context.mounted) {
+          showMessage(context, "Password reset link sent to your email!");
+        }
+      } else if (response.statusCode == 429) {
+        if (context.mounted) showMessage(context, "Too many requests. Please try again later.", isError: true);
+      } else {
+        if (context.mounted) showMessage(context, "Failed to send reset link. User not found or server error.", isError: true);
+      }
+    } catch (e) {
+      if (context.mounted) Navigator.of(context).pop();
+      if (context.mounted) showMessage(context, "An error occurred", isError: true);
+    }
+  }
+
+  /// Check if CA user is authenticated and restore state
+  Future<bool> isCaUserAuthenticated() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final bool isLoggedIn = prefs.getBool('isLoggedInCA') ?? false;
+      final String name = prefs.getString('ca_name') ?? '';
+      if (!isLoggedIn || name.isEmpty) return false;
+
+      // Restore Riverpod state
+      final t_id = prefs.getString('ca_t_id') ?? '';
+      final email = prefs.getString('ca_email') ?? '';
+      final points = prefs.getInt('ca_points') ?? 0;
+      final sanitizedHash = prefs.getString('ca_sanitizedHash') ?? '';
+      final contact = prefs.getInt('ca_contact') ?? 0;
+      final state = prefs.getString('ca_state') ?? '';
+      final city = prefs.getString('ca_city') ?? '';
+      final institution = prefs.getString('ca_institution') ?? '';
+
+      _ref.read(caUserProvider.notifier).setUser(jsonEncode({
+        'name': name,
+        't_id': t_id,
+        'email': email,
+        'points': points,
+        'token': sanitizedHash,
+        'contact': contact,
+        'state': state,
+        'city': city,
+        'institution': institution,
+      }));
+
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /// Validate session — calls fetchUserData to ensure the server still recognizes the user.
+  Future<bool> validateTokenAndFetchUser(BuildContext context) async {
+    return await fetchUserData(context);
+  }
+
+  /// Fetch fresh CA user data from server (Identity Sync)
+  Future<bool> fetchUserData(BuildContext context) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final String email = prefs.getString('ca_email') ?? '';
+      final String token = prefs.getString('ca_sanitizedHash') ?? '';
+
+      if (email.isEmpty) return false;
+
+      // Using getCaUserDetails as it returns all fields including institution/city/state
+      final userData = await CaApiService.getCaUserDetails(email);
+
+      if (userData != null) {
+        final String name = userData['name'] ?? '';
+        final String t_id = userData['t_id']?.toString() ?? '';
+        final int points = userData['points'] ?? 0;
+        final int contact = userData['contact'] ?? 0;
+        final String state = userData['state'] ?? '';
+        final String city = userData['city'] ?? '';
+        final String institution = userData['institution'] ?? '';
+
+        // Update SharedPreferences
+        await prefs.setString('ca_name', name);
+        await prefs.setString('ca_t_id', t_id);
+        await prefs.setInt('ca_points', points);
+        await prefs.setInt('ca_contact', contact);
+        await prefs.setString('ca_state', state);
+        await prefs.setString('ca_city', city);
+        await prefs.setString('ca_institution', institution);
+
+        // Update Riverpod state
+        _ref.read(caUserProvider.notifier).setUser(jsonEncode({
+          'name': name,
+          't_id': t_id,
+          'email': email,
+          'points': points,
+          'token': token,
+          'contact': contact,
+          'state': state,
+          'city': city,
+          'institution': institution,
+        }));
+        return true;
+      }
+      return false;
+    } catch (e) {
+      print("Error fetching fresh CA user data: $e");
+      return false;
+    }
+  }
+
+  /// Logout CA user
+  Future<void> logoutUser(BuildContext context) async {
+    try {
+      await _clearAuthData(context);
+      if (context.mounted) {
+        showMessage(context, "Logged out successfully");
+        Navigator.pushNamedAndRemoveUntil(context, '/landing-screen', (route) => false);
+      }
+    } catch (e) {
+      print("Logout error: $e");
+    }
+  }
+
+  /// Clear all CA auth data
+  Future<void> _clearAuthData(BuildContext context) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('isLoggedInCA');
+      await prefs.remove('ca_name');
+      await prefs.remove('ca_t_id');
+      await prefs.remove('ca_email');
+      await prefs.remove('ca_points');
+      await prefs.remove('ca_sanitizedHash');
+      await prefs.remove('ca_contact');
+      await prefs.remove('ca_state');
+      await prefs.remove('ca_city');
+      await prefs.remove('ca_institution');
+      
+      _ref.read(caUserProvider.notifier).clearUser();
+    } catch (e) {
+      print("Clear auth data error: $e");
+    }
+  }
+
+  void _showLoadingDialog(BuildContext context, String message) {
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -45,19 +309,16 @@ class CaAuthController {
               color: Colors.white,
               borderRadius: BorderRadius.circular(15),
             ),
-            child: const Column(
+            child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFF00F7)),
+                const CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF002B5B)),
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 Text(
-                  "Signing in...",
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                  ),
+                  message,
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
                 ),
               ],
             ),
@@ -65,310 +326,5 @@ class CaAuthController {
         );
       },
     );
-
-    try {
-      const uri = GlobalVariables.baseUrl;
-
-      final response = await http.post(
-        Uri.parse("$uri/caauth/login"),
-        headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8',
-        },
-        body: jsonEncode({
-          'email': email,
-          'password': password,
-        }),
-      );
-
-      // Hide loading dialog
-      if (context.mounted) {
-        Navigator.of(context).pop();
-      }
-
-      if (response.statusCode == 200) {
-        final responseData = jsonDecode(response.body);
-
-        if (responseData['token'] != null) {
-          // Save token to SharedPreferences for persistence
-          final prefs = await SharedPreferences.getInstance();
-          await prefs.setString('ca_token', responseData['token']);
-
-          // Create complete user data with token
-          final userData = {
-            ...responseData,
-            'token': responseData['token'],
-          };
-
-          // Update Riverpod state
-          _ref.read(caUserProvider.notifier).setUser(jsonEncode(userData));
-
-          // Show "Loading account..." dialog while fetching user data
-          if (context.mounted) {
-            showDialog(
-              context: context,
-              barrierDismissible: false,
-              builder: (BuildContext context) {
-                return Dialog(
-                  elevation: 0,
-                  backgroundColor: Colors.transparent,
-                  child: Container(
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(15),
-                    ),
-                    child: const Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        CircularProgressIndicator(
-                          valueColor:
-                              AlwaysStoppedAnimation<Color>(Color(0xFFFF00F7)),
-                        ),
-                        SizedBox(height: 20),
-                        Text(
-                          "Loading account data...",
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              },
-            );
-          }
-
-          // Fetch full profile
-          await fetchUserData(context);
-
-          // Hide the second loading dialog
-          if (context.mounted) {
-            Navigator.of(context).pop();
-          }
-
-          showMessage(context, "Logged in Successfully!");
-          if (context.mounted) {
-            Navigator.pushNamedAndRemoveUntil(
-                context, CaBottomNavBar.routeName, (route) => false);
-          }
-          return true;
-        } else {
-          showMessage(context, "Login failed - no token received",
-              isError: true);
-        }
-      } else {
-        final errorMessage =
-            jsonDecode(response.body)['error'] ?? 'Login failed';
-        showMessage(context, errorMessage, isError: true);
-      }
-      return false;
-    } catch (e) {
-      // Hide loading dialog in case of error
-      if (context.mounted) {
-        Navigator.of(context).pop();
-      }
-      print("CA Login error: $e");
-      showMessage(context, "An error occurred during login", isError: true);
-      await _clearAuthData(context);
-      return false;
-    }
-  }
-
-  /// Check if CA user is authenticated (has valid token)
-  Future<bool> isCaUserAuthenticated() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      String? token = prefs.getString("ca_token");
-
-      if (token == null || token.isEmpty) {
-        return false;
-      }
-
-      try {
-        final parts = token.split('.');
-        if (parts.length != 3) {
-          return false;
-        }
-
-        String normalizedPayload = base64Url.normalize(parts[1]);
-        Map<String, dynamic> payload =
-            json.decode(utf8.decode(base64Url.decode(normalizedPayload)));
-
-        if (payload.containsKey('exp')) {
-          int expiry = payload['exp'];
-          int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-
-          if (now >= expiry) {
-            return false;
-          }
-        }
-      } catch (e) {
-        print("CA Token parsing error: $e");
-        return false;
-      }
-
-      return true;
-    } catch (e) {
-      print("CA Auth check error: $e");
-      return false;
-    }
-  }
-
-  /// Validate token with server and fetch user data
-  Future<bool> validateTokenAndFetchUser(BuildContext context) async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      String? token = prefs.getString("ca_token");
-
-      if (token == null || token.isEmpty) {
-        return false;
-      }
-
-      String uri = GlobalVariables.baseUrl;
-
-      // Validate token
-      final tokenRes = await http.post(
-        Uri.parse("$uri/caauth/validatetokenApp"),
-        headers: {
-          'Content-Type': 'application/json; charset=UTF-8',
-          'token': token,
-        },
-      );
-
-      if (tokenRes.statusCode != 200) {
-        await _clearAuthData(context);
-        return false;
-      }
-
-      final bool isValid = jsonDecode(tokenRes.body);
-      if (!isValid) {
-        await _clearAuthData(context);
-        return false;
-      }
-
-      // Show loading while fetching user data
-      if (context.mounted) {
-        showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (BuildContext context) {
-            return const Center(
-              child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFF00F7)),
-              ),
-            );
-          },
-        );
-      }
-
-      // If token is valid, fetch user data
-      await fetchUserData(context);
-
-      // Hide loading dialog
-      if (context.mounted) {
-        Navigator.of(context).pop();
-      }
-
-      return true;
-    } catch (e) {
-      // Hide loading dialog
-      if (context.mounted) {
-        Navigator.of(context).pop();
-      }
-      print("CA Token validation error: $e");
-      await _clearAuthData(context);
-      return false;
-    }
-  }
-
-  /// Fetch CA user data from server
-  Future<void> fetchUserData(BuildContext context) async {
-    try {
-      print("Starting fetchUserData (CA Riverpod)");
-      final prefs = await SharedPreferences.getInstance();
-      String? token = prefs.getString("ca_token");
-
-      if (token == null || token.isEmpty) {
-        await _clearAuthData(context);
-        return;
-      }
-
-      String uri = GlobalVariables.baseUrl;
-
-      // Validate token
-      final tokenRes = await http.post(
-        Uri.parse("$uri/caauth/validatetokenApp"),
-        headers: {
-          'Content-Type': 'application/json; charset=UTF-8',
-          'token': token,
-        },
-      );
-
-      if (tokenRes.statusCode != 200 || !jsonDecode(tokenRes.body)) {
-        await _clearAuthData(context);
-        return;
-      }
-
-      // Fetch user data
-      final userRes = await http.get(
-        Uri.parse("$uri/caauth/getUserApp"),
-        headers: {
-          'Content-Type': 'application/json; charset=UTF-8',
-          'token': token,
-        },
-      );
-
-      if (userRes.statusCode == 200) {
-        final userData = jsonDecode(userRes.body);
-        userData['token'] = token;
-
-        // Update Riverpod state
-        _ref.read(caUserProvider.notifier).setUser(jsonEncode(userData));
-      } else {
-        await _clearAuthData(context);
-      }
-    } catch (e) {
-      print("Error fetching CA user data: $e");
-      await _clearAuthData(context);
-    }
-  }
-
-  /// Logout CA user
-  Future<void> logoutUser(BuildContext context) async {
-    try {
-      await _clearAuthData(context);
-      showMessage(context, "Logged out successfully");
-
-      if (context.mounted) {
-        Navigator.pushNamedAndRemoveUntil(
-            context, '/landing-screen', (route) => false);
-      }
-    } catch (e) {
-      print("CA Logout error: $e");
-      showMessage(context, "An error occurred during logout", isError: true);
-      await _clearAuthData(context);
-      if (context.mounted) {
-        Navigator.pushNamedAndRemoveUntil(
-            context, '/landing-screen', (route) => false);
-      }
-    }
-  }
-
-  /// Clear all CA auth data
-  Future<void> _clearAuthData(BuildContext context) async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.remove('ca_token');
-      await prefs.remove('ca_user');
-      await prefs.remove('ca_userData');
-
-      // Clear Riverpod state
-      _ref.read(caUserProvider.notifier).clearUser();
-
-    } catch (e) {
-      print("Error clearing CA auth data: $e");
-    }
   }
 }
