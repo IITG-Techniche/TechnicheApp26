@@ -3,8 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'dart:convert';
 import 'package:intl/intl.dart';
-import 'package:techniche26/view/landing_screen.dart';
-import 'package:techniche26/utils/app_drawer.dart';
+import 'package:techniche26/view/core/landing_screen.dart';
+import 'package:techniche26/widgets/app_drawer.dart';
 
 const Map<String, Map<String, dynamic>> categoryStyles = {
   'Robotics': {'icon': Icons.smart_toy_outlined, 'color': Color(0xFF7C3EC3)},

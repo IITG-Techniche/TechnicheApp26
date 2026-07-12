@@ -1,17 +1,17 @@
 import 'package:techniche26/view/auth/ca_auth_screen.dart';
-import 'package:techniche26/utils/app_drawer.dart';
+import 'package:techniche26/widgets/app_drawer.dart';
 import 'package:techniche26/view/techno/papers_display.dart';
 
 import 'package:techniche26/view/marathon/marathon_main.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:techniche26/utils/ca_bottom_nav_bar.dart';
-import 'package:techniche26/view/events_screen.dart';
-import 'package:techniche26/view/utilities_screen.dart';
-import 'package:techniche26/view/legacy_screen.dart';
+import 'package:techniche26/widgets/ca_bottom_nav_bar.dart';
+import 'package:techniche26/view/events/events_screen.dart';
+import 'package:techniche26/view/core/utilities_screen.dart';
+import 'package:techniche26/view/core/legacy_screen.dart';
 import 'package:techniche26/controller/riverpod_controller/ca_auth_riverpod_controller.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:techniche26/utils/bottom_nav_bar.dart';
+import 'package:techniche26/widgets/bottom_nav_bar.dart';
 import 'package:upgrader/upgrader.dart';
 import 'package:techniche26/services/notification_service.dart';
 import 'package:techniche26/constant/appTheme.dart';
@@ -373,6 +373,18 @@ class _LandingScreenState extends ConsumerState<LandingScreen> {
                         logo_image: 'assets/ghm/technichelogo.png',
                         logo_color: const Color(0xFF23242B),
                         logo_name: 'Check Out',
+                      ),
+                      SizedBox(height: screenWidth * 0.04),
+                      _gridItem(
+                        context: context,
+                        title: 'Comedy Night',
+                        description: 'Register to secure your virtual entry pass for Techniche Comedy Night!',
+                        imagePath: 'assets/logo_withoutBG.png',
+                        onTap: () => Navigator.pushNamed(
+                            context, '/comedy-night'),
+                        logo_image: 'assets/ghm/technichelogo.png',
+                        logo_color: const Color(0xFF8E24AA),
+                        logo_name: 'Book Slot',
                       ),
                       SizedBox(height: 20),
                     ],

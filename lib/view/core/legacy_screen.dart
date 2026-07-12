@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:timeline_tile/timeline_tile.dart';
-import 'package:techniche26/utils/app_drawer.dart';
+import 'package:techniche26/widgets/app_drawer.dart';
 
 class LegacyPage extends StatefulWidget {
   const LegacyPage({Key? key}) : super(key: key);

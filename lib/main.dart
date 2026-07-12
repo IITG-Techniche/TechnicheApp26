@@ -1,6 +1,6 @@
 import 'constant/appTheme.dart';
 import 'router.dart';
-import 'view/splash_screen.dart';
+import 'view/core/splash_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';

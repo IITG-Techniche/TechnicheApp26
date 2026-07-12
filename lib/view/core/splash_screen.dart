@@ -6,8 +6,8 @@ import 'package:lottie/lottie.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:techniche26/controller/riverpod_controller/ca_auth_riverpod_controller.dart';
 import 'package:techniche26/providers/marathon_provider.dart';
-import 'package:techniche26/view/landing_screen.dart';
-import 'package:techniche26/view/onboarding_screen.dart';
+import 'package:techniche26/view/core/landing_screen.dart';
+import 'package:techniche26/view/core/onboarding_screen.dart';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 

@@ -1,5 +1,5 @@
 //import 'package:techniche26/view/auth/authScreen.dart';
-import 'package:techniche26/utils/bottom_nav_bar.dart';
+import 'package:techniche26/widgets/bottom_nav_bar.dart';
 import 'package:techniche26/view/ca/homescreen.dart';
 import 'package:techniche26/view/ca/leaderboard.dart';
 import 'package:techniche26/view/ca/profilescreen.dart';

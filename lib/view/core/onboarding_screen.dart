@@ -4,8 +4,8 @@ import 'package:lottie/lottie.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:techniche26/constant/sharedPerfence.dart';
 import 'package:techniche26/controller/riverpod_controller/ca_auth_riverpod_controller.dart';
-import 'package:techniche26/utils/ca_bottom_nav_bar.dart';
-import 'package:techniche26/view/landing_screen.dart';
+import 'package:techniche26/widgets/ca_bottom_nav_bar.dart';
+import 'package:techniche26/view/core/landing_screen.dart';
 
 class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({super.key});

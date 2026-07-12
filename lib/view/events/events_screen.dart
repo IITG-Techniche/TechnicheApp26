@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
-import '../model/events_data.dart';
+import '../../model/events_data.dart';
 import 'event_detail_sheet.dart';
-import '../constant/appTheme.dart';
+import '../../constant/appTheme.dart';
 
 class EventsScreen extends StatefulWidget {
   static const String routeName = '/events-screen';

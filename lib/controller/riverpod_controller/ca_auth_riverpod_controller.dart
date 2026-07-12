@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:techniche26/utils/ca_bottom_nav_bar.dart';
+import 'package:techniche26/widgets/ca_bottom_nav_bar.dart';
 import 'package:techniche26/utils/errorHandler.dart';
 import 'package:techniche26/controller/riverpod_controller/ca_user_provider.dart';
 import 'package:techniche26/services/ca_api_service.dart';

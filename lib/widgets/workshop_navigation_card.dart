@@ -1,5 +1,5 @@
 import 'package:techniche26/model/events_data.dart'; 
-import 'package:techniche26/view/sub_category_screen.dart'; 
+import 'package:techniche26/view/events/sub_category_screen.dart'; 
 import 'package:flutter/material.dart';
 
 class WorkshopNavigationCard extends StatelessWidget {

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../model/events_data.dart';
-import '../constant/appTheme.dart';
+import '../../model/events_data.dart';
+import '../../constant/appTheme.dart';
 
 /// Shows the appropriate event detail UI based on event data in a clean light theme
 void showEventDetail(BuildContext context, SubCategory subCategory) {

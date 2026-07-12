@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
-import 'package:techniche26/utils/app_drawer.dart';
-import '../constant/appTheme.dart';
+import 'package:techniche26/widgets/app_drawer.dart';
+import '../../constant/appTheme.dart';
 
 class UtilitiesScreen extends StatefulWidget {
   static const String routeName = '/utilities-screen';

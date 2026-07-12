@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../constant/appTheme.dart';
+import '../../constant/appTheme.dart';
 import 'package:animated_glitch/animated_glitch.dart';
 import 'package:model_viewer_plus/model_viewer_plus.dart';
 

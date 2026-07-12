@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../constant/appTheme.dart';
+import '../../constant/appTheme.dart';
 
 class WorkshopsScreen extends StatefulWidget {
   static const String routeName = '/workshops';

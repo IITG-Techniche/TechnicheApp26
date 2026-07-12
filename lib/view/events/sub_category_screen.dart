@@ -1,7 +1,7 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
-import '../model/events_data.dart';
-import '../utils/animate_gradient_background.dart';
+import '../../model/events_data.dart';
+import '../../widgets/animate_gradient_background.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class _Star {

@@ -3,10 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:techniche26/providers/navigation_provider.dart';
 import 'package:techniche26/view/marathon/marathon_main.dart';
 import 'package:techniche26/view/auth/ca_auth_screen.dart';
-import 'package:techniche26/view/events_screen.dart';
+import 'package:techniche26/view/events/events_screen.dart';
 import 'package:techniche26/view/techno/papers_display.dart';
-import 'package:techniche26/view/utilities_screen.dart';
-import 'package:techniche26/view/workshops_screen.dart';
+import 'package:techniche26/view/core/utilities_screen.dart';
+import 'package:techniche26/view/events/workshops_screen.dart';
 
 class AppDrawer extends ConsumerWidget {
   const AppDrawer({Key? key}) : super(key: key);
