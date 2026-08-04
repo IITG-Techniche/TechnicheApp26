@@ -11,6 +11,8 @@ import 'package:techniche26/view/core/utilities_screen.dart';
 import 'package:techniche26/view/events/workshops_screen.dart';
 import 'package:techniche26/view/techno/registration_screen.dart';
 import 'package:techniche26/view/home/comedy_night_screen.dart';
+import 'package:techniche26/view/auth/login_screen.dart';
+import 'package:techniche26/view/core/profile_screen.dart';
 
 import 'package:flutter/material.dart';
 
@@ -18,6 +20,15 @@ Route<dynamic> generateRoute(RouteSettings routeSettings) {
   switch (routeSettings.name) {
     case LandingScreen.routeName:
       return _fadeRoute(const LandingScreen(), routeSettings);
+
+    case LoginScreen.routeName:
+      return _fadeRoute(const LoginScreen(), routeSettings);
+
+    case ProfileScreen.routeName:
+      return MaterialPageRoute(
+        settings: routeSettings,
+        builder: (_) => const ProfileScreen(),
+      );
 
     case ComedyNightScreen.routeName:
       return MaterialPageRoute(

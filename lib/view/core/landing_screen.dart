@@ -1,15 +1,17 @@
-import 'package:techniche26/view/auth/ca_auth_screen.dart';
+import 'package:techniche26/view/auth/ca_auth_screen.dart'; // Used by home CA card
+import 'package:techniche26/view/core/schedule_screen.dart';
+import 'package:techniche26/view/core/map_screen.dart';
 import 'package:techniche26/widgets/app_drawer.dart';
 import 'package:techniche26/view/techno/papers_display.dart';
 
 import 'package:techniche26/view/marathon/marathon_main.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:techniche26/widgets/ca_bottom_nav_bar.dart';
+import 'package:techniche26/widgets/ca_bottom_nav_bar.dart'; // Still used by _handleAuthNavigation
 import 'package:techniche26/view/events/events_screen.dart';
-import 'package:techniche26/view/core/utilities_screen.dart';
+// import 'package:techniche26/view/core/utilities_screen.dart';
 import 'package:techniche26/view/core/legacy_screen.dart';
-import 'package:techniche26/controller/riverpod_controller/ca_auth_riverpod_controller.dart';
+import 'package:techniche26/controller/riverpod_controller/ca_auth_riverpod_controller.dart'; // Still used by _handleAuthNavigation
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:techniche26/widgets/bottom_nav_bar.dart';
 import 'package:upgrader/upgrader.dart';
@@ -141,29 +143,23 @@ class _LandingScreenState extends ConsumerState<LandingScreen> {
   }
 
   void _onItemTapped(int index) {
-    // Index 3 is Campus Ambassador — navigate directly instead of switching tab
-    if (index == 3) {
-      _handleAuthNavigation(context);
-      return;
-    }
     if (ref.read(bottomNavSelectedIndexProvider) == index) return;
     ref.read(bottomNavSelectedIndexProvider.notifier).state = index;
   }
 
+  // CA auth navigation (used by home screen CA card)
   Future<void> _handleAuthNavigation(BuildContext context) async {
-    // Perform a quick local check for stored session
     bool isAuth = await ref.read(caAuthControllerProvider).isCaUserAuthenticated();
-    
     if (context.mounted) {
       if (isAuth) {
-        // Navigate immediately - background sync will happen inside the CA Portal
         Navigator.pushNamed(context, CaBottomNavBar.routeName);
       } else {
-        // Go to auth screen if no local session exists
         Navigator.pushNamed(context, CaAuthScreen.routeName);
       }
     }
   }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -171,8 +167,10 @@ class _LandingScreenState extends ConsumerState<LandingScreen> {
       const EventsScreen(isTab: true),
       LegacyPage(),
       _buildHomeContent(context),
-      const SizedBox.shrink(), // CA — handled via _handleAuthNavigation, never rendered
-      const UtilitiesScreen(),
+      const SchedulePage(),   // Schedule screen
+      const MapScreen(),       // Map screen
+      // const SizedBox.shrink(), // CA — commented out
+      // const UtilitiesScreen(),
     ];
 
     final selectedIndex = ref.watch(bottomNavSelectedIndexProvider);
@@ -210,9 +208,13 @@ class _LandingScreenState extends ConsumerState<LandingScreen> {
               GlowingBottomNavBarItem(icon: Icons.history_edu, label: 'Legacy'),
               GlowingBottomNavBarItem(icon: Icons.home_filled, label: 'Home'),
               GlowingBottomNavBarItem(
-                  icon: Icons.school_rounded, label: 'CA'),
+                  icon: Icons.calendar_month_rounded, label: 'Schedule'),
               GlowingBottomNavBarItem(
-                  icon: Icons.workspace_premium_sharp, label: 'Utilities'),
+                  icon: Icons.map_outlined, label: 'Map'),
+              // GlowingBottomNavBarItem(
+              //     icon: Icons.school_rounded, label: 'CA'),
+              // GlowingBottomNavBarItem(
+              //     icon: Icons.workspace_premium_sharp, label: 'Utilities'),
             ],
           ),
         ),
@@ -299,6 +301,16 @@ class _LandingScreenState extends ConsumerState<LandingScreen> {
                               fit: BoxFit.contain,
                             ),
                           ),
+                          GestureDetector(
+                            onTap: () {
+                              Navigator.pushNamed(context, '/profile');
+                            },
+                            child: Icon(
+                              Icons.account_circle_outlined,
+                              color: Colors.grey[600],
+                              size: 26,
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -332,22 +344,22 @@ class _LandingScreenState extends ConsumerState<LandingScreen> {
                         logo_color: const Color(0xFF002B5B),
                         logo_name: 'Explore',
                       ),
-                      SizedBox(height: screenWidth * 0.04),
-                      _gridItem(
-                        context: context,
-                        title: 'Practice Run',
-                        description:
-                            'Track your runs and join the leaderboard!',
-                        imagePath: 'assets/ghm/practicerun2.png',
-                        onTap: () {
-                          if (ModalRoute.of(context)?.isCurrent == true) {
-                            Navigator.pushNamed(context, MarathonMainScreen.routeName);
-                          }
-                        },
-                        logo_image: 'assets/ghm/runline.png',
-                        logo_color: const Color(0xFF175BCC),
-                        logo_name: 'Track',
-                      ),
+                      // SizedBox(height: screenWidth * 0.04),
+                      // _gridItem(
+                      //   context: context,
+                      //   title: 'Practice Run',
+                      //   description:
+                      //       'Track your runs and join the leaderboard!',
+                      //   imagePath: 'assets/ghm/practicerun2.png',
+                      //   onTap: () {
+                      //     if (ModalRoute.of(context)?.isCurrent == true) {
+                      //       Navigator.pushNamed(context, MarathonMainScreen.routeName);
+                      //     }
+                      //   },
+                      //   logo_image: 'assets/ghm/runline.png',
+                      //   logo_color: const Color(0xFF175BCC),
+                      //   logo_name: 'Track',
+                      // ),
                       SizedBox(height: screenWidth * 0.04),
                       _gridItem(
                         context: context,

@@ -22,6 +22,18 @@ class NotificationService {
   Future<void> initializeAndHandleNotifications() async {
     await _initializeLocalNotifications();
     FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+
+    try {
+      NotificationSettings settings = await _fcm.requestPermission(
+        alert: true,
+        badge: true,
+        sound: true,
+      );
+      print("FCM notification permission status: ${settings.authorizationStatus}");
+    } catch (e) {
+      print("Failed to request FCM notification permission: $e");
+    }
+
     PermissionStatus status = await Permission.notification.status;
     if (!status.isGranted) {
       status = await Permission.notification.request();

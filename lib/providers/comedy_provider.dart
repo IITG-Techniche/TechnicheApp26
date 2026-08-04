@@ -46,14 +46,29 @@ class ComedyNotifier extends StateNotifier<ComedyState> {
   Future<void> _loadStateFromPrefs() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final bool registered = prefs.getBool(SharedPreferenceConstants.userComedyRegistered) ?? false;
-      final String status = prefs.getString(SharedPreferenceConstants.userComedyStatus) ?? '';
+      
+      // Backward-compatible migration from old keys if new key does not exist yet
+      String? comedyStatus = prefs.getString('comedyStatus');
+      if (comedyStatus == null) {
+        final bool oldRegistered = prefs.getBool(SharedPreferenceConstants.userComedyRegistered) ?? false;
+        final String oldStatus = prefs.getString(SharedPreferenceConstants.userComedyStatus) ?? '';
+        if (oldRegistered) {
+          if (oldStatus == 'CONFIRMED') {
+            comedyStatus = 'confirmed';
+          } else {
+            comedyStatus = 'registered';
+          }
+          await prefs.setString('comedyStatus', comedyStatus);
+        }
+      }
+
+      final String resolvedStatus = comedyStatus ?? 'unregistered';
       final String? ticketCode = prefs.getString(SharedPreferenceConstants.userComedyTicketCode);
 
       state = ComedyState(
         isLoading: false,
-        registered: registered,
-        status: status,
+        registered: resolvedStatus != 'unregistered',
+        status: resolvedStatus == 'confirmed' ? 'CONFIRMED' : (resolvedStatus == 'registered' ? 'WAITLISTED' : ''),
         ticketCode: ticketCode,
       );
     } catch (e) {
@@ -65,8 +80,15 @@ class ComedyNotifier extends StateNotifier<ComedyState> {
   Future<void> _saveStateToPrefs(ComedyState newState) async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setBool(SharedPreferenceConstants.userComedyRegistered, newState.registered);
-      await prefs.setString(SharedPreferenceConstants.userComedyStatus, newState.status);
+      String comedyStatus = 'unregistered';
+      if (newState.registered) {
+        if (newState.status == 'CONFIRMED') {
+          comedyStatus = 'confirmed';
+        } else {
+          comedyStatus = 'registered';
+        }
+      }
+      await prefs.setString('comedyStatus', comedyStatus);
       if (newState.ticketCode != null) {
         await prefs.setString(SharedPreferenceConstants.userComedyTicketCode, newState.ticketCode!);
       } else {
@@ -82,8 +104,7 @@ class ComedyNotifier extends StateNotifier<ComedyState> {
     state = ComedyState();
     try {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.remove(SharedPreferenceConstants.userComedyRegistered);
-      await prefs.remove(SharedPreferenceConstants.userComedyStatus);
+      await prefs.remove('comedyStatus');
       await prefs.remove(SharedPreferenceConstants.userComedyTicketCode);
     } catch (e) {
       print('Error clearing ComedyState from prefs: $e');
@@ -91,15 +112,19 @@ class ComedyNotifier extends StateNotifier<ComedyState> {
   }
 
   /// Fetch registration status from server
-  Future<void> fetchRegistrationStatus() async {
+  Future<void> fetchRegistrationStatus({bool force = false}) async {
     final userState = _ref.read(userProvider);
     if (userState.token.isEmpty) {
       await clearComedyState();
       return;
     }
 
-    // If ticket is already confirmed and we have a ticket code, skip fetching to prevent server spam
-    if (state.registered && state.status == 'CONFIRMED' && state.ticketCode != null && state.ticketCode!.isNotEmpty) {
+    final prefs = await SharedPreferences.getInstance();
+    final bool hasCachedStatus = prefs.containsKey('comedyStatus');
+    final String comedyStatus = prefs.getString('comedyStatus') ?? 'unregistered';
+
+    // If not forced (meaning it's not a manual refresh click or initial load where cache is missing), and the status is 'unregistered' or 'confirmed', skip the API call!
+    if (!force && hasCachedStatus && (comedyStatus == 'unregistered' || comedyStatus == 'confirmed')) {
       return;
     }
 
@@ -187,7 +212,7 @@ class ComedyNotifier extends StateNotifier<ComedyState> {
     } catch (e) {
       state = state.copyWith(isLoading: false);
       if (context.mounted) {
-        showMessage(context, "An error occurred during registration: $e", isError: true);
+        showMessage(context, "Failed to register due to an internet or connection issue.", isError: true);
       }
       return false;
     }

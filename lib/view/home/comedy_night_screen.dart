@@ -2,12 +2,12 @@ import 'dart:async';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../providers/user_provider.dart';
 import '../../providers/comedy_provider.dart';
 import '../../utils/errorHandler.dart';
+import '../../constant/appTheme.dart';
 
 class ComedyNightScreen extends ConsumerStatefulWidget {
   static const String routeName = '/comedy-night';
@@ -18,11 +18,6 @@ class ComedyNightScreen extends ConsumerStatefulWidget {
 }
 
 class _ComedyNightScreenState extends ConsumerState<ComedyNightScreen> {
-  final GoogleSignIn _googleSignIn = GoogleSignIn(
-    scopes: ['email', 'profile'],
-  );
-
-  bool _isGoogleLoggingIn = false;
   bool _isRemoteConfigLoading = true;
   
   // Timer config states
@@ -31,41 +26,15 @@ class _ComedyNightScreenState extends ConsumerState<ComedyNightScreen> {
   Timer? _countdownTimer;
   Duration _timeLeft = Duration.zero;
 
-  // Form keys and controllers
-  final _formKey = GlobalKey<FormState>();
-  final _nameCtrl = TextEditingController();
-  final _rollCtrl = TextEditingController();
-  final _emailCtrl = TextEditingController();
-  final _branchCtrl = TextEditingController();
-  final _phoneCtrl = TextEditingController();
-  
-  String _selectedYear = '3rd Year';
-  String _selectedProgram = 'B.Tech';
-
-  final List<String> _years = ['1st Year', '2nd Year', '3rd Year', '4th Year', '5th Year', 'Other'];
-  final List<String> _programs = ['B.Tech', 'B.Des', 'M.Tech', 'Ph.D', 'M.Sc', 'M.Des', 'Other'];
-
   @override
   void initState() {
     super.initState();
     _fetchRemoteConfig();
     
-    // Auto-populate form when user profile is updated or loaded
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final user = ref.read(userProvider);
       if (user.isAuthenticated) {
-        _nameCtrl.text = user.name;
-        _emailCtrl.text = user.collegeEmail.isNotEmpty ? user.collegeEmail : user.email;
-        _rollCtrl.text = user.rollNumber;
-        _branchCtrl.text = user.branch;
-        _phoneCtrl.text = user.phone;
-        if (user.year.isNotEmpty && _years.contains(user.year)) {
-          _selectedYear = user.year;
-        }
-        if (user.program.isNotEmpty && _programs.contains(user.program)) {
-          _selectedProgram = user.program;
-        }
-        // Fetch fresh comedy status
+        // Fetch fresh comedy status (it checks SharedPreferences cache internally to prevent spamming!)
         ref.read(comedyProvider.notifier).fetchRegistrationStatus();
       }
     });
@@ -74,11 +43,6 @@ class _ComedyNightScreenState extends ConsumerState<ComedyNightScreen> {
   @override
   void dispose() {
     _countdownTimer?.cancel();
-    _nameCtrl.dispose();
-    _rollCtrl.dispose();
-    _emailCtrl.dispose();
-    _branchCtrl.dispose();
-    _phoneCtrl.dispose();
     super.dispose();
   }
 
@@ -141,75 +105,7 @@ class _ComedyNightScreenState extends ConsumerState<ComedyNightScreen> {
     });
   }
 
-  /// Trigger actual Google Authentication
-  Future<void> _handleGoogleSignIn() async {
-    setState(() => _isGoogleLoggingIn = true);
-    try {
-      final GoogleSignInAccount? account = await _googleSignIn.signIn();
-      if (account != null) {
-        if (mounted) {
-          final success = await ref.read(userProvider.notifier).signInWithGoogle(
-            context: context,
-            email: account.email,
-            googleId: account.id,
-            name: account.displayName,
-          );
 
-          if (success && mounted) {
-            // Auto populate details
-            final user = ref.read(userProvider);
-            _nameCtrl.text = user.name;
-            _emailCtrl.text = user.email;
-            
-            // Sync FCM Token
-            final prefs = await SharedPreferences.getInstance();
-            final fcm = prefs.getString('fcm_token');
-            if (fcm != null && fcm.isNotEmpty) {
-              await ref.read(userProvider.notifier).syncFcmToken(fcm);
-            }
-
-            // Fetch registration status
-            ref.read(comedyProvider.notifier).fetchRegistrationStatus();
-          }
-        }
-      }
-    } catch (e) {
-      debugPrint("Google Sign-In Error: $e");
-      if (mounted) {
-        showMessage(context, "Google login failed: $e", isError: true);
-      }
-    } finally {
-      if (mounted) setState(() => _isGoogleLoggingIn = false);
-    }
-  }
-
-  /// Developer bypass to authenticate without a working Google setup (e.g. in Emulator)
-  Future<void> _developerBypassLogin() async {
-    setState(() => _isGoogleLoggingIn = true);
-    try {
-      final String mockEmail = "comedy_tester@iitg.ac.in";
-      final String mockGoogleId = "mock_google_id_1012398";
-      final String mockName = "Techniche Tester";
-
-      final success = await ref.read(userProvider.notifier).signInWithGoogle(
-        context: context,
-        email: mockEmail,
-        googleId: mockGoogleId,
-        name: mockName,
-      );
-
-      if (success && mounted) {
-        final user = ref.read(userProvider);
-        _nameCtrl.text = user.name;
-        _emailCtrl.text = user.email;
-        ref.read(comedyProvider.notifier).fetchRegistrationStatus();
-      }
-    } catch (e) {
-      if (mounted) showMessage(context, "Bypass failed: $e", isError: true);
-    } finally {
-      if (mounted) setState(() => _isGoogleLoggingIn = false);
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -234,17 +130,7 @@ class _ComedyNightScreenState extends ConsumerState<ComedyNightScreen> {
           icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
-        actions: [
-          if (userState.isAuthenticated)
-            IconButton(
-              icon: const Icon(Icons.logout, color: Colors.redAccent),
-              tooltip: 'Sign Out',
-              onPressed: () {
-                ref.read(userProvider.notifier).signOut();
-                showMessage(context, "Logged out successfully");
-              },
-            )
-        ],
+       
       ),
       body: Stack(
         children: [
@@ -291,300 +177,148 @@ class _ComedyNightScreenState extends ConsumerState<ComedyNightScreen> {
 
   Widget _buildBody(UserState userState, ComedyState comedyState) {
     if (!userState.isAuthenticated) {
-      return _buildLoginView();
+      return _buildLoginRequiredView();
     }
 
     if (!userState.profileCompleted) {
-      return _buildProfileForm(userState);
+      return _buildProfileRequiredView();
     }
 
     return _buildEventRegistration(userState, comedyState);
   }
 
-  // ──── 1. LOGIN SCREEN VIEW ────
-  Widget _buildLoginView() {
+  Widget _buildLoginRequiredView() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16),
+      padding: const EdgeInsets.all(28.0),
       child: Center(
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.purple.withOpacity(0.1),
-                  border: Border.all(color: Colors.purple.withOpacity(0.3), width: 2),
-                ),
-                child: const Icon(
-                  Icons.theater_comedy,
-                  size: 90,
-                  color: Colors.purpleAccent,
-                ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.purple.withOpacity(0.1),
+                border: Border.all(color: Colors.purpleAccent.withOpacity(0.2), width: 2),
               ),
-              const SizedBox(height: 24),
-              const Text(
-                'Unlock Comedy Night',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'Univers',
-                ),
-              ),
-              const SizedBox(height: 12),
-              const Text(
-                'Sign in with your Google account to complete your student profile and secure your ticket.',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Colors.white70,
-                  fontSize: 15,
-                  height: 1.4,
-                  fontFamily: 'General Sans',
-                ),
-              ),
-              const SizedBox(height: 40),
-              
-              if (_isGoogleLoggingIn)
-                const CircularProgressIndicator(valueColor: AlwaysStoppedAnimation(Colors.purpleAccent))
-              else ...[
-                ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    foregroundColor: Colors.black,
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30),
-                    ),
-                    elevation: 5,
-                  ),
-                  icon: Image.asset(
-                    'assets/logo_withoutBG.png', // Assuming we can use this or direct icon
-                    width: 22,
-                    height: 22,
-                    errorBuilder: (_, __, ___) => const Icon(Icons.g_mobiledata, color: Colors.blue, size: 24),
-                  ),
-                  label: const Text(
-                    'Continue with Google',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
-                  onPressed: _handleGoogleSignIn,
-                ),
-                const SizedBox(height: 20),
-                TextButton(
-                  onPressed: _developerBypassLogin,
-                  child: Text(
-                    '[Dev Mode] Bypass Google Login',
-                    style: TextStyle(color: Colors.white.withOpacity(0.4), fontSize: 13),
-                  ),
-                ),
-              ],
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  // ──── 2. PROFILE COMPLETION VIEW ────
-  Widget _buildProfileForm(UserState userState) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24.0),
-      child: Form(
-        key: _formKey,
-        child: SingleChildScrollView(
-          physics: const BouncingScrollPhysics(),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 16),
-              const Text(
-                'Complete Student Profile',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'Univers',
-                ),
-              ),
-              const SizedBox(height: 6),
-              const Text(
-                'All fields are required to register for Comedy Night events.',
-                style: TextStyle(color: Colors.white60, fontSize: 13),
-              ),
-              const SizedBox(height: 24),
-
-              _buildTextField('Full Name', _nameCtrl, Icons.person, (val) {
-                if (val == null || val.trim().isEmpty) return 'Enter your name';
-                return null;
-              }),
-              _buildTextField('Roll Number', _rollCtrl, Icons.badge, (val) {
-                if (val == null || val.trim().isEmpty) return 'Enter your IITG Roll number';
-                return null;
-              }),
-              _buildTextField('College Email', _emailCtrl, Icons.email, (val) {
-                if (val == null || val.trim().isEmpty) return 'Enter your college email';
-                if (!val.contains('@')) return 'Enter a valid email';
-                return null;
-              }),
-              _buildTextField('Branch', _branchCtrl, Icons.book, (val) {
-                if (val == null || val.trim().isEmpty) return 'Enter your academic branch (e.g. CSE)';
-                return null;
-              }),
-              _buildTextField('Phone Number', _phoneCtrl, Icons.phone, (val) {
-                if (val == null || val.trim().isEmpty) return 'Enter your contact number';
-                return null;
-              }, keyboardType: TextInputType.phone),
-
-              const SizedBox(height: 12),
-              // Dropdowns
-              Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text('Year', style: TextStyle(color: Colors.white70, fontWeight: FontWeight.bold)),
-                        const SizedBox(height: 6),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12),
-                          decoration: BoxDecoration(
-                            color: Colors.grey[900],
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: Colors.purple.withOpacity(0.3)),
-                          ),
-                          child: DropdownButtonHideUnderline(
-                            child: DropdownButton<String>(
-                              value: _selectedYear,
-                              dropdownColor: Colors.grey[950],
-                              style: const TextStyle(color: Colors.white),
-                              items: _years.map((y) {
-                                return DropdownMenuItem(value: y, child: Text(y));
-                              }).toList(),
-                              onChanged: (val) {
-                                if (val != null) setState(() => _selectedYear = val);
-                              },
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text('Program', style: TextStyle(color: Colors.white70, fontWeight: FontWeight.bold)),
-                        const SizedBox(height: 6),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12),
-                          decoration: BoxDecoration(
-                            color: Colors.grey[900],
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: Colors.purple.withOpacity(0.3)),
-                          ),
-                          child: DropdownButtonHideUnderline(
-                            child: DropdownButton<String>(
-                              value: _selectedProgram,
-                              dropdownColor: Colors.grey[950],
-                              style: const TextStyle(color: Colors.white),
-                              items: _programs.map((p) {
-                                return DropdownMenuItem(value: p, child: Text(p));
-                              }).toList(),
-                              onChanged: (val) {
-                                if (val != null) setState(() => _selectedProgram = val);
-                              },
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 40),
-
-              SizedBox(
-                width: double.infinity,
-                height: 52,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.purpleAccent,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: const Text('Save & Continue', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                  onPressed: () async {
-                    if (_formKey.currentState!.validate()) {
-                      final success = await ref.read(userProvider.notifier).completeProfile(
-                        context: context,
-                        name: _nameCtrl.text.trim(),
-                        rollNumber: _rollCtrl.text.trim(),
-                        collegeEmail: _emailCtrl.text.trim(),
-                        year: _selectedYear,
-                        branch: _branchCtrl.text.trim(),
-                        program: _selectedProgram,
-                        phone: _phoneCtrl.text.trim(),
-                      );
-
-                      if (success) {
-                        // Reload comedy night status
-                        ref.read(comedyProvider.notifier).fetchRegistrationStatus();
-                      }
-                    }
-                  },
-                ),
-              ),
-              const SizedBox(height: 32),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTextField(
-    String label,
-    TextEditingController controller,
-    IconData icon,
-    String? Function(String?)? validator, {
-    TextInputType keyboardType = TextInputType.text,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 18.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(label, style: const TextStyle(color: Colors.white70, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 6),
-          TextFormField(
-            controller: controller,
-            validator: validator,
-            keyboardType: keyboardType,
-            style: const TextStyle(color: Colors.white),
-            decoration: InputDecoration(
-              prefixIcon: Icon(icon, color: Colors.purpleAccent),
-              filled: true,
-              fillColor: Colors.grey[900],
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: Colors.purple.withOpacity(0.3)),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: Colors.purple.withOpacity(0.3)),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: Colors.purpleAccent),
+              child: const Icon(
+                Icons.lock_outline,
+                size: 80,
+                color: Colors.purpleAccent,
               ),
             ),
-          ),
-        ],
+            const SizedBox(height: 32),
+            Text(
+              'Sign In Required',
+              style: TextStyle(
+                fontFamily: AppTheme.fontUnivers,
+                fontSize: 26,
+                fontWeight: FontWeight.w700,
+                color: Colors.white,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'To register for the Comedy Night, you must sign in first. You can log in securely via Google inside the Profile section.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontFamily: AppTheme.fontGeneralSans,
+                fontSize: 15,
+                color: Colors.white70,
+                height: 1.4,
+              ),
+            ),
+            const SizedBox(height: 40),
+            SizedBox(
+              width: double.infinity,
+              height: 52,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.purpleAccent,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                onPressed: () {
+                  Navigator.pushNamed(context, '/profile');
+                },
+                child: const Text(
+                  'Go to Profile / Login',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProfileRequiredView() {
+    return Padding(
+      padding: const EdgeInsets.all(28.0),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.purple.withOpacity(0.1),
+                border: Border.all(color: Colors.purpleAccent.withOpacity(0.2), width: 2),
+              ),
+              child: const Icon(
+                Icons.assignment_ind_outlined,
+                size: 80,
+                color: Colors.purpleAccent,
+              ),
+            ),
+            const SizedBox(height: 32),
+            Text(
+              'Complete Your Profile',
+              style: TextStyle(
+                fontFamily: AppTheme.fontUnivers,
+                fontSize: 26,
+                fontWeight: FontWeight.w700,
+                color: Colors.white,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'A completed IITG student profile is required to register for comedy night privileges. Please fill in your Roll Number, Branch, and College Email in your profile screen.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontFamily: AppTheme.fontGeneralSans,
+                fontSize: 15,
+                color: Colors.white70,
+                height: 1.4,
+              ),
+            ),
+            const SizedBox(height: 40),
+            SizedBox(
+              width: double.infinity,
+              height: 52,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.purpleAccent,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                onPressed: () {
+                  Navigator.pushNamed(context, '/profile');
+                },
+                child: const Text(
+                  'Complete Profile Now',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -704,16 +438,27 @@ class _ComedyNightScreenState extends ConsumerState<ComedyNightScreen> {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      elevation: 8,
+                      elevation: comedyState.isLoading ? 0 : 8,
                       shadowColor: Colors.purpleAccent.withOpacity(0.5),
                     ),
-                    child: const Text(
-                      'REGISTER NOW',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, letterSpacing: 1.2),
-                    ),
-                    onPressed: () async {
-                      await ref.read(comedyProvider.notifier).registerForComedy(context);
-                    },
+                    onPressed: comedyState.isLoading
+                        ? null
+                        : () async {
+                            await ref.read(comedyProvider.notifier).registerForComedy(context);
+                          },
+                    child: comedyState.isLoading
+                        ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                            ),
+                          )
+                        : const Text(
+                            'REGISTER NOW',
+                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, letterSpacing: 1.2),
+                          ),
                   ),
                 ),
               ],
@@ -960,7 +705,7 @@ class _ComedyNightScreenState extends ConsumerState<ComedyNightScreen> {
                 icon: const Icon(Icons.refresh, color: Colors.purpleAccent),
                 label: const Text("Refresh Ticket Status", style: TextStyle(color: Colors.purpleAccent)),
                 onPressed: () {
-                  ref.read(comedyProvider.notifier).fetchRegistrationStatus();
+                  ref.read(comedyProvider.notifier).fetchRegistrationStatus(force: true);
                   showMessage(context, "Status updated.");
                 },
               ),

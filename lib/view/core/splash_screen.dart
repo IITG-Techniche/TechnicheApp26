@@ -10,6 +10,8 @@ import 'package:techniche26/view/core/landing_screen.dart';
 import 'package:techniche26/view/core/onboarding_screen.dart';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:techniche26/constant/sharedPerfence.dart';
+import 'package:techniche26/view/auth/login_screen.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
   static const String routeName = '/splash';
@@ -82,10 +84,16 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
       print("Error restoring auth or marathon state: $e");
     }
 
-    // Always navigate to Landing Screen
-    // User can access CA Portal from there if they're authenticated
+    // Navigate to Landing Screen or Login Screen depending on login state/history
     if (mounted) {
-      Navigator.pushReplacementNamed(context, LandingScreen.routeName);
+      final userToken = prefs.getString(SharedPreferenceConstants.userToken) ?? '';
+      final seenLoginGate = prefs.getBool('seenLoginGate') ?? false;
+
+      if (userToken.isEmpty && !seenLoginGate) {
+        Navigator.pushReplacementNamed(context, LoginScreen.routeName);
+      } else {
+        Navigator.pushReplacementNamed(context, LandingScreen.routeName);
+      }
     }
   }
 

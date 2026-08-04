@@ -68,10 +68,16 @@ class AppDrawer extends ConsumerWidget {
                 ),
                 _buildDrawerItem(
                   context: context,
-                  icon: Icons.directions_run_rounded,
-                  title: 'Marathon Practice',
-                  routeName: MarathonMainScreen.routeName,
+                  icon: Icons.person_outline_rounded,
+                  title: 'My Profile',
+                  routeName: '/profile',
                 ),
+                // _buildDrawerItem(
+                //   context: context,
+                //   icon: Icons.directions_run_rounded,
+                //   title: 'Marathon Practice',
+                //   routeName: MarathonMainScreen.routeName,
+                // ),
                 const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 20, vertical: 8),
                   child: Divider(color: Color(0xFFE8E8E8), height: 1),

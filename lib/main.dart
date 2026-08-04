@@ -3,7 +3,6 @@ import 'router.dart';
 import 'view/core/splash_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'firebase_options.dart';
 
@@ -13,11 +12,6 @@ void main() async {
 
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
-    );
-
-    await Supabase.initialize(
-      url: 'https://app-api.techniche.org.in',
-      anonKey: 'sb_publishable_ciFSMUfqc4ynJ7eFvHC0Ug_4js-PR63',
     );
   } catch (e) {
     debugPrint("Failed to initialize core services: $e");

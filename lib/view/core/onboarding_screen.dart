@@ -6,6 +6,7 @@ import 'package:techniche26/constant/sharedPerfence.dart';
 import 'package:techniche26/controller/riverpod_controller/ca_auth_riverpod_controller.dart';
 import 'package:techniche26/widgets/ca_bottom_nav_bar.dart';
 import 'package:techniche26/view/core/landing_screen.dart';
+import 'package:techniche26/view/auth/login_screen.dart';
 
 class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({super.key});
@@ -106,7 +107,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
       }
     } else {
       if (mounted) {
-        Navigator.pushReplacementNamed(context, LandingScreen.routeName);
+        Navigator.pushReplacementNamed(context, LoginScreen.routeName);
       }
     }
   }

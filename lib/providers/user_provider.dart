@@ -170,7 +170,7 @@ class UserNotifier extends StateNotifier<UserState> {
       }
     } catch (e) {
       if (context.mounted) {
-        showMessage(context, "An error occurred during authentication: $e", isError: true);
+        showMessage(context, "Failed to authenticate due to an internet or connection issue.", isError: true);
       }
       return false;
     }
@@ -271,7 +271,7 @@ class UserNotifier extends StateNotifier<UserState> {
       }
     } catch (e) {
       if (context.mounted) {
-        showMessage(context, "An error occurred while updating profile: $e", isError: true);
+        showMessage(context, "Failed to update profile due to an internet or connection issue.", isError: true);
       }
       return false;
     }
