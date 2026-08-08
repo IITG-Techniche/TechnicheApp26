@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:techniche26/providers/user_provider.dart';
 import 'package:techniche26/constant/appTheme.dart';
 import 'package:techniche26/view/core/landing_screen.dart';
@@ -58,11 +60,71 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     }
   }
 
+  Future<void> _handleAppleSignIn() async {
+    setState(() => _isLoading = true);
+    try {
+      final credential = await SignInWithApple.getAppleIDCredential(
+        scopes: [
+          AppleIDAuthorizationScopes.email,
+          AppleIDAuthorizationScopes.fullName,
+        ],
+      );
+
+      String? fullName;
+      if (credential.givenName != null || credential.familyName != null) {
+        fullName = '${credential.givenName ?? ''} ${credential.familyName ?? ''}'.trim();
+        if (fullName.isEmpty) fullName = null;
+      }
+
+      if (mounted) {
+        final success = await ref.read(userProvider.notifier).signInWithApple(
+          context: context,
+          appleId: credential.userIdentifier ?? '',
+          email: credential.email,
+          name: fullName,
+          identityToken: credential.identityToken,
+        );
+
+        if (success && mounted) {
+          final prefs = await SharedPreferences.getInstance();
+          final fcm = prefs.getString('fcm_token');
+          if (fcm != null && fcm.isNotEmpty) {
+            await ref.read(userProvider.notifier).syncFcmToken(fcm);
+          }
+          await prefs.setBool('seenLoginGate', true);
+          if (mounted) {
+            Navigator.pushReplacementNamed(context, LandingScreen.routeName);
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint("Apple Sign-In Error: $e");
+      if (mounted) {
+        showMessage(context, "Apple Sign-In failed due to an internet or connection issue.", isError: true);
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
   Future<void> _skipLogin() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('seenLoginGate', true);
     if (mounted) {
       Navigator.pushReplacementNamed(context, LandingScreen.routeName);
+    }
+  }
+
+  Future<void> _openPrivacyPolicy() async {
+    final Uri url = Uri.parse('https://techniche.org.in/privacy');
+    try {
+      if (await canLaunchUrl(url)) {
+        await launchUrl(url, mode: LaunchMode.externalApplication);
+      } else {
+        if (mounted) showMessage(context, "Privacy Policy: https://techniche.org.in/privacy");
+      }
+    } catch (_) {
+      if (mounted) showMessage(context, "Privacy Policy: https://techniche.org.in/privacy");
     }
   }
 
@@ -201,12 +263,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           ),
                           const SizedBox(height: 32),
                           
-                          // Google Login Button
+                          // Login Buttons
                           if (_isLoading)
                             const CircularProgressIndicator(
                               valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                             )
-                          else
+                          else ...[
                             ElevatedButton(
                               onPressed: _handleGoogleSignIn,
                               style: ElevatedButton.styleFrom(
@@ -241,6 +303,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 ],
                               ),
                             ),
+                            if (Theme.of(context).platform == TargetPlatform.iOS) ...[
+                              const SizedBox(height: 12),
+                              SignInWithAppleButton(
+                                onPressed: _handleAppleSignIn,
+                                style: SignInWithAppleButtonStyle.black,
+                                borderRadius: BorderRadius.circular(16),
+                                height: 50,
+                              ),
+                            ],
+                          ],
                         ],
                       ),
                     ),
@@ -251,7 +323,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       onPressed: _skipLogin,
                       style: TextButton.styleFrom(
                         foregroundColor: Colors.white70,
-                        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
                       ),
                       child: const Row(
                         mainAxisSize: MainAxisSize.min,
@@ -269,6 +341,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           SizedBox(width: 6),
                           Icon(Icons.arrow_forward_rounded, size: 18, color: Colors.white),
                         ],
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    TextButton(
+                      onPressed: _openPrivacyPolicy,
+                      child: const Text(
+                        'Privacy Policy',
+                        style: TextStyle(
+                          fontFamily: AppTheme.fontGeneralSans,
+                          color: Colors.white60,
+                          fontSize: 12,
+                          decoration: TextDecoration.underline,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 12),

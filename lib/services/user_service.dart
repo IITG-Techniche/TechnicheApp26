@@ -23,6 +23,39 @@ class UserService {
     );
   }
 
+  /// Authenticate user via Apple login endpoint in microservice
+  static Future<http.Response> loginWithApple({
+    required String appleId,
+    String? email,
+    String? name,
+    String? identityToken,
+  }) async {
+    final url = Uri.parse('$_baseUrl/auth/apple-login');
+    return await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'appleId': appleId,
+        'email': email,
+        'name': name,
+        'identityToken': identityToken,
+      }),
+    );
+  }
+
+  /// Request user account deletion (App Store Guideline 5.1.1(v) compliance)
+  static Future<http.Response> deleteAccount(String token) async {
+    final url = Uri.parse('$_baseUrl/profile');
+    return await http.delete(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'token': token,
+        'Authorization': 'Bearer $token',
+      },
+    );
+  }
+
   /// Save Firebase Cloud Messaging token for push notifications
   static Future<http.Response> saveFcmToken({
     required String fcmToken,

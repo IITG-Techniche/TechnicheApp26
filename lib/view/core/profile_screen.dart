@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:techniche26/providers/user_provider.dart';
 import 'package:techniche26/constant/appTheme.dart';
 import 'package:techniche26/utils/errorHandler.dart';
+import 'package:techniche26/view/auth/login_screen.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   static const String routeName = '/profile';
@@ -103,6 +106,105 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     }
   }
 
+  Future<void> _handleAppleSignIn() async {
+    setState(() => _isLoading = true);
+    try {
+      final credential = await SignInWithApple.getAppleIDCredential(
+        scopes: [
+          AppleIDAuthorizationScopes.email,
+          AppleIDAuthorizationScopes.fullName,
+        ],
+      );
+
+      String? fullName;
+      if (credential.givenName != null || credential.familyName != null) {
+        fullName = '${credential.givenName ?? ''} ${credential.familyName ?? ''}'.trim();
+        if (fullName.isEmpty) fullName = null;
+      }
+
+      if (mounted) {
+        final success = await ref.read(userProvider.notifier).signInWithApple(
+          context: context,
+          appleId: credential.userIdentifier ?? '',
+          email: credential.email,
+          name: fullName,
+          identityToken: credential.identityToken,
+        );
+
+        if (success && mounted) {
+          final prefs = await SharedPreferences.getInstance();
+          final fcm = prefs.getString('fcm_token');
+          if (fcm != null && fcm.isNotEmpty) {
+            await ref.read(userProvider.notifier).syncFcmToken(fcm);
+          }
+          await prefs.setBool('seenLoginGate', true);
+          _populateFields();
+        }
+      }
+    } catch (e) {
+      debugPrint("Apple Sign-In Error: $e");
+      if (mounted) {
+        showMessage(context, "Apple Sign-In failed due to an internet or connection issue.", isError: true);
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _confirmAndDeleteAccount() async {
+    final bool? confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text(
+          'Delete Account',
+          style: TextStyle(fontFamily: AppTheme.fontUnivers, fontWeight: FontWeight.bold),
+        ),
+        content: const Text(
+          'Are you sure you want to permanently delete your account and remove all your data? This action cannot be undone.',
+          style: TextStyle(fontFamily: AppTheme.fontGeneralSans, fontSize: 14),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.redAccent,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Delete Permanently'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true && mounted) {
+      await ref.read(userProvider.notifier).deleteAccount(context);
+      if (mounted) {
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          LoginScreen.routeName,
+          (route) => false,
+        );
+      }
+    }
+  }
+
+  Future<void> _openPrivacyPolicy() async {
+    final Uri url = Uri.parse('https://techniche.org.in/privacy');
+    try {
+      if (await canLaunchUrl(url)) {
+        await launchUrl(url, mode: LaunchMode.externalApplication);
+      } else {
+        if (mounted) showMessage(context, "Privacy Policy: https://techniche.org.in/privacy");
+      }
+    } catch (_) {
+      if (mounted) showMessage(context, "Privacy Policy: https://techniche.org.in/privacy");
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -185,7 +287,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               const CircularProgressIndicator(
                 valueColor: AlwaysStoppedAnimation<Color>(AppTheme.primaryBlue),
               )
-            else
+            else ...[
               ElevatedButton(
                 onPressed: _handleGoogleSignIn,
                 style: ElevatedButton.styleFrom(
@@ -221,6 +323,19 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   ],
                 ),
               ),
+              if (Theme.of(context).platform == TargetPlatform.iOS) ...[
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: 230,
+                  child: SignInWithAppleButton(
+                    onPressed: _handleAppleSignIn,
+                    style: SignInWithAppleButtonStyle.black,
+                    borderRadius: BorderRadius.circular(12),
+                    height: 48,
+                  ),
+                ),
+              ],
+            ],
           ],
         ),
       ),
@@ -355,9 +470,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 child: ElevatedButton(
                   onPressed: () async {
                     await ref.read(userProvider.notifier).signOut();
-                    setState(() {
-                      _isEditing = false;
-                    });
+                    if (context.mounted) {
+                      Navigator.pushNamedAndRemoveUntil(
+                        context,
+                        LoginScreen.routeName,
+                        (route) => false,
+                      );
+                    }
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.redAccent,
@@ -377,6 +496,35 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 ),
               ),
             ],
+          ),
+          const SizedBox(height: 16),
+          // Delete Account Button (App Store Guideline 5.1.1(v) compliance)
+          TextButton.icon(
+            onPressed: _confirmAndDeleteAccount,
+            icon: const Icon(Icons.delete_forever_rounded, size: 18, color: Colors.red),
+            label: const Text(
+              'Delete Account',
+              style: TextStyle(
+                fontFamily: AppTheme.fontGeneralSans,
+                color: Colors.red,
+                fontWeight: FontWeight.w600,
+                fontSize: 13,
+              ),
+            ),
+          ),
+          const SizedBox(height: 4),
+          // Privacy Policy Link
+          TextButton(
+            onPressed: _openPrivacyPolicy,
+            child: const Text(
+              'Privacy Policy',
+              style: TextStyle(
+                fontFamily: AppTheme.fontGeneralSans,
+                color: AppTheme.textSecondary,
+                fontSize: 12,
+                decoration: TextDecoration.underline,
+              ),
+            ),
           ),
           const SizedBox(height: 20),
         ],

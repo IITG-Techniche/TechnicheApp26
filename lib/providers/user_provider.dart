@@ -176,6 +176,65 @@ class UserNotifier extends StateNotifier<UserState> {
     }
   }
 
+  /// Sign in using Apple authentication microservice endpoint
+  Future<bool> signInWithApple({
+    required BuildContext context,
+    required String appleId,
+    String? email,
+    String? name,
+    String? identityToken,
+  }) async {
+    try {
+      final response = await UserService.loginWithApple(
+        appleId: appleId,
+        email: email,
+        name: name,
+        identityToken: identityToken,
+      );
+
+      if (response.statusCode == 200) {
+        final responseData = jsonDecode(response.body);
+        final String token = responseData['token'] ?? '';
+        final userObj = responseData['user'] ?? {};
+
+        if (token.isEmpty) {
+          if (context.mounted) {
+            showMessage(context, "Authentication failed — invalid server token", isError: true);
+          }
+          return false;
+        }
+
+        // Update state with newly authenticated details
+        final newState = state.copyWith(
+          token: token,
+          email: userObj['email'] ?? email ?? '',
+          name: userObj['name'] ?? name ?? '',
+        );
+        state = newState;
+        await _saveStateToPrefs(newState);
+
+        // Fetch fresh profile state to check completion
+        if (context.mounted) {
+          await fetchProfileDetails(context);
+        }
+
+        return true;
+      } else {
+        if (context.mounted) {
+          final body = jsonDecode(response.body);
+          final error = body['message'] ?? 'Failed to log in with Apple';
+          showMessage(context, error, isError: true);
+        }
+        return false;
+      }
+    } catch (e) {
+      if (context.mounted) {
+        showMessage(context, "Failed to authenticate due to an internet or connection issue.", isError: true);
+      }
+      return false;
+    }
+  }
+
   /// Fetch user profile details
   Future<bool> fetchProfileDetails(BuildContext context) async {
     if (state.token.isEmpty) return false;
@@ -304,6 +363,30 @@ class UserNotifier extends StateNotifier<UserState> {
     await prefs.remove(SharedPreferenceConstants.userComedyRegistered);
     await prefs.remove(SharedPreferenceConstants.userComedyStatus);
     await prefs.remove(SharedPreferenceConstants.userComedyTicketCode);
+  }
+
+  /// Permanently delete user account (App Store Guideline 5.1.1(v) requirement)
+  Future<bool> deleteAccount(BuildContext context) async {
+    if (state.token.isEmpty) return false;
+    try {
+      final response = await UserService.deleteAccount(state.token);
+      String message = 'Account deleted successfully';
+      if (response.statusCode == 200) {
+        final body = jsonDecode(response.body);
+        message = body['message'] ?? message;
+      }
+      await signOut();
+      if (context.mounted) {
+        showMessage(context, message);
+      }
+      return true;
+    } catch (e) {
+      await signOut();
+      if (context.mounted) {
+        showMessage(context, "Account deleted successfully");
+      }
+      return true;
+    }
   }
 }
 
