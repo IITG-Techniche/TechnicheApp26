@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../model/events_data.dart';
 import '../constant/appTheme.dart';
+import 'eventdetailpage.dart';
 
 /// Shows the appropriate event detail UI based on event data in a clean light theme
 void showEventDetail(BuildContext context, SubCategory subCategory) {
@@ -158,13 +159,18 @@ class _EventsListSheet extends StatelessWidget {
                                     height: 1.2,
                                   ),
                                 ),
-                                trailing: event.redirectUrl != null
-                                    ? const Icon(Icons.arrow_forward_ios_rounded, size: 16, color: Color(0xFF6D7985))
-                                    : null,
+                                trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 16, color: Color(0xFF6D7985)),
                                 onTap: () {
-                                  if (event.redirectUrl != null) {
-                                    _launchUrl(context, event.redirectUrl!);
-                                  }
+                                  Navigator.of(context).pop();
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => EventDetailPage(
+                                        eventTitle: event.title,
+                                        event: event,
+                                      ),
+                                    ),
+                                  );
                                 },
                               ),
                             );

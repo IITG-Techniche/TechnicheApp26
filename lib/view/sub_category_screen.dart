@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../model/events_data.dart';
 import '../utils/animate_gradient_background.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'eventdetailpage.dart';
 
 class _Star {
   final Offset position;
@@ -223,57 +224,71 @@ class _SubCategoryScreenState extends State<SubCategoryScreen>
               if (isExpanded) ...[
                 const SizedBox(height: 12),
                 for (var event in subCat.events)
-                  Container(
-                    width: cardWidth + 40,
-                    margin: const EdgeInsets.only(bottom: 8.0),
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 8.0, horizontal: 12.0),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.white.withOpacity(0.2)),
-                    ),
-                    child: Column(
-                      children: [
-                        Text(
-                          event.title,
-                          style: theme.textTheme.bodyMedium
-                              ?.copyWith(color: Colors.white70),
-                          textAlign: TextAlign.center,
-                        ),
-                        if (event.redirectUrl != null) ...[
-                          const SizedBox(height: 8),
-                          SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.cyanAccent,
-                                foregroundColor: Colors.black,
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 8),
-                                textStyle: const TextStyle(
-                                    fontWeight: FontWeight.bold),
-                              ),
-                              onPressed: () async {
-                                final url = Uri.parse(event.redirectUrl!);
-                                if (await canLaunchUrl(url)) {
-                                  await launchUrl(url,
-                                      mode: LaunchMode.externalApplication);
-                                } else {
-                                  if (context.mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                          content: Text(
-                                              'Cannot open registration link')),
-                                    );
-                                  }
-                                }
-                              },
-                              child: const Text('Register Now'),
-                            ),
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => EventDetailPage(
+                            eventTitle: event.title,
+                            event: event,
                           ),
+                        ),
+                      );
+                    },
+                    child: Container(
+                      width: cardWidth + 40,
+                      margin: const EdgeInsets.only(bottom: 8.0),
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 8.0, horizontal: 12.0),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                        border:
+                            Border.all(color: Colors.white.withOpacity(0.2)),
+                      ),
+                      child: Column(
+                        children: [
+                          Text(
+                            event.title,
+                            style: theme.textTheme.bodyMedium
+                                ?.copyWith(color: Colors.white70),
+                            textAlign: TextAlign.center,
+                          ),
+                          if (event.redirectUrl != null) ...[
+                            const SizedBox(height: 8),
+                            SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.cyanAccent,
+                                  foregroundColor: Colors.black,
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 8),
+                                  textStyle: const TextStyle(
+                                      fontWeight: FontWeight.bold),
+                                ),
+                                onPressed: () async {
+                                  final url = Uri.parse(event.redirectUrl!);
+                                  if (await canLaunchUrl(url)) {
+                                    await launchUrl(url,
+                                        mode: LaunchMode.externalApplication);
+                                  } else {
+                                    if (context.mounted) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(
+                                            content: Text(
+                                                'Cannot open registration link')),
+                                      );
+                                    }
+                                  }
+                                },
+                                child: const Text('Register Now'),
+                              ),
+                            ),
+                          ],
                         ],
-                      ],
+                      ),
                     ),
                   ),
               ],
