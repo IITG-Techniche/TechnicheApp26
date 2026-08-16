@@ -3,6 +3,7 @@ import 'package:webview_flutter/webview_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class GHMPaymentScreen extends StatefulWidget {
+  static const String routeName = '/ghm-payment';
   final String paymentUrl;
   final Function() onPaymentSuccess;
 

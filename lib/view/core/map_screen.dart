@@ -51,6 +51,7 @@ final Map<String, LatLng> venueCoordinates = {
 };
 
 class MapScreen extends StatefulWidget {
+  static const String routeName = '/map';
   final String? initialVenue;
   const MapScreen({super.key, this.initialVenue});
 

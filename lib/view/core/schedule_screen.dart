@@ -26,6 +26,7 @@ const Map<String, Map<String, dynamic>> categoryStyles = {
 };
 
 class SchedulePage extends StatefulWidget {
+  static const String routeName = '/schedule';
   const SchedulePage({Key? key}) : super(key: key);
 
   @override

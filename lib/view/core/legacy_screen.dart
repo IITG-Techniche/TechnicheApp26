@@ -3,6 +3,7 @@ import 'package:timeline_tile/timeline_tile.dart';
 import 'package:techniche26/widgets/app_drawer.dart';
 
 class LegacyPage extends StatefulWidget {
+  static const String routeName = '/legacy';
   const LegacyPage({Key? key}) : super(key: key);
 
   @override

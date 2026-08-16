@@ -6,6 +6,7 @@ import 'payment_screen.dart';
 import 'package:flutter/services.dart';
 
 class TechnoRegistrationScreen extends StatefulWidget {
+  static const String routeName = '/techno-registration';
   const TechnoRegistrationScreen({super.key});
 
   @override

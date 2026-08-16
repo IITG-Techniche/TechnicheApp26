@@ -21,6 +21,7 @@ class _Star {
 }
 
 class SubCategoryScreen extends StatefulWidget {
+  static const String routeName = '/sub-category';
   final String categoryTitle;
   final List<SubCategory> subCategories;
 

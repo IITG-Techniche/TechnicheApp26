@@ -9,6 +9,7 @@ import 'package:techniche26/view/core/landing_screen.dart';
 import 'package:techniche26/view/auth/login_screen.dart';
 
 class OnboardingScreen extends ConsumerStatefulWidget {
+  static const String routeName = '/onboarding';
   const OnboardingScreen({super.key});
   @override
   ConsumerState<OnboardingScreen> createState() => _OnboardingScreenState();

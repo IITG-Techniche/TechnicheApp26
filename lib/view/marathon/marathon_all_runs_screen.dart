@@ -5,6 +5,7 @@ import '../../constant/appTheme.dart';
 import 'package:intl/intl.dart';
 
 class MarathonAllRunsScreen extends ConsumerWidget {
+  static const String routeName = '/marathon-all-runs';
   const MarathonAllRunsScreen({super.key});
 
   @override
