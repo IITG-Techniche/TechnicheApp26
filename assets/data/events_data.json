@@ -1,0 +1,298 @@
+[
+  {
+    "title": "Competitions",
+    "subCategories": [
+      {
+        "title": "Robotics",
+        "imageAsset": "assets/robotics.jpeg",
+        "events": [
+          {
+            "id": "robowars",
+            "title": "Robowars",
+            "subtitle": "The Ultimate Combat Robotics Arena",
+            "category": "Robotics",
+            "imageAsset": "assets/robo.png",
+            "prizePool": "₹ 1,50,000",
+            "teamSize": "2 - 6 Members",
+            "date": "Sep 4 - Sep 6, 2026",
+            "time": "10:00 AM - 6:00 PM",
+            "venue": "L1 - Lecture Hall, Near Academic Block",
+            "mapLocationUrl": "https://maps.google.com/?q=IIT+Guwahati+Lecture+Hall",
+            "whatsappUrl": "https://chat.whatsapp.com/invite/techniche2026",
+            "redirectUrl": "https://unstop.com/techniche-2026",
+            "description": "Robowars, a major event at Techniche, showcases top talents in robotics through intense competition. Participants design and develop wireless, manually controlled robots to engage in dual combat within a secure enclosed arena with destructive weapons, spinners, lifters, and battle mechanics.",
+            "rounds": [
+              {
+                "title": "Round 1: Online test (Unstop)",
+                "date": "25th Aug, 2026",
+                "time": "12:00",
+                "description": "Screening round testing mechanical aptitude, circuit design, and safety guidelines."
+              },
+              {
+                "title": "Round 2: Strategy Ideation & Flowchart",
+                "date": "27th Aug, 2026",
+                "time": "12:00",
+                "description": "Submission and jury review of CAD models, weapon specs, and fail-safe mechanisms."
+              },
+              {
+                "title": "Round 3: Main Arena Combat Showdown",
+                "date": "4th Sep, 2026",
+                "time": "10:00",
+                "description": "Live bot vs bot duals in the high-voltage arena at IIT Guwahati."
+              }
+            ],
+            "whoCanParticipate": [
+              "Any student with a valid college ID.",
+              "Teams may have up to 3 members.",
+              "Members can be from different institutes."
+            ],
+            "rules": [
+              "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+              "sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+              "Ut enim ad minim veniam, quis nostrud exercitation ullamco.",
+              "laboris nisi ut aliquip ex ea commodo consequat."
+            ],
+            "faqs": [
+              {
+                "question": "Accordion row collapsed default",
+                "answer": "Detailed response with competition specifications, submission deadlines, and arena guidelines."
+              },
+              {
+                "question": "Accordion row collapsed default",
+                "answer": "Standard safety gear, batteries, and remote controller frequencies approved for use."
+              }
+            ],
+            "coordinators": [
+              {
+                "name": "Alex Mercer",
+                "role": "Head Coordinator",
+                "phone": "+91 98765 43210",
+                "email": "robowars@techniche.org.in"
+              }
+            ]
+          },
+          {
+            "id": "escalade",
+            "title": "Escalade",
+            "subtitle": "All-Terrain Robot Climbing Challenge",
+            "category": "Robotics",
+            "imageAsset": "assets/escalade.png",
+            "prizePool": "₹ 80,000",
+            "teamSize": "2 - 4 Members",
+            "date": "Sep 4 - Sep 5, 2026",
+            "time": "11:00 AM - 4:00 PM",
+            "venue": "Academic Complex Court, IIT Guwahati",
+            "mapLocationUrl": "https://maps.google.com/?q=IIT+Guwahati+Academic+Complex",
+            "description": "Participants build autonomous/semi-autonomous robots capable of navigating vertical obstacles, steep inclines, and rough terrains.",
+            "rounds": [
+              {
+                "title": "Round 1: Obstacle Qualifier",
+                "date": "4th Sep, 2026",
+                "time": "11:00",
+                "description": "Speed run on inclined surface with obstacle avoidance."
+              },
+              {
+                "title": "Round 2: Vertical Wall Ascent",
+                "date": "5th Sep, 2026",
+                "time": "14:00",
+                "description": "Timed climbing competition on specialized friction walls."
+              }
+            ],
+            "rules": [
+              "Max bot weight: 5 kg.",
+              "Bot dimensions must fit within 40x40x40 cm cube."
+            ],
+            "faqs": [
+              {
+                "question": "Can wireless controllers be used?",
+                "answer": "Yes, 2.4 GHz RF and Bluetooth wireless controllers are permitted."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Avinya",
+        "imageAsset": "assets/avinya.webp",
+        "events": [
+          {
+            "id": "avinya_design",
+            "title": "Avinya",
+            "subtitle": "National School Innovation Contest",
+            "category": "Avinya",
+            "imageAsset": "assets/avinya.webp",
+            "prizePool": "₹ 1,00,000",
+            "description": "High school students showcase creative tech prototypes, science models, and social innovation projects."
+          }
+        ]
+      },
+      {
+        "title": "STPI",
+        "imageAsset": "assets/stpi.jpg",
+        "events": [
+          {
+            "id": "stpi_hackathon",
+            "title": "STPI Tech Pitch",
+            "subtitle": "Software Technology Parks Innovation Challenge",
+            "category": "STPI",
+            "imageAsset": "assets/stpi.jpg",
+            "prizePool": "₹ 2,00,000",
+            "description": "Early stage startups and student entrepreneurs pitch software and hardware solutions directly to STPI mentors."
+          }
+        ]
+      },
+      {
+        "title": "Funniche",
+        "imageAsset": "assets/funniche.png",
+        "events": [
+          {
+            "id": "funniche_fun",
+            "title": "Funniche",
+            "subtitle": "Fun On-Spot Games & Micro Challenges",
+            "category": "Funniche",
+            "imageAsset": "assets/funniche.png",
+            "prizePool": "₹ 50,000",
+            "description": "Casual mini-games, pop quizzes, laser tag, and interactive fun stalls open to all fest attendees."
+          }
+        ]
+      },
+      {
+        "title": "Catalysis T",
+        "imageAsset": "assets/cata.jpg",
+        "events": [
+          {
+            "id": "catalysis_t",
+            "title": "Catalysis T",
+            "subtitle": "Chemical & Bio-Tech Solution Sprint",
+            "category": "Catalysis T",
+            "imageAsset": "assets/cata.jpg",
+            "prizePool": "₹ 75,000",
+            "description": "Case study sprint addressing sustainable chemical processes, green energy, and biotechnology innovations."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Workshops",
+    "subCategories": [
+      {
+        "title": "AI & Web Dev",
+        "imageAsset": "assets/genai.jpg",
+        "events": [
+          {
+            "id": "web_dev_ws",
+            "title": "Full Stack Web Development",
+            "subtitle": "Modern React & Node.js Bootcamp",
+            "category": "Workshops",
+            "imageAsset": "assets/webdev.jpg",
+            "redirectUrl": "https://unstop.com/workshops-webinars/full-stack-web-development-bootcamp-iit-guwahati-1541887",
+            "description": "Hands-on masterclass covering modern web development, state management, REST APIs, and deployment."
+          },
+          {
+            "id": "gen_ai_ws",
+            "title": "Generative AI & Agentic AI",
+            "subtitle": "LLM Agents & Prompt Engineering",
+            "category": "Workshops",
+            "imageAsset": "assets/genai.jpg",
+            "redirectUrl": "https://unstop.com/workshops-webinars/generative-ai-agentic-ai-workshop-iit-guwahati-1541805",
+            "description": "Explore building autonomous LLM agents, RAG systems, and generative multimodal applications."
+          }
+        ]
+      },
+      {
+        "title": "Hardware & Cyber",
+        "imageAsset": "assets/arduino.jpg",
+        "events": [
+          {
+            "id": "arduino_ws",
+            "title": "Arduino Project Development",
+            "subtitle": "Embedded Systems & Sensor Networks",
+            "category": "Workshops",
+            "imageAsset": "assets/arduino.jpg",
+            "redirectUrl": "https://unstop.com/workshops-webinars/arduino-project-development-workshop-iit-guwahati-1541858",
+            "description": "Build micro-controller projects with sensors, motor drivers, wireless communication modules, and IoT relays."
+          },
+          {
+            "id": "cyber_ws",
+            "title": "Cybersecurity & Ethical Hacking",
+            "subtitle": "Network Security & Penetration Testing",
+            "category": "Workshops",
+            "imageAsset": "assets/cybersec.jpg",
+            "redirectUrl": "https://unstop.com/workshops-webinars/cybersecurity-and-ethical-hacking-workshop-iit-guwahati-1541776",
+            "description": "Learn vulnerability assessment, penetration testing techniques, wireless security auditing, and ethical hacking protocols."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Nexus",
+    "subCategories": [
+      {
+        "title": "Corporate & Mentorship",
+        "imageAsset": "assets/nexus.jpg",
+        "events": [
+          {
+            "id": "live_project",
+            "title": "Live Project",
+            "subtitle": "Real-world Corporate Problem Solving",
+            "category": "Nexus",
+            "imageAsset": "assets/nexus.jpg",
+            "venue": "Seminar Hall 3, IIT Guwahati",
+            "description": "Collaborate in multidisciplinary teams to tackle real-world industry case studies with mentorship from corporate executives."
+          },
+          {
+            "id": "mentorship",
+            "title": "Mentorship",
+            "subtitle": "1-on-1 Guidance with Domain Experts",
+            "category": "Nexus",
+            "imageAsset": "assets/nexus.jpg",
+            "venue": "SAC Executive Lounge, IIT Guwahati",
+            "description": "Get personalized feedback on your startup pitch, research thesis, career trajectory, and technical roadmaps from experienced mentors."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Lecture Series",
+    "subCategories": [
+      {
+        "title": "Keynote Lectures",
+        "imageAsset": "assets/techexpo.jpg",
+        "events": [
+          {
+            "id": "keynote_lecture",
+            "title": "Global Innovation Keynote",
+            "subtitle": "Insights from World Tech Leaders",
+            "category": "Lecture Series",
+            "imageAsset": "assets/techexpo.jpg",
+            "venue": "Main Auditorium, IIT Guwahati",
+            "description": "Inspirational talks by world-renowned scientists, tech visionaries, and industry pioneers sharing breakthroughs in science & technology."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Exhibitions",
+    "subCategories": [
+      {
+        "title": "Tech Expo",
+        "imageAsset": "assets/army-expo.jpg",
+        "events": [
+          {
+            "id": "army_expo",
+            "title": "Defense Tech & Army Expo",
+            "subtitle": "Advanced Military & Aerospace Displays",
+            "category": "Exhibitions",
+            "imageAsset": "assets/army-expo.jpg",
+            "venue": "IIT Guwahati Grounds",
+            "description": "Exhibition showcasing modern defense technology, drone systems, robotics, and aerospace innovations."
+          }
+        ]
+      }
+    ]
+  }
+]

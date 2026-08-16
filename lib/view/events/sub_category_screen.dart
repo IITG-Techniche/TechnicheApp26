@@ -1,24 +1,10 @@
-import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../model/events_data.dart';
-import '../../widgets/animate_gradient_background.dart';
-import 'package:url_launcher/url_launcher.dart';
-
-class _Star {
-  final Offset position;
-  final double radius;
-  final double initialOpacity;
-  final double twinkleSpeed;
-  final double twinkleOffset;
-
-  _Star({
-    required this.position,
-    required this.radius,
-    required this.initialOpacity,
-    required this.twinkleSpeed,
-    required this.twinkleOffset,
-  });
-}
+import '../../constant/appTheme.dart';
+import '../../providers/theme_provider.dart';
+import '../eventdetailpage.dart';
+import 'event_detail_sheet.dart';
 
 class SubCategoryScreen extends StatefulWidget {
   static const String routeName = '/sub-category';
@@ -35,334 +21,297 @@ class SubCategoryScreen extends StatefulWidget {
   State<SubCategoryScreen> createState() => _SubCategoryScreenState();
 }
 
-class _SubCategoryScreenState extends State<SubCategoryScreen>
-    with TickerProviderStateMixin {
-  final Set<int> _expanded = {};
-  int? _selectedStop;
-
-  final double cardWidth = 100;
-  final double collapsedCardHeight = 100;
-  final double verticalSpacing = 120;
-  final double eventTileMinHeight = 50;
-
-  late AnimationController _starController;
-  final List<_Star> _stars = [];
-  final int _starCount = 300;
-
-  @override
-  void initState() {
-    super.initState();
-    _starController = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 5),
-    )..repeat();
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final random = Random();
-      final size = MediaQuery.of(context).size;
-      for (int i = 0; i < _starCount; i++) {
-        _stars.add(_Star(
-          position: Offset(
-            random.nextDouble() * size.width,
-            random.nextDouble() * (size.height * 2),
-          ),
-          radius: random.nextDouble() * 1.8 + 0.6,
-          initialOpacity: random.nextDouble() * 0.6 + 0.2,
-          twinkleSpeed: random.nextDouble() * 0.5 + 0.2,
-          twinkleOffset: random.nextDouble() * 2 * pi,
-        ));
-      }
-      setState(() {});
-    });
-  }
-
-  @override
-  void dispose() {
-    _starController.dispose();
-    super.dispose();
-  }
-
-  double _calculateEventsHeight(SubCategory subCat) {
-    return subCat.events.length * (eventTileMinHeight + 8.0);
-  }
-
+class _SubCategoryScreenState extends State<SubCategoryScreen> {
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    const double sidePadding = 6;
-    final double usableWidth =
-        MediaQuery.of(context).size.width - (sidePadding * 2);
-    final double leftX = 20;
-    final double rightX = usableWidth - cardWidth - 60;
-    final List<Offset> centers = [];
-    double y = 40.0;
-    for (int i = 0; i < widget.subCategories.length; i++) {
-      final bool isLeft = i % 2 == 0;
-      final double x = isLeft ? leftX : rightX;
-      final bool isExpanded = _expanded.contains(i);
-      final double cardH = collapsedCardHeight +
-          (isExpanded ? _calculateEventsHeight(widget.subCategories[i]) : 0);
-      centers.add(Offset(x + cardWidth / 2, y + cardH / 2));
-      y += cardH + verticalSpacing;
-    }
-    final double totalHeight = y + 40;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final pageBg = isDark ? AppTheme.darkPageBg : AppTheme.lightPageBg;
+    final textPrimary = isDark ? AppTheme.darkTextPrimary : AppTheme.lightTextPrimary;
 
     return Scaffold(
-      backgroundColor: Colors.transparent,
-      extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        title: Text(widget.categoryTitle),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
+      backgroundColor: pageBg,
+      body: SafeArea(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildHeader(context, textPrimary: textPrimary),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+                child: _buildStaggeredSubCategoryGrid(context, isDark: isDark),
+              ),
+            ),
+          ],
+        ),
       ),
-      body: Stack(
+    );
+  }
+
+  Widget _buildHeader(BuildContext context, {required Color textPrimary}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+      child: Row(
         children: [
-          const AnimatedGradientBackground(),
-          if (_stars.isNotEmpty)
-            CustomPaint(
-              size: Size.infinite,
-              painter: _StarryBackgroundPainter(
-                stars: _stars,
-                animation: _starController,
+          GestureDetector(
+            onTap: () => Navigator.maybePop(context),
+            child: Icon(
+              Icons.chevron_left_rounded,
+              color: textPrimary,
+              size: 28,
+            ),
+          ),
+          const SizedBox(width: 4),
+          Expanded(
+            child: Text(
+              widget.categoryTitle,
+              style: TextStyle(
+                color: textPrimary,
+                fontSize: 22,
+                fontWeight: FontWeight.w700,
+                fontFamily: AppTheme.fontUnivers,
               ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
-          Padding(
-            padding: EdgeInsets.only(
-              top: MediaQuery.of(context).padding.top + kToolbarHeight,
-            ),
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: sidePadding),
-                child: SizedBox(
-                  height: totalHeight,
-                  width: usableWidth,
-                  child: Stack(
-                    children: [
-                      CustomPaint(
-                        size: Size(usableWidth, totalHeight),
-                        painter: _TrackPainter(
-                          centers: centers,
-                          trackColor: Colors.white.withOpacity(0.3),
-                        ),
-                      ),
-                      for (int i = 0; i < widget.subCategories.length; i++)
-                        _buildStop(i, leftX, rightX, theme),
-                    ],
-                  ),
+          ),
+          const SizedBox(width: 8),
+          Consumer(
+            builder: (context, ref, _) {
+              final themeMode = ref.watch(themeModeProvider);
+              final isDark = themeMode == ThemeMode.dark;
+              return Container(
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(0xFF1C1E38) : const Color(0xFFE2E8F0),
+                  shape: BoxShape.circle,
                 ),
-              ),
-            ),
+                child: IconButton(
+                  tooltip: isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode',
+                  icon: Icon(
+                    isDark ? Icons.wb_sunny_rounded : Icons.nightlight_round,
+                    color: isDark ? Colors.amber : const Color(0xFF30499E),
+                    size: 20,
+                  ),
+                  onPressed: () {
+                    ref.read(themeModeProvider.notifier).toggleTheme();
+                  },
+                ),
+              );
+            },
           ),
         ],
       ),
     );
   }
 
-  Widget _buildStop(int i, double leftX, double rightX, ThemeData theme) {
-    final bool isLeft = i % 2 == 0;
-    final bool isExpanded = _expanded.contains(i);
-    final subCat = widget.subCategories[i];
-    final double top = _calculateTopForIndex(i);
-
-    return Positioned(
-      top: top,
-      left: isLeft ? leftX : rightX,
-      child: GestureDetector(
-        onTap: () {
-          setState(() {
-            final bool wasAlreadyExpanded = _expanded.contains(i);
-            _expanded.clear();
-            _selectedStop = i;
-            if (!wasAlreadyExpanded) {
-              _expanded.add(i);
-            }
-          });
-        },
-        child: AnimatedSize(
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeInOut,
-          child: Column(
-            children: [
-              Container(
-                width: 20,
-                height: 20,
-                decoration: BoxDecoration(
-                  color: _selectedStop == i ? Colors.amber : Colors.white,
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.3),
-                      blurRadius: 4,
-                      spreadRadius: 1,
-                    )
-                  ],
-                ),
-              ),
-              const SizedBox(height: 10),
-              Container(
-                width: cardWidth,
-                height: collapsedCardHeight,
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.surface.withOpacity(0.5),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.white24, width: 1),
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: Image.asset(
-                    subCat.imageAsset,
-                    fit: BoxFit.cover,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                subCat.title.split(' ').join('\n'),
-                style: theme.textTheme.bodyLarge?.copyWith(color: Colors.white),
-                textAlign: TextAlign.center,
-              ),
-              if (isExpanded) ...[
-                const SizedBox(height: 12),
-                for (var event in subCat.events)
-                  Container(
-                    width: cardWidth + 40,
-                    margin: const EdgeInsets.only(bottom: 8.0),
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 8.0, horizontal: 12.0),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.white.withOpacity(0.2)),
-                    ),
-                    child: Column(
-                      children: [
-                        Text(
-                          event.title,
-                          style: theme.textTheme.bodyMedium
-                              ?.copyWith(color: Colors.white70),
-                          textAlign: TextAlign.center,
-                        ),
-                        if (event.redirectUrl != null) ...[
-                          const SizedBox(height: 8),
-                          SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.cyanAccent,
-                                foregroundColor: Colors.black,
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 8),
-                                textStyle: const TextStyle(
-                                    fontWeight: FontWeight.bold),
-                              ),
-                              onPressed: () async {
-                                final url = Uri.parse(event.redirectUrl!);
-                                if (await canLaunchUrl(url)) {
-                                  await launchUrl(url,
-                                      mode: LaunchMode.externalApplication);
-                                } else {
-                                  if (context.mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                          content: Text(
-                                              'Cannot open registration link')),
-                                    );
-                                  }
-                                }
-                              },
-                              child: const Text('Register Now'),
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
-              ],
-            ],
+  Widget _buildStaggeredSubCategoryGrid(BuildContext context, {required bool isDark}) {
+    if (widget.subCategories.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 40),
+          child: Text(
+            'No sub-categories available',
+            style: TextStyle(
+              color: isDark ? AppTheme.darkTextSecondary : AppTheme.lightTextSecondary,
+              fontFamily: AppTheme.fontGeneralSans,
+            ),
           ),
+        ),
+      );
+    }
+
+    final leftCol = <int>[];
+    final rightCol = <int>[];
+
+    for (int i = 0; i < widget.subCategories.length; i++) {
+      if (i % 2 == 0) {
+        leftCol.add(i);
+      } else {
+        rightCol.add(i);
+      }
+    }
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          child: Column(
+            children: leftCol.map((index) {
+              final subCat = widget.subCategories[index];
+              final double height = _getSubCardHeight(index, isLeft: true);
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 16.0),
+                child: _SubCategoryCard(
+                  subCategory: subCat,
+                  height: height,
+                  isDark: isDark,
+                  onTap: () => _onSubCategoryTap(context, subCat),
+                ),
+              );
+            }).toList(),
+          ),
+        ),
+        const SizedBox(width: 14),
+        Expanded(
+          child: Column(
+            children: rightCol.map((index) {
+              final subCat = widget.subCategories[index];
+              final double height = _getSubCardHeight(index, isLeft: false);
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 16.0),
+                child: _SubCategoryCard(
+                  subCategory: subCat,
+                  height: height,
+                  isDark: isDark,
+                  onTap: () => _onSubCategoryTap(context, subCat),
+                ),
+              );
+            }).toList(),
+          ),
+        ),
+      ],
+    );
+  }
+
+  double _getSubCardHeight(int index, {required bool isLeft}) {
+    final heightsLeft = [180.0, 260.0, 140.0, 220.0, 190.0];
+    final heightsRight = [280.0, 170.0, 220.0, 160.0, 240.0];
+
+    if (isLeft) {
+      return heightsLeft[index ~/ 2 % heightsLeft.length];
+    } else {
+      return heightsRight[index ~/ 2 % heightsRight.length];
+    }
+  }
+
+  void _onSubCategoryTap(BuildContext context, SubCategory subCategory) {
+    if (subCategory.events.isNotEmpty) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => EventDetailPage(
+            eventTitle: subCategory.events.first.title,
+            event: subCategory.events.first,
+          ),
+        ),
+      );
+    } else {
+      showEventDetail(context, subCategory);
+    }
+  }
+}
+
+class _SubCategoryCard extends StatelessWidget {
+  final SubCategory subCategory;
+  final double height;
+  final bool isDark;
+  final VoidCallback onTap;
+
+  const _SubCategoryCard({
+    required this.subCategory,
+    required this.height,
+    required this.isDark,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final cardBg = AppTheme.darkCardsBg;
+
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        height: height,
+        width: double.infinity,
+        decoration: BoxDecoration(
+          color: cardBg,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: cardBg.withOpacity(0.2),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        clipBehavior: Clip.hardEdge,
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: CustomPaint(
+                painter: _SubCategoryArchedPainter(
+                  color: const Color(0xFF4C7AAB).withOpacity(0.25),
+                ),
+              ),
+            ),
+            if (subCategory.imageAsset.isNotEmpty)
+              Positioned(
+                bottom: 12,
+                left: 12,
+                right: 12,
+                top: 54,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(14),
+                  child: Image.asset(
+                    subCategory.imageAsset,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => Container(
+                      color: const Color(0xFF232542),
+                      child: const Icon(
+                        Icons.event,
+                        color: Colors.white54,
+                        size: 36,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            Positioned(
+              top: 16,
+              left: 16,
+              right: 16,
+              child: Text(
+                subCategory.title,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  fontFamily: AppTheme.fontGeneralSans,
+                  letterSpacing: -0.3,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
-
-  double _calculateTopForIndex(int index) {
-    double y = 40.0;
-    for (int i = 0; i < index; i++) {
-      final bool isExpanded = _expanded.contains(i);
-      final double cardH = collapsedCardHeight +
-          (isExpanded ? _calculateEventsHeight(widget.subCategories[i]) : 0);
-      y += cardH + verticalSpacing;
-    }
-    return y;
-  }
 }
 
-class _StarryBackgroundPainter extends CustomPainter {
-  final List<_Star> stars;
-  final Animation<double> animation;
+class _SubCategoryArchedPainter extends CustomPainter {
+  final Color color;
 
-  _StarryBackgroundPainter({required this.stars, required this.animation})
-      : super(repaint: animation);
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()..color = Colors.white;
-    final glowPaint = Paint();
-
-    for (final star in stars) {
-      final sineValue = sin(
-          star.twinkleOffset + (animation.value * 2 * pi * star.twinkleSpeed));
-
-      final normalizedSine = (sineValue + 1) / 2;
-
-      final opacity = star.initialOpacity * normalizedSine;
-      final glowOpacity = opacity * 0.5;
-      glowPaint.color = Colors.white.withOpacity(glowOpacity);
-      glowPaint.maskFilter =
-          MaskFilter.blur(BlurStyle.normal, star.radius * 3.0);
-      canvas.drawCircle(star.position, star.radius, glowPaint);
-      paint.color = Colors.white.withOpacity(opacity);
-      canvas.drawCircle(star.position, star.radius, paint);
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant _StarryBackgroundPainter oldDelegate) {
-    return false;
-  }
-}
-
-class _TrackPainter extends CustomPainter {
-  final List<Offset> centers;
-  final Color trackColor;
-
-  _TrackPainter({required this.centers, required this.trackColor});
+  _SubCategoryArchedPainter({required this.color});
 
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = trackColor
-      ..strokeWidth = 4
-      ..style = PaintingStyle.stroke;
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.4;
 
-    for (int i = 0; i < centers.length - 1; i++) {
-      final p1 = centers[i];
-      final p2 = centers[i + 1];
-      double horizontalPull = (p2.dx > p1.dx ? 1 : -1) * 80;
-      final controlPoint = Offset(
-        (p1.dx + p2.dx) / 2 + horizontalPull,
-        (p1.dy + p2.dy) / 2,
+    for (int i = 0; i < 4; i++) {
+      final rect = Rect.fromLTWH(
+        10.0 + (i * 14),
+        35.0 + (i * 12),
+        size.width * 0.8,
+        size.height * 0.8,
       );
-      final path = Path()
-        ..moveTo(p1.dx, p1.dy)
-        ..quadraticBezierTo(controlPoint.dx, controlPoint.dy, p2.dx, p2.dy);
-      canvas.drawPath(path, paint);
+      canvas.drawArc(rect, 3.14, 3.14, false, paint);
     }
   }
 
   @override
-  bool shouldRepaint(covariant _TrackPainter oldDelegate) {
-    return oldDelegate.centers != centers ||
-        oldDelegate.trackColor != trackColor;
-  }
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

@@ -70,6 +70,7 @@ flutter:
 
   assets:
     - assets/
+    - assets/data/
     - assets/onboarding/
     - assets/ghm/
 

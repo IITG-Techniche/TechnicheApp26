@@ -1,151 +1,41 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../model/events_data.dart';
-import 'event_detail_sheet.dart';
 import '../../constant/appTheme.dart';
+import '../../providers/theme_provider.dart';
+import 'sub_category_screen.dart';
 
 class EventsScreen extends StatefulWidget {
-  static const String routeName = '/events-screen';
+  static const String routeName = '/events';
   final bool isTab;
 
-  const EventsScreen({super.key, this.isTab = false});
+  const EventsScreen({
+    super.key,
+    this.isTab = false,
+  });
 
   @override
   State<EventsScreen> createState() => _EventsScreenState();
 }
 
-class _EventsScreenState extends State<EventsScreen>
-    with SingleTickerProviderStateMixin {
-  late TabController _tabController;
-
-  @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(
-      length: eventData.length,
-      vsync: this,
-    );
-  }
-
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
-  }
-
+class _EventsScreenState extends State<EventsScreen> {
   @override
   Widget build(BuildContext context) {
-    final bodyContent = NestedScrollView(
-      headerSliverBuilder: (context, innerBoxIsScrolled) {
-        return [
-          SliverToBoxAdapter(child: _buildHeader(context)),
-          SliverPersistentHeader(
-            pinned: true,
-            delegate: _SliverAppBarDelegate(
-              Container(
-                color: AppTheme.backgroundGray,
-                child: Column(
-                  children: [
-                    _buildTabBar(),
-                    const SizedBox(height: 8),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ];
-      },
-      body: TabBarView(
-        controller: _tabController,
-        children: eventData.map((category) {
-          return _buildSubCategoryGrid(category.subCategories);
-        }).toList(),
-      ),
-    );
-
-    if (widget.isTab) {
-      return Container(
-        color: AppTheme.backgroundGray,
-        child: bodyContent,
-      );
-    }
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final pageBg = isDark ? AppTheme.darkPageBg : AppTheme.lightPageBg;
+    final textPrimary = isDark ? AppTheme.darkTextPrimary : AppTheme.lightTextPrimary;
 
     return Scaffold(
-      backgroundColor: AppTheme.backgroundGray,
-      body: bodyContent,
-    );
-  }
-
-  Widget _buildHeader(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      decoration: const BoxDecoration(
-        color: Color(0xFF002B5B),
-        image: DecorationImage(
-          image: AssetImage('assets/ghm/frame3.png'),
-          fit: BoxFit.cover,
-        ),
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 25),
-      child: SafeArea(
-        bottom: false,
+      backgroundColor: pageBg,
+      body: SafeArea(
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(16),
-              decoration: ShapeDecoration(
-                color: Colors.white,
-                shape: RoundedRectangleBorder(
-                  side: const BorderSide(width: 1, color: Color(0xFFAFAFAF)),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                shadows: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Row(
-                children: [
-                  GestureDetector(
-                    onTap: () {
-                      if (widget.isTab) {
-                        Scaffold.of(context).openDrawer();
-                      } else {
-                        Navigator.pop(context);
-                      }
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.all(6),
-                      decoration: const BoxDecoration(
-                        color: Color(0xFFF5F5F5),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(
-                        widget.isTab
-                            ? Icons.menu_rounded
-                            : Icons.arrow_back_rounded,
-                        color: const Color(0xFF6D7985),
-                        size: 20,
-                      ),
-                    ),
-                  ),
-                  const Spacer(flex: 1),
-                  const Text(
-                    'EVENTS',
-                    style: TextStyle(
-                      color: AppTheme.textMain,
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                      fontFamily: AppTheme.fontUnivers,
-                      height: 1.2,
-                    ),
-                  ),
-                  const Spacer(flex: 2),
-                ],
+            _buildHeader(context, textPrimary: textPrimary),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+                child: _buildStaggeredCategoryGrid(context, isDark: isDark),
               ),
             ),
           ],
@@ -154,132 +44,213 @@ class _EventsScreenState extends State<EventsScreen>
     );
   }
 
-  Widget _buildTabBar() {
-    return Container(
-      height: 45,
-      margin: const EdgeInsets.only(top: 16),
-      child: TabBar(
-        controller: _tabController,
-        isScrollable: true,
-        tabAlignment: TabAlignment.start,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        labelPadding: const EdgeInsets.symmetric(horizontal: 20),
-        indicator: UnderlineTabIndicator(
-          borderSide: const BorderSide(width: 3, color: Color(0xFF002B5B)),
-          borderRadius: BorderRadius.circular(3),
-        ),
-        dividerColor: const Color(0xFFE8E8E8),
-        indicatorSize: TabBarIndicatorSize.label,
-        labelColor: const Color(0xFF002B5B),
-        unselectedLabelColor: const Color(0xFF6D7985),
-        labelStyle: const TextStyle(
-          fontWeight: FontWeight.w700,
-          fontSize: 14,
-          fontFamily: AppTheme.fontUnivers,
-        ),
-        unselectedLabelStyle: const TextStyle(
-          fontWeight: FontWeight.w500,
-          fontSize: 14,
-          fontFamily: AppTheme.fontGeneralSans,
-        ),
-        tabs: eventData.map((category) {
-          return Tab(text: category.title.toUpperCase());
-        }).toList(),
+  Widget _buildHeader(BuildContext context, {required Color textPrimary}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+      child: Row(
+        children: [
+          GestureDetector(
+            onTap: () {
+              if (widget.isTab) {
+                Scaffold.of(context).openDrawer();
+              } else {
+                Navigator.maybePop(context);
+              }
+            },
+            child: Icon(
+              widget.isTab ? Icons.menu_rounded : Icons.chevron_left_rounded,
+              color: textPrimary,
+              size: 28,
+            ),
+          ),
+          const SizedBox(width: 4),
+          Expanded(
+            child: Text(
+              'Events',
+              style: TextStyle(
+                color: textPrimary,
+                fontSize: 22,
+                fontWeight: FontWeight.w700,
+                fontFamily: AppTheme.fontUnivers,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Consumer(
+            builder: (context, ref, _) {
+              final themeMode = ref.watch(themeModeProvider);
+              final isDark = themeMode == ThemeMode.dark;
+              return Container(
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(0xFF1C1E38) : const Color(0xFFE2E8F0),
+                  shape: BoxShape.circle,
+                ),
+                child: IconButton(
+                  tooltip: isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode',
+                  icon: Icon(
+                    isDark ? Icons.wb_sunny_rounded : Icons.nightlight_round,
+                    color: isDark ? Colors.amber : const Color(0xFF30499E),
+                    size: 20,
+                  ),
+                  onPressed: () {
+                    ref.read(themeModeProvider.notifier).toggleTheme();
+                  },
+                ),
+              );
+            },
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildSubCategoryGrid(List<SubCategory> subCategories) {
-    return AnimationLimiter(
-      child: GridView.builder(
-        padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          childAspectRatio: 0.82,
-          crossAxisSpacing: 16,
-          mainAxisSpacing: 16,
-        ),
-        itemCount: subCategories.length,
-        itemBuilder: (context, index) {
-          return AnimationConfiguration.staggeredGrid(
-            position: index,
-            duration: const Duration(milliseconds: 400),
-            columnCount: 2,
-            child: SlideAnimation(
-              verticalOffset: 30.0,
-              child: FadeInAnimation(
-                child: _EventCard(
-                  subCategory: subCategories[index],
-                  onTap: () => showEventDetail(context, subCategories[index]),
-                ),
-              ),
+  Widget _buildStaggeredCategoryGrid(BuildContext context, {required bool isDark}) {
+    if (eventData.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 40),
+          child: Text(
+            'No event categories available',
+            style: TextStyle(
+              color: isDark ? AppTheme.darkTextSecondary : AppTheme.lightTextSecondary,
+              fontFamily: AppTheme.fontGeneralSans,
             ),
-          );
-        },
-      ),
+          ),
+        ),
+      );
+    }
+
+    final leftCol = <int>[];
+    final rightCol = <int>[];
+
+    for (int i = 0; i < eventData.length; i++) {
+      if (i % 2 == 0) {
+        leftCol.add(i);
+      } else {
+        rightCol.add(i);
+      }
+    }
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          child: Column(
+            children: leftCol.map((index) {
+              final cat = eventData[index];
+              final double cardHeight = _getCardHeight(cat.title, index, isLeft: true);
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 16.0),
+                child: _CategoryCard(
+                  category: cat,
+                  height: cardHeight,
+                  isDark: isDark,
+                  onTap: () => _onCategoryTap(context, cat),
+                ),
+              );
+            }).toList(),
+          ),
+        ),
+        const SizedBox(width: 14),
+        Expanded(
+          child: Column(
+            children: rightCol.map((index) {
+              final cat = eventData[index];
+              final double cardHeight = _getCardHeight(cat.title, index, isLeft: false);
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 16.0),
+                child: _CategoryCard(
+                  category: cat,
+                  height: cardHeight,
+                  isDark: isDark,
+                  onTap: () => _onCategoryTap(context, cat),
+                ),
+              );
+            }).toList(),
+          ),
+        ),
+      ],
+    );
+  }
+
+  double _getCardHeight(String title, int index, {required bool isLeft}) {
+    final lowerTitle = title.toLowerCase();
+    if (lowerTitle.contains('competition')) return 270;
+    if (lowerTitle.contains('workshop')) return 170;
+    if (lowerTitle.contains('nexus')) return 165;
+    if (lowerTitle.contains('lecture')) return 240;
+    if (lowerTitle.contains('exhibition')) return 220;
+    return isLeft ? 240 : 190;
+  }
+
+  void _onCategoryTap(BuildContext context, MainCategory category) {
+    Navigator.pushNamed(
+      context,
+      SubCategoryScreen.routeName,
+      arguments: {
+        'categoryTitle': category.title,
+        'subCategories': category.subCategories,
+      },
     );
   }
 }
 
-class _EventCard extends StatelessWidget {
-  final SubCategory subCategory;
+class _CategoryCard extends StatelessWidget {
+  final MainCategory category;
+  final double height;
+  final bool isDark;
   final VoidCallback onTap;
 
-  const _EventCard({
-    required this.subCategory,
+  const _CategoryCard({
+    required this.category,
+    required this.height,
+    required this.isDark,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
+    final cardBg = AppTheme.darkCardsBg;
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
+        height: height,
+        width: double.infinity,
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: cardBg,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: const Color(0xFFE8E8E8)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.04),
+              color: cardBg.withOpacity(0.2),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
           ],
         ),
         clipBehavior: Clip.hardEdge,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+        child: Stack(
           children: [
-            Expanded(
-              child: Hero(
-                tag: 'subcategory_${subCategory.title}',
-                child: Image.asset(
-                  subCategory.imageAsset,
-                  fit: BoxFit.cover,
-                ),
-              ),
+            Positioned.fill(
+              child: _CategoryGraphic(categoryTitle: category.title),
             ),
-            Padding(
-              padding: const EdgeInsets.all(12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    subCategory.title,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                      fontFamily: AppTheme.fontUnivers,
-                      color: AppTheme.textMain,
-                      height: 1.2,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 6),
-                  _buildEventBadge(),
-                ],
+            Positioned(
+              top: 16,
+              left: 16,
+              right: 16,
+              child: Text(
+                category.title,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  fontFamily: AppTheme.fontGeneralSans,
+                  letterSpacing: -0.3,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
           ],
@@ -287,64 +258,274 @@ class _EventCard extends StatelessWidget {
       ),
     );
   }
+}
 
-  Widget _buildEventBadge() {
-    final events = subCategory.events;
+class _CategoryGraphic extends StatelessWidget {
+  final String categoryTitle;
 
-    String text;
-    Color color;
-    Color bgColor;
+  const _CategoryGraphic({required this.categoryTitle});
 
-    if (events.isEmpty) {
-      text = 'Coming Soon';
-      color = const Color(0xFFBDBDBD);
-      bgColor = const Color(0xFFF5F5F5);
-    } else {
-      text = events.length == 1 && events.first.redirectUrl != null
-          ? 'REGISTER NOW'
-          : '${events.length} EVENTS';
-      color = const Color(0xFF002B5B);
-      bgColor = const Color(0xFFE1EBFF);
+  @override
+  Widget build(BuildContext context) {
+    final lower = categoryTitle.toLowerCase();
+
+    if (lower.contains('competition')) {
+      return Stack(
+        children: [
+          Positioned.fill(
+            child: CustomPaint(
+              painter: _ArchedLinesPainter(
+                color: const Color(0xFF8B5CF6).withOpacity(0.4),
+                arcCount: 5,
+              ),
+            ),
+          ),
+          Positioned(
+            bottom: 12,
+            left: 12,
+            right: 12,
+            height: 140,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(14),
+              child: Image.asset(
+                'assets/robo.png',
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => Container(
+                  color: const Color(0xFF232542),
+                  child: const Icon(Icons.smart_toy_rounded, color: Colors.white54, size: 40),
+                ),
+              ),
+            ),
+          ),
+        ],
+      );
+    } else if (lower.contains('workshop')) {
+      return Stack(
+        children: [
+          Positioned(
+            bottom: -10,
+            right: -10,
+            width: 140,
+            height: 110,
+            child: ClipRRect(
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(50),
+                topRight: Radius.circular(50),
+                bottomLeft: Radius.circular(20),
+              ),
+              child: Image.asset(
+                'assets/robotics.jpeg',
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => Container(
+                  color: const Color(0xFF232542),
+                  child: const Icon(Icons.build_rounded, color: Colors.white54, size: 30),
+                ),
+              ),
+            ),
+          ),
+          Positioned.fill(
+            child: CustomPaint(
+              painter: _ConcentricArchesPainter(
+                color: Colors.white.withOpacity(0.2),
+              ),
+            ),
+          ),
+        ],
+      );
+    } else if (lower.contains('nexus')) {
+      return Stack(
+        children: [
+          Positioned(
+            bottom: 0,
+            left: 10,
+            width: 120,
+            height: 90,
+            child: ClipRRect(
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(45),
+                topRight: Radius.circular(45),
+              ),
+              child: Container(
+                color: const Color(0xFF25284B),
+                child: const Icon(Icons.record_voice_over_rounded, color: Colors.white60, size: 36),
+              ),
+            ),
+          ),
+          Positioned.fill(
+            child: CustomPaint(
+              painter: _WaveLinesPainter(
+                color: AppTheme.accentBlue.withOpacity(0.5),
+              ),
+            ),
+          ),
+        ],
+      );
+    } else if (lower.contains('lecture')) {
+      return Stack(
+        children: [
+          Positioned(
+            bottom: -10,
+            left: -10,
+            child: CustomPaint(
+              size: const Size(180, 130),
+              painter: _StackedSheetsPainter(),
+            ),
+          ),
+        ],
+      );
+    } else if (lower.contains('exhibition')) {
+      return Stack(
+        children: [
+          Positioned.fill(
+            child: CustomPaint(
+              painter: _FanArchPainter(
+                color: const Color(0xFF93C5FD).withOpacity(0.4),
+              ),
+            ),
+          ),
+        ],
+      );
     }
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: bgColor,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Text(
-        text,
-        style: TextStyle(
-          fontSize: 10,
-          fontWeight: FontWeight.w700,
-          color: color,
-          fontFamily: AppTheme.fontGeneralSans,
-          letterSpacing: 0.5,
+    return Stack(
+      children: [
+        Positioned.fill(
+          child: CustomPaint(
+            painter: _WaveLinesPainter(
+              color: AppTheme.accentBlue.withOpacity(0.3),
+            ),
+          ),
         ),
-      ),
+      ],
     );
   }
 }
 
-class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
-  final Widget child;
+class _ArchedLinesPainter extends CustomPainter {
+  final Color color;
+  final int arcCount;
 
-  _SliverAppBarDelegate(this.child);
-
-  @override
-  double get minExtent => 69.0;
-  @override
-  double get maxExtent => 69.0;
+  _ArchedLinesPainter({required this.color, this.arcCount = 4});
 
   @override
-  Widget build(
-      BuildContext context, double shrinkOffset, bool overlapsContent) {
-    return child;
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.5;
+
+    for (int i = 0; i < arcCount; i++) {
+      final rect = Rect.fromLTWH(
+        20.0 + (i * 12),
+        40.0 + (i * 10),
+        size.width * 0.75,
+        size.height * 0.75,
+      );
+      canvas.drawArc(rect, 3.14, 3.14, false, paint);
+    }
   }
 
   @override
-  bool shouldRebuild(_SliverAppBarDelegate oldDelegate) {
-    return false;
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+class _ConcentricArchesPainter extends CustomPainter {
+  final Color color;
+
+  _ConcentricArchesPainter({required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.2;
+
+    for (int i = 1; i <= 5; i++) {
+      canvas.drawCircle(Offset(size.width * 0.85, size.height * 0.6), i * 22.0, paint);
+    }
   }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+class _WaveLinesPainter extends CustomPainter {
+  final Color color;
+
+  _WaveLinesPainter({required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.5;
+
+    for (int i = 0; i < 4; i++) {
+      final path = Path();
+      path.moveTo(0, size.height * 0.5 + (i * 14));
+      path.quadraticBezierTo(
+        size.width * 0.5,
+        size.height * 0.2 + (i * 14),
+        size.width,
+        size.height * 0.6 + (i * 14),
+      );
+      canvas.drawPath(path, paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+class _StackedSheetsPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final fillPaint = Paint()
+      ..color = AppTheme.primaryBlue.withOpacity(0.85)
+      ..style = PaintingStyle.fill;
+
+    final strokePaint = Paint()
+      ..color = AppTheme.accentBlue
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.2;
+
+    for (int i = 0; i < 4; i++) {
+      final path = Path();
+      final offset = i * 14.0;
+      path.moveTo(offset, size.height - offset);
+      path.lineTo(offset + 100, size.height - offset - 50);
+      path.lineTo(offset + 150, size.height - offset + 10);
+      path.lineTo(offset + 50, size.height - offset + 60);
+      path.close();
+
+      canvas.drawPath(path, fillPaint);
+      canvas.drawPath(path, strokePaint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+class _FanArchPainter extends CustomPainter {
+  final Color color;
+
+  _FanArchPainter({required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.4;
+
+    for (int i = 1; i <= 5; i++) {
+      canvas.drawCircle(Offset(size.width * 0.2, size.height * 1.1), i * 35.0, paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

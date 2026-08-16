@@ -2,26 +2,43 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 class AppTheme {
-  // ── Colors ───────────────────────────────────────────────────
-  static const Color primaryBlue = Color(0xFF002B5B);
-  static const Color accentBlue = Color(0xFF175BCC);
-  static const Color backgroundGray = Color(0xFFF5F5F5); 
-  static const Color textMain = Color(0XFF232930);
-  static const Color textSecondary = Color(0xFF6D7985);
-  static const Color textMuted = Color(0xFFAFAFAF);
+  // ── 2026 Official Color Palettes ─────────────────────────────────
 
-  // Still keeping the old neon colors
-  static const Color neonCyan = Color(0xFF00FFF7);
-  static const Color neonMagenta = Color(0xFFFF00F7);
-  static const Color darkBackground = Color(0xFF18122B);
+  // Light Mode Palette
+  static const Color lightPageBg = Color(0xFFF7F7F7); // rgb(247, 247, 247)
+  static const Color lightCardsBg = Color(0xFFFFFFFF); // rgb(255, 255, 255)
+  static const Color lightChip = Color(0xFFCADEF5); // rgb(202, 223, 245)
+  static const Color lightTextPrimary = Color(0xFF191919); // rgb(25, 25, 25)
+  static const Color lightTextSecondary = Color(0xFF808080); // rgb(128, 128, 128)
 
-  // ── Legacy Getters for Backward Compatibility ────────────────
+  // Dark Mode Palette
+  static const Color darkPageBg = Color(0xFF050510); // rgb(5, 5, 16)
+  static const Color darkCardsBg = Color(0xFF1A1A2E); // rgb(26, 26, 46)
+  static const Color darkChip = Color(0xFF4C7AAB); // rgb(76, 122, 171)
+  static const Color darkTextPrimary = Color(0xFFE8E8F0); // rgb(232, 232, 240)
+  static const Color darkTextSecondary = Color(0xFF9090A8); // rgb(144, 144, 168)
+
+  // Brand Accent & Gradients
+  static const Color primaryBlue = Color(0xFF30499E); // rgb(48, 73, 158)
+  static const Color accentBlue = Color(0xFF4C7AAB); // rgb(76, 122, 171)
+  static const LinearGradient primaryGradient = LinearGradient(
+    colors: [Color(0xFF30499E), Color(0xFF4C7AAB)],
+    begin: Alignment.centerLeft,
+    end: Alignment.centerRight,
+  );
+
+  // ── Backward Compatibility Constants ────────────────────────────
+  static const Color backgroundGray = lightPageBg;
+  static const Color textMain = lightTextPrimary;
+  static const Color textSecondary = lightTextSecondary;
+  static const Color textMuted = lightTextSecondary;
   static const Color primaryColor = primaryBlue;
   static const Color secondaryColor = accentBlue;
-  static const Color scaffoldBackgroundColor = backgroundGray;
-  static const String fontFamily = 'General Sans'; // Default for the app now
+  static const Color darkBackground = darkPageBg;
+  static const Color neonCyan = Color(0xFF00FFF7);
+  static const Color neonMagenta = Color(0xFFFF00F7);
 
-  // ── Font Families ──────────────────────────────────────────
+  // ── Font Families ──────────────────────────────────────────────
   static const String fontUnivers = 'Univers';
   static const String fontGeneralSans = 'General Sans';
 
@@ -29,25 +46,26 @@ class AppTheme {
     return ThemeData(
       brightness: Brightness.light,
       primaryColor: primaryBlue,
-      scaffoldBackgroundColor: backgroundGray,
-      fontFamily: fontGeneralSans, // Default font for body
+      scaffoldBackgroundColor: lightPageBg,
+      cardColor: lightCardsBg,
+      fontFamily: fontGeneralSans,
       colorScheme: const ColorScheme.light(
         primary: primaryBlue,
         secondary: accentBlue,
-        surface: Colors.white,
-        onSurface: textMain,
-        background: backgroundGray,
+        surface: lightCardsBg,
+        onSurface: lightTextPrimary,
+        background: lightPageBg,
       ),
       appBarTheme: const AppBarTheme(
-        backgroundColor: Colors.white,
+        backgroundColor: lightCardsBg,
         elevation: 0,
         centerTitle: true,
-        iconTheme: IconThemeData(color: textMain),
+        iconTheme: IconThemeData(color: lightTextPrimary),
         titleTextStyle: TextStyle(
           fontFamily: fontUnivers,
           fontWeight: FontWeight.w700,
           fontSize: 18,
-          color: textMain,
+          color: lightTextPrimary,
           height: 1.2,
         ),
         systemOverlayStyle: SystemUiOverlayStyle(
@@ -60,80 +78,117 @@ class AppTheme {
           fontFamily: fontUnivers,
           fontWeight: FontWeight.w700,
           fontSize: 32,
-          color: textMain,
+          color: lightTextPrimary,
           height: 1.2,
         ),
         headlineMedium: TextStyle(
           fontFamily: fontUnivers,
           fontWeight: FontWeight.w700,
           fontSize: 24,
-          color: textMain,
+          color: lightTextPrimary,
           height: 1.2,
         ),
         titleLarge: TextStyle(
           fontFamily: fontUnivers,
           fontWeight: FontWeight.w700,
           fontSize: 20,
-          color: textMain,
+          color: lightTextPrimary,
           height: 1.2,
         ),
         bodyLarge: TextStyle(
           fontFamily: fontGeneralSans,
           fontSize: 16,
-          color: textMain,
+          color: lightTextPrimary,
           height: 1.3,
         ),
         bodyMedium: TextStyle(
           fontFamily: fontGeneralSans,
           fontSize: 14,
-          color: textMain,
+          color: lightTextPrimary,
           height: 1.3,
         ),
         labelLarge: TextStyle(
           fontFamily: fontGeneralSans,
           fontWeight: FontWeight.w600,
           fontSize: 14,
-          color: textMain,
-        ),
-      ),
-      elevatedButtonTheme: ElevatedButtonThemeData(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: primaryBlue,
-          foregroundColor: Colors.white,
-          elevation: 0,
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          textStyle: const TextStyle(
-            fontFamily: fontGeneralSans,
-            fontWeight: FontWeight.w600,
-            fontSize: 16,
-          ),
-        ),
-      ),
-      inputDecorationTheme: InputDecorationTheme(
-        filled: true,
-        fillColor: Colors.white,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFFE8E8E8)),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFFE8E8E8)),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: primaryBlue, width: 1.5),
-        ),
-        hintStyle: const TextStyle(
-          fontFamily: fontGeneralSans,
-          color: textSecondary,
-          fontSize: 14,
+          color: lightTextPrimary,
         ),
       ),
     );
   }
 
-  static ThemeData get darkTheme => lightTheme; 
+  static ThemeData get darkTheme {
+    return ThemeData(
+      brightness: Brightness.dark,
+      primaryColor: primaryBlue,
+      scaffoldBackgroundColor: darkPageBg,
+      cardColor: darkCardsBg,
+      fontFamily: fontGeneralSans,
+      colorScheme: const ColorScheme.dark(
+        primary: primaryBlue,
+        secondary: accentBlue,
+        surface: darkCardsBg,
+        onSurface: darkTextPrimary,
+        background: darkPageBg,
+      ),
+      appBarTheme: const AppBarTheme(
+        backgroundColor: darkCardsBg,
+        elevation: 0,
+        centerTitle: true,
+        iconTheme: IconThemeData(color: darkTextPrimary),
+        titleTextStyle: TextStyle(
+          fontFamily: fontUnivers,
+          fontWeight: FontWeight.w700,
+          fontSize: 18,
+          color: darkTextPrimary,
+          height: 1.2,
+        ),
+        systemOverlayStyle: SystemUiOverlayStyle(
+          statusBarColor: Colors.transparent,
+          statusBarIconBrightness: Brightness.light,
+        ),
+      ),
+      textTheme: const TextTheme(
+        headlineLarge: TextStyle(
+          fontFamily: fontUnivers,
+          fontWeight: FontWeight.w700,
+          fontSize: 32,
+          color: darkTextPrimary,
+          height: 1.2,
+        ),
+        headlineMedium: TextStyle(
+          fontFamily: fontUnivers,
+          fontWeight: FontWeight.w700,
+          fontSize: 24,
+          color: darkTextPrimary,
+          height: 1.2,
+        ),
+        titleLarge: TextStyle(
+          fontFamily: fontUnivers,
+          fontWeight: FontWeight.w700,
+          fontSize: 20,
+          color: darkTextPrimary,
+          height: 1.2,
+        ),
+        bodyLarge: TextStyle(
+          fontFamily: fontGeneralSans,
+          fontSize: 16,
+          color: darkTextPrimary,
+          height: 1.3,
+        ),
+        bodyMedium: TextStyle(
+          fontFamily: fontGeneralSans,
+          fontSize: 14,
+          color: darkTextPrimary,
+          height: 1.3,
+        ),
+        labelLarge: TextStyle(
+          fontFamily: fontGeneralSans,
+          fontWeight: FontWeight.w600,
+          fontSize: 14,
+          color: darkTextPrimary,
+        ),
+      ),
+    );
+  }
 }
