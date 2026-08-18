@@ -375,7 +375,7 @@ class EventTimelineTile extends StatelessWidget {
             context,
             MaterialPageRoute(
               builder: (context) =>
-                  LandingScreen(initialTab: 0, initialVenue: venueName),
+                  LandingScreen(initialTab: 3, initialVenue: venueName),
             ),
           );
         },

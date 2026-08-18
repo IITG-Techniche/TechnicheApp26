@@ -21,17 +21,18 @@ class GlowingBottomNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       height: kBottomNavigationBarHeight + 15,
       padding: const EdgeInsets.symmetric(horizontal: 10),
       decoration: BoxDecoration(
-        color: Colors.white,
-        border: const Border(
-          top: BorderSide(color: Color(0xFFE8E8E8), width: 1),
+        color: isDark ? const Color(0xFF070B19) : Colors.white,
+        border: Border(
+          top: BorderSide(color: isDark ? const Color(0xFF1E293B) : const Color(0xFFE8E8E8), width: 1),
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: Colors.black.withOpacity(isDark ? 0.2 : 0.03),
             blurRadius: 10,
             offset: const Offset(0, -4),
           ),
@@ -57,16 +58,16 @@ class GlowingBottomNavBar extends StatelessWidget {
                       item.icon,
                       size: 22,
                       color: isSelected
-                          ? const Color(0xFF002B5B)
-                          : const Color(0XFF6D7985).withOpacity(0.5),
+                          ? (isDark ? Colors.white : const Color(0xFF002B5B))
+                          : (isDark ? const Color(0xFF94A3B8).withOpacity(0.6) : const Color(0XFF6D7985).withOpacity(0.5)),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       item.label,
                       style: TextStyle(
                         color: isSelected
-                            ? const Color(0xFF002B5B)
-                            : const Color(0XFF6D7985).withOpacity(0.5),
+                            ? (isDark ? Colors.white : const Color(0xFF002B5B))
+                            : (isDark ? const Color(0xFF94A3B8).withOpacity(0.6) : const Color(0XFF6D7985).withOpacity(0.5)),
                         fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
                         fontSize: 11,
                         fontFamily: 'General Sans',

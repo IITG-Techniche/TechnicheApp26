@@ -196,23 +196,6 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
     }
   }
 
-  Future<void> _launchGoogleMaps(LatLng destination) async {
-    final lat = destination.latitude;
-    final lng = destination.longitude;
-    final url = Uri.parse(
-        'https://www.google.com/maps/dir/?api=1&destination=$lat,$lng');
-
-    if (await canLaunchUrl(url)) {
-      await launchUrl(url);
-    } else {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Could not open Google Maps')),
-        );
-      }
-    }
-  }
-
   Future<void> getCurrentLocation() async {
     setState(() {
       _isLoadingLocation = true;
@@ -613,33 +596,16 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
                                       ],
                                     ),
                                     child: IntrinsicWidth(
-                                      child: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Expanded(
-                                            child: Text(
-                                              venueName,
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                              textAlign: TextAlign.center,
-                                              style: const TextStyle(
-                                                fontWeight: FontWeight.w600,
-                                                fontSize: 12.0,
-                                                color: Colors.white,
-                                              ),
-                                            ),
-                                          ),
-                                          const SizedBox(width: 8),
-                                          InkWell(
-                                            onTap: () =>
-                                                _launchGoogleMaps(venueCoord),
-                                            child: const Icon(
-                                              Icons.directions,
-                                              color: Colors.white,
-                                              size: 20,
-                                            ),
-                                          )
-                                        ],
+                                      child: Text(
+                                        venueName,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        textAlign: TextAlign.center,
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: 12.0,
+                                          color: Colors.white,
+                                        ),
                                       ),
                                     ),
                                   ),
