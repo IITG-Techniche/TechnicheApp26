@@ -1,16 +1,16 @@
 import 'package:techniche26/view/auth/ca_auth_screen.dart';
-import 'package:techniche26/utils/app_drawer.dart';
+import 'package:techniche26/widgets/app_drawer.dart';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:techniche26/utils/ca_bottom_nav_bar.dart';
-import 'package:techniche26/view/events_screen.dart';
-import 'package:techniche26/view/utilities_screen.dart';
-import 'package:techniche26/view/legacy_screen.dart';
-import 'package:techniche26/view/map_screen.dart';
+import 'package:techniche26/widgets/ca_bottom_nav_bar.dart';
+import 'package:techniche26/view/events/events_screen.dart';
+import 'package:techniche26/view/core/utilities_screen.dart';
+import 'package:techniche26/view/core/legacy_screen.dart';
+import 'package:techniche26/view/core/map_screen.dart';
 import 'package:techniche26/controller/riverpod_controller/ca_auth_riverpod_controller.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:techniche26/utils/bottom_nav_bar.dart';
+import 'package:techniche26/widgets/bottom_nav_bar.dart';
 import 'package:upgrader/upgrader.dart';
 import 'package:techniche26/services/notification_service.dart';
 import 'package:techniche26/constant/appTheme.dart';
