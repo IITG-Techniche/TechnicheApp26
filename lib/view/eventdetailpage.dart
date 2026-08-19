@@ -3,6 +3,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:share_plus/share_plus.dart';
 import '../constant/appTheme.dart';
 import '../model/events_data.dart';
+import 'core/map_screen.dart';
 
 class EventDetailPage extends StatefulWidget {
   final String eventTitle;
@@ -75,6 +76,16 @@ class _EventDetailPageState extends State<EventDetailPage> {
         '${_event.description ?? ''}\n'
         'Register here: ${_event.redirectUrl ?? 'https://techniche.org.in'}';
     Share.share(text);
+  }
+
+  void _openTechnicheMap(String? venue) {
+    if (venue == null || venue.trim().isEmpty) return;
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => MapScreen(initialVenue: venue),
+      ),
+    );
   }
 
   void _setReminder() {
@@ -357,56 +368,68 @@ class _EventDetailPageState extends State<EventDetailPage> {
         children: [
           // ── Location Row ──
           if (hasLocation) ...[
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: iconContainerBg,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Icon(
-                    Icons.location_on_outlined,
-                    color: Color(0xFF175BCC),
-                    size: 22,
-                  ),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        locationText!,
-                        style: TextStyle(
-                          fontSize: 14.5,
-                          fontWeight: FontWeight.w600,
-                          fontFamily: AppTheme.fontGeneralSans,
-                          color: textPrimary,
-                          height: 1.25,
-                        ),
+            InkWell(
+              onTap: () => _openTechnicheMap(locationText),
+              borderRadius: BorderRadius.circular(16),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: iconContainerBg,
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                      if (mapUrl != null) ...[
-                        const SizedBox(height: 4),
-                        GestureDetector(
-                          onTap: () => _launchExternalUrl(mapUrl),
-                          child: Text(
-                            'Show in Google Maps',
+                      child: const Icon(
+                        Icons.location_on_outlined,
+                        color: Color(0xFF175BCC),
+                        size: 22,
+                      ),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            locationText!,
                             style: TextStyle(
-                              fontSize: 12.5,
+                              fontSize: 14.5,
                               fontWeight: FontWeight.w600,
                               fontFamily: AppTheme.fontGeneralSans,
-                              color: primaryBlue,
+                              color: textPrimary,
+                              height: 1.25,
                             ),
                           ),
-                        ),
-                      ],
-                    ],
-                  ),
+                          const SizedBox(height: 4),
+                          Row(
+                            children: [
+                              Text(
+                                'Show on Techniche Map',
+                                style: TextStyle(
+                                  fontSize: 12.5,
+                                  fontWeight: FontWeight.w600,
+                                  fontFamily: AppTheme.fontGeneralSans,
+                                  color: primaryBlue,
+                                ),
+                              ),
+                              const SizedBox(width: 4),
+                              Icon(
+                                Icons.arrow_forward_ios_rounded,
+                                size: 11,
+                                color: primaryBlue,
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
             if (hasRounds) const SizedBox(height: 20),
           ],

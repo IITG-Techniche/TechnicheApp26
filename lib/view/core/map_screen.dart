@@ -32,9 +32,12 @@ const Map<String, Map<String, dynamic>> categoryStyles = {
 final Map<String, LatLng> venueCoordinates = {
   "Old Gymkhana": const LatLng(26.192450, 91.695894),
   "Lake": const LatLng(26.190546, 91.694773),
+  "Administrative Building Lake": const LatLng(26.190546, 91.694773),
   "Cricket Ground": const LatLng(26.190743, 91.697019),
   "Lecture Hall 1": const LatLng(26.188869, 91.691550),
   "Lecture Hall": const LatLng(26.189042, 91.691442),
+  "L1 - Lecture Hall, Near Academic Block": const LatLng(26.189042, 91.691442),
+  "LHC": const LatLng(26.189042, 91.691442),
   "IITG Circle": const LatLng(26.190865, 91.692867),
   "ED Lab": const LatLng(26.187656, 91.691551),
   "Conference Hall (Foyer)": const LatLng(26.191169, 91.692556),
@@ -42,12 +45,16 @@ final Map<String, LatLng> venueCoordinates = {
   "Conference Hall 3": const LatLng(26.191169, 91.692556),
   "Mini Audi": const LatLng(26.190689, 91.693047),
   "Audi": const LatLng(26.190943, 91.693001),
+  "Bhupen Hazarika Auditorium": const LatLng(26.190943, 91.693001),
   "CCC": const LatLng(26.189215, 91.693057),
   "Swimming pool": const LatLng(26.191441, 91.698647),
   "5G1": const LatLng(26.186020, 91.689600),
-  // "Cricket Ground": const LatLng(26.189954, 91.697348),
   "Near library ground": const LatLng(26.189991, 91.693029),
-  "Conference room(new sac)": const LatLng(26.192760, 91.698913)
+  "Conference room(new sac)": const LatLng(26.192760, 91.698913),
+  "Old SAC": const LatLng(26.192450, 91.695894),
+  "Old SAC Combat Arena": const LatLng(26.192450, 91.695894),
+  "New SAC": const LatLng(26.192760, 91.698913),
+  "Core 1": const LatLng(26.188869, 91.691550),
 };
 
 class MapScreen extends StatefulWidget {
@@ -177,21 +184,50 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
   }
 
   void _selectInitialVenue() {
-    if (widget.initialVenue != null) {
-      final index = _allEvents
-          .indexWhere((event) => event['venue'] == widget.initialVenue);
+    if (widget.initialVenue != null && widget.initialVenue!.trim().isNotEmpty) {
+      final initialVenueQuery = widget.initialVenue!.trim().toLowerCase();
+
+      final index = _allEvents.indexWhere((event) {
+        final v = (event['venue'] ?? '').toString().toLowerCase();
+        return v == initialVenueQuery ||
+            v.contains(initialVenueQuery) ||
+            initialVenueQuery.contains(v);
+      });
+
       if (index != -1) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (_pageController != null && _pageController!.hasClients) {
             _pageController!.jumpToPage(index);
           }
         });
-      } else if (venueCoordinates.containsKey(widget.initialVenue)) {
-        final venueCoord = venueCoordinates[widget.initialVenue]!;
-        _mapController.move(venueCoord, 17.5);
-        setState(() {
-          _selectedVenue = widget.initialVenue;
-        });
+      } else {
+        // Look up in venueCoordinates directly or with substring match
+        String? matchedKey;
+        if (venueCoordinates.containsKey(widget.initialVenue)) {
+          matchedKey = widget.initialVenue;
+        } else {
+          for (final key in venueCoordinates.keys) {
+            final lk = key.toLowerCase();
+            if (lk == initialVenueQuery ||
+                initialVenueQuery.contains(lk) ||
+                lk.contains(initialVenueQuery)) {
+              matchedKey = key;
+              break;
+            }
+          }
+        }
+
+        if (matchedKey != null) {
+          final venueCoord = venueCoordinates[matchedKey]!;
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            _mapController.move(venueCoord, 17.5);
+            if (mounted) {
+              setState(() {
+                _selectedVenue = matchedKey;
+              });
+            }
+          });
+        }
       }
     }
   }

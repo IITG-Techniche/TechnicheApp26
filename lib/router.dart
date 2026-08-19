@@ -10,6 +10,7 @@ import 'package:techniche26/view/ca/homescreen.dart';
 import 'package:techniche26/widgets/ca_bottom_nav_bar.dart';
 
 // Core
+import 'package:techniche26/view/core/help_center_screen.dart';
 import 'package:techniche26/view/core/landing_screen.dart';
 import 'package:techniche26/view/core/legacy_screen.dart';
 import 'package:techniche26/view/core/map_screen.dart';
@@ -113,6 +114,13 @@ Route<dynamic> generateRoute(RouteSettings routeSettings) {
       return MaterialPageRoute(
         settings: routeSettings,
         builder: (_) => const MerchScreen(),
+      );
+
+    case HelpCenterScreen.routeName:
+    case '/help-center':
+      return MaterialPageRoute(
+        settings: routeSettings,
+        builder: (_) => const HelpCenterScreen(),
       );
 
     // Auth Routes

@@ -5,7 +5,7 @@ class LegacyPage extends StatelessWidget {
 
   const LegacyPage({super.key});
 
-  static const String routeName = '/legacy';
+
 
   @override
   Widget build(BuildContext context) {

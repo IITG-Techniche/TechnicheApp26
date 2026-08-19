@@ -184,7 +184,7 @@ class _SubCategoryScreenState extends State<SubCategoryScreen> {
   }
 
   void _onSubCategoryTap(BuildContext context, SubCategory subCategory) {
-    if (subCategory.events.isNotEmpty) {
+    if (subCategory.events.length == 1) {
       Navigator.push(
         context,
         MaterialPageRoute(

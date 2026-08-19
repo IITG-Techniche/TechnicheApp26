@@ -45,3 +45,5 @@ app.*.map.json
 /android/app/.cxx
 
 *.apk
+linux/flutter/ephemeral/
+windows/flutter/ephemeral/

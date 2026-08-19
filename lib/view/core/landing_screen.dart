@@ -19,6 +19,9 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:techniche26/view/eventdetailpage.dart';
+import 'package:techniche26/model/events_data.dart';
+import 'package:techniche26/view/core/help_center_screen.dart';
 
 class LandingScreen extends ConsumerStatefulWidget {
   static const String routeName = '/landing-screen';
@@ -507,7 +510,7 @@ class _LandingScreenState extends ConsumerState<LandingScreen> with TickerProvid
                               IconButton(
                                 icon: Icon(Icons.help_outline_rounded, color: isDark ? Colors.white : const Color(0xFF10152B), size: 34),
                                 onPressed: () {
-                                  ref.read(bottomNavSelectedIndexProvider.notifier).state = 4;
+                                  Navigator.pushNamed(context, HelpCenterScreen.routeName);
                                 },
                               ),
                             ],
@@ -945,6 +948,42 @@ class _LandingScreenState extends ConsumerState<LandingScreen> with TickerProvid
     );
   }
 
+  void _navigateToEventDetail(BuildContext context, String eventTitle) {
+    final event = findEventByTitle(eventTitle);
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => EventDetailPage(
+          eventTitle: eventTitle,
+          event: event,
+        ),
+      ),
+    );
+  }
+
+  void _setEventReminder(BuildContext context, String eventTitle) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.notifications_active_rounded,
+                color: Colors.white, size: 20),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                'Reminder set for $eventTitle!',
+                style: const TextStyle(fontWeight: FontWeight.w600),
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: const Color(0xFF175BCC),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+    );
+  }
+
   Widget _buildUpcomingEventCard(
     BuildContext context, {
     required String title,
@@ -956,148 +995,161 @@ class _LandingScreenState extends ConsumerState<LandingScreen> with TickerProvid
     final textPrimary = isDark ? Colors.white : const Color(0XFF232930);
     final textSecondary = isDark ? const Color(0xFF94A3B8) : const Color(0xFF6D7985);
 
-    return Container(
-      width: double.infinity,
-      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
-      child: Stack(
-        children: [
-          // Background Image
-          Positioned.fill(
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(24),
-              child: Image.asset(
-                image,
-                fit: BoxFit.cover,
-              ),
-            ),
-          ),
-          // Dark overlay gradient to make ROBOWARS text legible
-          Positioned.fill(
-            child: Container(
-              decoration: BoxDecoration(
+    return GestureDetector(
+      onTap: () => _navigateToEventDetail(context, title),
+      child: Container(
+        width: double.infinity,
+        margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+        child: Stack(
+          children: [
+            // Background Image
+            Positioned.fill(
+              child: ClipRRect(
                 borderRadius: BorderRadius.circular(24),
-                gradient: LinearGradient(
-                  colors: [
-                    Colors.black.withOpacity(0.55),
-                    Colors.black.withOpacity(0.1),
-                    Colors.black.withOpacity(0.5),
-                  ],
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                ),
-              ),
-            ),
-          ),
-          // ROBOWARS header text at the top
-          Positioned(
-            top: 24,
-            left: 20,
-            right: 20,
-            child: const Text(
-              'ROBOWARS',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 32,
-                fontWeight: FontWeight.w900,
-                letterSpacing: 1.5,
-                fontFamily: 'Univers',
-              ),
-            ),
-          ),
-          // Floating Info card at the bottom
-          Positioned(
-            left: 14,
-            right: 14,
-            bottom: 14,
-            child: Container(
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF0F172A) : Colors.white,
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: isDark ? const Color(0xFF334155).withOpacity(0.4) : const Color(0xFFE2E8F0),
-                  width: 1,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: isDark ? Colors.black.withOpacity(0.3) : Colors.black.withOpacity(0.08),
-                    blurRadius: 8,
-                    offset: const Offset(0, 4),
+                child: Image.asset(
+                  image,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => Container(
+                    color: const Color(0xFF002B5B),
+                    child: const Center(
+                      child: Icon(Icons.smart_toy_outlined,
+                          size: 64, color: Colors.white38),
+                    ),
                   ),
-                ],
+                ),
               ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          date,
-                          style: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: Color(0xFF2B53B4),
-                            fontFamily: 'General Sans',
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          title,
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: textPrimary,
-                            fontFamily: 'General Sans',
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Row(
-                          children: [
-                            Icon(
-                              Icons.location_on,
-                              size: 13,
-                              color: textSecondary,
+            ),
+            // Dark overlay gradient to make title text legible
+            Positioned.fill(
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(24),
+                  gradient: LinearGradient(
+                    colors: [
+                      Colors.black.withOpacity(0.55),
+                      Colors.black.withOpacity(0.1),
+                      Colors.black.withOpacity(0.5),
+                    ],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                  ),
+                ),
+              ),
+            ),
+            // Dynamic event title header at the top
+            Positioned(
+              top: 24,
+              left: 20,
+              right: 20,
+              child: Text(
+                title.toUpperCase(),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 28,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 1.2,
+                  fontFamily: 'Univers',
+                ),
+              ),
+            ),
+            // Floating Info card at the bottom
+            Positioned(
+              left: 14,
+              right: 14,
+              bottom: 14,
+              child: Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(0xFF0F172A) : Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: isDark ? const Color(0xFF334155).withOpacity(0.4) : const Color(0xFFE2E8F0),
+                    width: 1,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: isDark ? Colors.black.withOpacity(0.3) : Colors.black.withOpacity(0.08),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            date,
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF2B53B4),
+                              fontFamily: 'General Sans',
                             ),
-                            const SizedBox(width: 3),
-                            Expanded(
-                              child: Text(
-                                venue,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  color: textSecondary,
-                                  fontFamily: 'General Sans',
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            title,
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: textPrimary,
+                              fontFamily: 'General Sans',
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.location_on,
+                                size: 13,
+                                color: textSecondary,
+                              ),
+                              const SizedBox(width: 3),
+                              Expanded(
+                                child: Text(
+                                  venue,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: textSecondary,
+                                    fontFamily: 'General Sans',
+                                  ),
                                 ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    // Bell button
+                    GestureDetector(
+                      onTap: () => _setEventReminder(context, title),
+                      child: Container(
+                        width: 36,
+                        height: 36,
+                        decoration: BoxDecoration(
+                          color: isDark ? const Color(0xFF1E293B) : const Color(0xFFE4F0FF),
+                          shape: BoxShape.circle,
                         ),
-                      ],
+                        child: Icon(
+                          Icons.notifications_none_rounded,
+                          size: 20,
+                          color: isDark ? Colors.white : const Color(0xFF0D256B),
+                        ),
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  // Bell button
-                  Container(
-                    width: 36,
-                    height: 36,
-                    decoration: BoxDecoration(
-                      color: isDark ? const Color(0xFF1E293B) : const Color(0xFFE4F0FF),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      Icons.notifications_none_rounded,
-                      size: 20,
-                      color: isDark ? Colors.white : const Color(0xFF0D256B),
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -1136,6 +1188,9 @@ class _LandingScreenState extends ConsumerState<LandingScreen> with TickerProvid
     required Color textSecondary,
     required Color pillBg,
   }) {
+    final eventDetail = findEventByTitle(title);
+    final imageAsset = eventDetail?.imageAsset ?? 'assets/robo.png';
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       width: double.infinity,
@@ -1147,66 +1202,94 @@ class _LandingScreenState extends ConsumerState<LandingScreen> with TickerProvid
           width: 1,
         ),
       ),
-      padding: const EdgeInsets.all(16),
-      child: Row(
-        children: [
-          // Event dummy placeholder image (grey square)
-          Container(
-            width: 70,
-            height: 70,
-            decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0),
-              borderRadius: BorderRadius.circular(12),
-            ),
-          ),
-          const SizedBox(width: 16),
-          // Details
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => _navigateToEventDetail(context, title),
+          borderRadius: BorderRadius.circular(20),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
               children: [
-                // Category pill
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFE4F0FF),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    category,
-                    style: const TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF175BCC),
-                      fontFamily: 'General Sans',
+                // Event image
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(14),
+                  child: Image.asset(
+                    imageAsset,
+                    width: 70,
+                    height: 70,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => Container(
+                      width: 70,
+                      height: 70,
+                      decoration: BoxDecoration(
+                        color: isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0),
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: Icon(
+                        Icons.smart_toy_outlined,
+                        color: isDark ? Colors.white54 : const Color(0xFF175BCC),
+                        size: 28,
+                      ),
                     ),
                   ),
                 ),
-                const SizedBox(height: 6),
-                Text(
-                  title,
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: textPrimary,
-                    fontFamily: 'General Sans',
+                const SizedBox(width: 16),
+                // Details
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Category pill
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFE4F0FF),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          category,
+                          style: const TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF175BCC),
+                            fontFamily: 'General Sans',
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        title,
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: textPrimary,
+                          fontFamily: 'General Sans',
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        desc,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: textSecondary,
+                          fontFamily: 'General Sans',
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 2),
-                Text(
-                  desc,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: textSecondary,
-                    fontFamily: 'General Sans',
-                  ),
+                const Icon(
+                  Icons.arrow_forward_ios_rounded,
+                  size: 14,
+                  color: Color(0xFF94A3B8),
                 ),
               ],
             ),
           ),
-        ],
+        ),
       ),
     );
   }
