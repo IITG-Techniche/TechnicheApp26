@@ -15,6 +15,10 @@ import 'package:upgrader/upgrader.dart';
 import 'package:techniche26/services/notification_service.dart';
 import 'package:techniche26/constant/appTheme.dart';
 import 'package:techniche26/providers/navigation_provider.dart';
+import 'dart:async';
+import 'dart:convert';
+import 'package:firebase_remote_config/firebase_remote_config.dart';
+import 'package:carousel_slider/carousel_slider.dart';
 
 class LandingScreen extends ConsumerStatefulWidget {
   static const String routeName = '/landing-screen';
@@ -121,9 +125,39 @@ class ScanlinePainter extends CustomPainter {
 }
 
 class _LandingScreenState extends ConsumerState<LandingScreen> with TickerProviderStateMixin {
+  static final DateTime _festStartDate = DateTime(2026, 8, 28);
+
+  static const List<Map<String, dynamic>> _fallbackFeaturedEvents = [
+    {
+      'title': 'Robowars',
+      'desc': 'Witness the ultimate clash of steel and circuits! Sparks will fly!',
+      'category': 'Robotics',
+    },
+    {
+      'title': 'Aquawars',
+      'desc': 'Autonomous aquatic robots navigating a series of complex underwater obstacles.',
+      'category': 'Robotics',
+    },
+    {
+      'title': 'Escalade',
+      'desc': 'A premier startup pitch competition showing groundbreaking business ideas.',
+      'category': 'Robotics',
+    },
+  ];
+
+  bool _isFeaturedScheduleLive = false;
+  List<Map<String, dynamic>> _featuredEvents = [];
+  Timer? _featuredEventsTimer;
+  late final AnimationController _sponsorsAnimationController;
+
   @override
   void initState() {
     super.initState();
+    _sponsorsAnimationController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 12),
+    )..repeat();
+    _initFeaturedEvents();
     Future.microtask(() {
       if (mounted) {
         ref.read(bottomNavSelectedIndexProvider.notifier).state =
@@ -142,6 +176,131 @@ class _LandingScreenState extends ConsumerState<LandingScreen> with TickerProvid
   void _onItemTapped(int index) {
     if (ref.read(bottomNavSelectedIndexProvider) == index) return;
     ref.read(bottomNavSelectedIndexProvider.notifier).state = index;
+  }
+
+  @override
+  void dispose() {
+    _featuredEventsTimer?.cancel();
+    _sponsorsAnimationController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _initFeaturedEvents() async {
+    try {
+      final remoteConfig = FirebaseRemoteConfig.instance;
+      await remoteConfig.setConfigSettings(RemoteConfigSettings(
+        fetchTimeout: const Duration(seconds: 10),
+        minimumFetchInterval: Duration.zero,
+      ));
+      await remoteConfig.setDefaults(const {
+        "is_schedule_live": false,
+        "fest_schedule_json": "{}",
+      });
+      await remoteConfig.fetchAndActivate();
+      final isScheduleLive = remoteConfig.getBool('is_schedule_live');
+      if (!isScheduleLive) return;
+      final scheduleData = json.decode(remoteConfig.getString('fest_schedule_json'));
+      if (!mounted) return;
+      setState(() {
+        _isFeaturedScheduleLive = true;
+      });
+      _updateFeaturedEvents(scheduleData);
+      _featuredEventsTimer = Timer.periodic(
+        const Duration(seconds: 30),
+        (_) => _updateFeaturedEvents(scheduleData),
+      );
+    } catch (e) {
+      debugPrint("Error fetching remote config for featured events: $e");
+    }
+  }
+
+  DateTime? _parseEventDateTime(int dayNumber, dynamic timeValue) {
+    if (timeValue == null) return null;
+    try {
+      final timeParts = timeValue.toString().split(':');
+      final hour = int.parse(timeParts[0]);
+      final minute = int.parse(timeParts[1]);
+      return DateTime(
+        _festStartDate.year,
+        _festStartDate.month,
+        _festStartDate.day + dayNumber - 1,
+        hour,
+        minute,
+      );
+    } catch (e) {
+      return null;
+    }
+  }
+
+  void _updateFeaturedEvents(Map<String, dynamic> scheduleData) {
+    final List<Map<String, dynamic>> featured =
+        _computeFeaturedEvents(scheduleData);
+    if (mounted && !_listEquals(featured, _featuredEvents)) {
+      setState(() {
+        _featuredEvents = featured;
+      });
+    }
+  }
+
+  bool _listEquals(List<Map<String, dynamic>> a, List<Map<String, dynamic>> b) {
+    if (a.length != b.length) return false;
+    for (int i = 0; i < a.length; i++) {
+      if (a[i]['name'] != b[i]['name']) return false;
+      if (a[i]['startTime'] != b[i]['startTime']) return false;
+    }
+    return true;
+  }
+
+  List<Map<String, dynamic>> _computeFeaturedEvents(
+      Map<String, dynamic> scheduleData) {
+    final DateTime now = DateTime.now();
+    final List<dynamic> days = scheduleData['days'] ?? [];
+    final List<({DateTime start, DateTime end, Map<String, dynamic> event})>
+        parsed = [];
+
+    for (var dayData in days) {
+      final String dayTitle = dayData['title'] ?? 'Day 1';
+      final int dayNumber = int.tryParse(
+              dayTitle.replaceAll(RegExp(r'[^0-9]'), '')) ??
+          1;
+      final List<dynamic> events = dayData['events'] ?? [];
+      for (var event in events) {
+        final DateTime? start =
+            _parseEventDateTime(dayNumber, event['startTime']);
+        final DateTime? end = _parseEventDateTime(
+            dayNumber, event['endTime'] ?? event['startTime']);
+        if (start == null || end == null) continue;
+        parsed.add((
+          start: start,
+          end: end,
+          event: Map<String, dynamic>.from(event),
+        ));
+      }
+    }
+
+    parsed.sort((a, b) => a.start.compareTo(b.start));
+
+    final List<Map<String, dynamic>> featured = [];
+
+    for (final item in parsed) {
+      if (featured.length >= 3) break;
+      if (now.isAfter(item.end)) continue;
+      if (!now.isBefore(item.start)) {
+        featured.add(item.event);
+      }
+    }
+
+    for (final item in parsed) {
+      if (featured.length >= 3) break;
+      if (featured.contains(item.event)) continue;
+      if (now.isAfter(item.end)) continue;
+      if (!now.isBefore(item.start)) continue;
+      if (item.start.difference(now) <= const Duration(minutes: 120)) {
+        featured.add(item.event);
+      }
+    }
+
+    return featured;
   }
 
   Widget _buildHeroLabel({
@@ -413,39 +572,41 @@ class _LandingScreenState extends ConsumerState<LandingScreen> with TickerProvid
               ),
             ),
           ),
-          SizedBox(
-            height: 380,
-            child: ListView(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 15),
-              physics: const BouncingScrollPhysics(),
-              children: [
-                _buildUpcomingEventCard(
-                  context,
-                  title: 'Aquawars',
-                  image: 'assets/robo.png',
-                  date: '12 August | 12 pm',
-                  venue: 'Bhupen Hazarika Auditorium',
-                  isDark: isDark,
-                ),
-                _buildUpcomingEventCard(
-                  context,
-                  title: 'Robowars',
-                  image: 'assets/robo.png',
-                  date: '13 August | 10 am',
-                  venue: 'Cricket Ground',
-                  isDark: isDark,
-                ),
-                _buildUpcomingEventCard(
-                  context,
-                  title: 'Escalade',
-                  image: 'assets/robo.png',
-                  date: '14 August | 02 pm',
-                  venue: 'Old SAC',
-                  isDark: isDark,
-                ),
-              ],
+          CarouselSlider(
+            options: CarouselOptions(
+              height: 427,
+              enlargeCenterPage: true,
+              viewportFraction: 0.72,
+              enlargeFactor: 0.2,
+              enableInfiniteScroll: true,
+              scrollPhysics: const BouncingScrollPhysics(),
             ),
+            items: [
+              _buildUpcomingEventCard(
+                context,
+                title: 'Aquawars',
+                image: 'assets/robo.png',
+                date: '12 August | 12 pm',
+                venue: 'Bhupen Hazarika Auditorium',
+                isDark: isDark,
+              ),
+              _buildUpcomingEventCard(
+                context,
+                title: 'Robowars',
+                image: 'assets/robo.png',
+                date: '13 August | 10 am',
+                venue: 'Cricket Ground',
+                isDark: isDark,
+              ),
+              _buildUpcomingEventCard(
+                context,
+                title: 'Escalade',
+                image: 'assets/robo.png',
+                date: '14 August | 02 pm',
+                venue: 'Old SAC',
+                isDark: isDark,
+              ),
+            ],
           ),
           const SizedBox(height: 25),
 
@@ -679,35 +840,17 @@ class _LandingScreenState extends ConsumerState<LandingScreen> with TickerProvid
                   ),
                 ),
                 const SizedBox(height: 15),
-                _buildFeaturedEventTile(
-                  title: 'Robowars',
-                  desc: 'Witness the ultimate clash of steel and circuits! Sparks will fly!',
-                  category: 'Robotics',
-                  isDark: isDark,
-                  cardBg: cardBg,
-                  textPrimary: textPrimary,
-                  textSecondary: textSecondary,
-                  pillBg: pillBg,
-                ),
-                _buildFeaturedEventTile(
-                  title: 'Aquawars',
-                  desc: 'Autonomous aquatic robots navigating a series of complex underwater obstacles.',
-                  category: 'Robotics',
-                  isDark: isDark,
-                  cardBg: cardBg,
-                  textPrimary: textPrimary,
-                  textSecondary: textSecondary,
-                  pillBg: pillBg,
-                ),
-                _buildFeaturedEventTile(
-                  title: 'Escalade',
-                  desc: 'A premier startup pitch competition showing groundbreaking business ideas.',
-                  category: 'Robotics',
-                  isDark: isDark,
-                  cardBg: cardBg,
-                  textPrimary: textPrimary,
-                  textSecondary: textSecondary,
-                  pillBg: pillBg,
+                ..._featuredDisplayEvents().map(
+                  (event) => _buildFeaturedEventTile(
+                    title: event['name'] ?? event['title'] ?? '',
+                    desc: event['venue'] ?? event['desc'] ?? '',
+                    category: event['category'] ?? 'Event',
+                    isDark: isDark,
+                    cardBg: cardBg,
+                    textPrimary: textPrimary,
+                    textSecondary: textSecondary,
+                    pillBg: pillBg,
+                  ),
                 ),
               ],
             ),
@@ -729,33 +872,71 @@ class _LandingScreenState extends ConsumerState<LandingScreen> with TickerProvid
           ),
           SizedBox(
             height: 80,
-            child: ListView(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 15),
-              physics: const BouncingScrollPhysics(),
-              children: List.generate(5, (index) {
-                return Container(
-                  width: 80,
-                  margin: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(16),
-                    gradient: LinearGradient(
-                      colors: isDark
-                          ? [const Color(0xFF1E294A), const Color(0xFF0F162A)]
-                          : [const Color(0xFFDCE8F8), const Color(0xFFEAF2FF)],
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.04),
-                        blurRadius: 4,
-                        offset: const Offset(0, 2),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                const double itemWidth = 92.0;
+                const int sponsorsPerSet = 5;
+                const double setWidth = sponsorsPerSet * itemWidth;
+                final int repeats =
+                    (constraints.maxWidth / setWidth).ceil() + 2;
+                return ClipRect(
+                  child: Stack(
+                    children: [
+                      Positioned(
+                        left: 0,
+                        top: 0,
+                        bottom: 0,
+                        child: AnimatedBuilder(
+                          animation: _sponsorsAnimationController,
+                          builder: (context, child) {
+                            final double offset =
+                                (_sponsorsAnimationController.value * setWidth) %
+                                    setWidth;
+                            return Transform.translate(
+                              offset: Offset(-offset, 0),
+                              child: child,
+                            );
+                          },
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: List.generate(
+                                repeats * sponsorsPerSet, (index) {
+                              return Container(
+                                width: 80,
+                                margin: const EdgeInsets.symmetric(
+                                    horizontal: 6, vertical: 2),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(16),
+                                  gradient: LinearGradient(
+                                    colors: isDark
+                                        ? const [
+                                            Color(0xFF1E294A),
+                                            Color(0xFF0F162A),
+                                          ]
+                                        : const [
+                                            Color(0xFFDCE8F8),
+                                            Color(0xFFEAF2FF),
+                                          ],
+                                    begin: Alignment.topCenter,
+                                    end: Alignment.bottomCenter,
+                                  ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.04),
+                                      blurRadius: 4,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            }),
+                          ),
+                        ),
                       ),
                     ],
                   ),
                 );
-              }),
+              },
             ),
           ),
           const SizedBox(height: 40),
@@ -776,7 +957,7 @@ class _LandingScreenState extends ConsumerState<LandingScreen> with TickerProvid
     final textSecondary = isDark ? const Color(0xFF94A3B8) : const Color(0xFF6D7985);
 
     return Container(
-      width: 270,
+      width: double.infinity,
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
       child: Stack(
         children: [
@@ -833,9 +1014,13 @@ class _LandingScreenState extends ConsumerState<LandingScreen> with TickerProvid
               decoration: BoxDecoration(
                 color: isDark ? const Color(0xFF0F172A) : Colors.white,
                 borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: isDark ? const Color(0xFF334155).withOpacity(0.4) : const Color(0xFFE2E8F0),
+                  width: 1,
+                ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.08),
+                    color: isDark ? Colors.black.withOpacity(0.3) : Colors.black.withOpacity(0.08),
                     blurRadius: 8,
                     offset: const Offset(0, 4),
                   ),
@@ -898,14 +1083,14 @@ class _LandingScreenState extends ConsumerState<LandingScreen> with TickerProvid
                   Container(
                     width: 36,
                     height: 36,
-                    decoration: const BoxDecoration(
-                      color: Color(0xFFE4F0FF),
+                    decoration: BoxDecoration(
+                      color: isDark ? const Color(0xFF1E293B) : const Color(0xFFE4F0FF),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.notifications_none_rounded,
                       size: 20,
-                      color: Color(0xFF0D256B),
+                      color: isDark ? Colors.white : const Color(0xFF0D256B),
                     ),
                   ),
                 ],
@@ -932,6 +1117,13 @@ class _LandingScreenState extends ConsumerState<LandingScreen> with TickerProvid
         ),
       ),
     );
+  }
+
+  List<Map<String, dynamic>> _featuredDisplayEvents() {
+    if (!_isFeaturedScheduleLive || _featuredEvents.isEmpty) {
+      return _fallbackFeaturedEvents;
+    }
+    return _featuredEvents;
   }
 
   Widget _buildFeaturedEventTile({

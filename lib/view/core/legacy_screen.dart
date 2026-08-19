@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 class LegacyPage extends StatelessWidget {
+  static const String routeName = '/legacy';
+
   const LegacyPage({super.key});
 
   @override
