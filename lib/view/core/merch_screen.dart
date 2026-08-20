@@ -30,7 +30,7 @@ class _MerchScreenState extends State<MerchScreen> {
     {
       "title": "Glitched GameBoy",
       "image": "assets/glitched.png",
-      "model": "assets/blackmerch.glb",
+      "model": "assets/MerchBlack.glb",
       "price": "₹449",
       "description":
           "When circuits fry but style survives. It’s rebellious, loud, and built for those who’d rather crash the system than play by its rules.",

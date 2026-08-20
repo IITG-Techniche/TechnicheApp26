@@ -2,20 +2,22 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:techniche26/widgets/app_drawer.dart';
 import '../../constant/appTheme.dart';
+import '../../providers/theme_provider.dart';
 
-class UtilitiesScreen extends StatefulWidget {
+class UtilitiesScreen extends ConsumerStatefulWidget {
   static const String routeName = '/utilities-screen';
   const UtilitiesScreen({Key? key}) : super(key: key);
 
   @override
-  State<UtilitiesScreen> createState() => _UtilitiesScreenState();
+  ConsumerState<UtilitiesScreen> createState() => _UtilitiesScreenState();
 }
 
-class _UtilitiesScreenState extends State<UtilitiesScreen> {
+class _UtilitiesScreenState extends ConsumerState<UtilitiesScreen> {
   bool showFAQ = false;
   bool isLoading = true;
 
@@ -307,6 +309,7 @@ class _UtilitiesScreenState extends State<UtilitiesScreen> {
                         ],
                       ),
                       const SizedBox(height: 32),
+                      _buildThemeTile(),
                       _buildSectionTile(
                         icon: Icons.people_alt_rounded,
                         title: 'Meet the Team',
@@ -415,6 +418,61 @@ class _UtilitiesScreenState extends State<UtilitiesScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildThemeTile() {
+    final themeMode = ref.watch(themeModeProvider);
+    final isDark = themeMode == ThemeMode.dark;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8F9FA),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE8E8E8)),
+      ),
+      child: ListTile(
+        leading: Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF1E2D4A) : const Color(0xFFE1EBFF),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Icon(
+            isDark ? Icons.dark_mode_rounded : Icons.light_mode_rounded,
+            color: isDark ? Colors.amberAccent : const Color(0xFF002B5B),
+            size: 24,
+          ),
+        ),
+        title: Text(
+          isDark ? 'Dark Theme' : 'Light Theme',
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w700,
+            fontFamily: AppTheme.fontGeneralSans,
+            color: AppTheme.textMain,
+          ),
+        ),
+        subtitle: Text(
+          isDark ? 'Switch to Light Theme' : 'Switch to Dark Theme',
+          style: const TextStyle(
+            fontSize: 12,
+            fontFamily: AppTheme.fontGeneralSans,
+            color: Color(0xFF6D7985),
+          ),
+        ),
+        trailing: Switch.adaptive(
+          value: isDark,
+          activeColor: const Color(0xFF002B5B),
+          onChanged: (_) {
+            ref.read(themeModeProvider.notifier).toggleTheme();
+          },
+        ),
+        onTap: () {
+          ref.read(themeModeProvider.notifier).toggleTheme();
+        },
       ),
     );
   }
