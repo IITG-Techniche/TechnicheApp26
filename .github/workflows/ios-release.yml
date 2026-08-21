@@ -98,20 +98,12 @@ jobs:
           echo "BUNDLE_ID=$BUNDLE_ID" >> "$GITHUB_ENV"
 
       # -------------------------------------------------------
-      # SIGN IN WITH APPLE ENTITLEMENTS (Python - no indentation issues)
+      # SIGN IN WITH APPLE ENTITLEMENTS
       # -------------------------------------------------------
 
       - name: Configure Sign In with Apple entitlements
         run: |
-          python3 -c "
-          import plistlib
-          import os
-          os.makedirs('ios/Runner', exist_ok=True)
-          data = {'com.apple.developer.applesignin': ['Default']}
-          with open('ios/Runner/Runner.entitlements', 'wb') as f:
-              plistlib.dump(data, f)
-          print('Created ios/Runner/Runner.entitlements')
-          "
+          python3 -c "import plistlib, os; os.makedirs('ios/Runner', exist_ok=True); plistlib.dump({'com.apple.developer.applesignin': ['Default']}, open('ios/Runner/Runner.entitlements', 'wb')); print('Created entitlements')"
 
       # -------------------------------------------------------
       # CONFIGURE XCODE SIGNING
@@ -134,28 +126,33 @@ jobs:
           sed -i '' '/DEVELOPMENT_TEAM = /d' "$PROJECT"
           sed -i '' '/CODE_SIGN_ENTITLEMENTS = /d' "$PROJECT"
 
-          # Inject actual values using Python (no indentation issues)
-          python3 -c "
-          from pathlib import Path
+          # Write Python script to file (avoids YAML escaping hell)
+          cat > /tmp/fix_signing.py << 'PYEOF'
           import os
+          from pathlib import Path
 
-          path = Path('ios/Runner.xcodeproj/project.pbxproj')
+          path = Path("ios/Runner.xcodeproj/project.pbxproj")
           text = path.read_text()
 
-          team_id = os.environ['TEAM_ID']
-          profile_name = os.environ['PROFILE_NAME']
+          team_id = os.environ["TEAM_ID"]
+          profile_name = os.environ["PROFILE_NAME"]
 
-          old = 'CODE_SIGN_STYLE = Manual;'
-          new = f'''CODE_SIGN_STYLE = Manual;
-\t\t\t\tCODE_SIGN_IDENTITY = \"Apple Distribution\";
-\t\t\t\tDEVELOPMENT_TEAM = {team_id};
-\t\t\t\tPROVISIONING_PROFILE_SPECIFIER = \"{profile_name}\";
-\t\t\t\tCODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;'''
+          old = "CODE_SIGN_STYLE = Manual;"
+          new_lines = [
+              "CODE_SIGN_STYLE = Manual;",
+              '\t\t\t\tCODE_SIGN_IDENTITY = "Apple Distribution";',
+              f'\t\t\t\tDEVELOPMENT_TEAM = {team_id};',
+              f'\t\t\t\tPROVISIONING_PROFILE_SPECIFIER = "{profile_name}";',
+              '\t\t\t\tCODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;'
+          ]
+          new = "\n".join(new_lines)
 
           text = text.replace(old, new)
           path.write_text(text)
-          print('Updated project.pbxproj')
-          "
+          print("Updated project.pbxproj")
+          PYEOF
+
+          python3 /tmp/fix_signing.py
 
           echo "=== After cleanup ==="
           grep -nE "CODE_SIGN_STYLE|CODE_SIGN_IDENTITY|DEVELOPMENT_TEAM|PROVISIONING_PROFILE|CODE_SIGN_ENTITLEMENTS" "$PROJECT" || true
@@ -187,30 +184,9 @@ jobs:
       - name: Install Flutter dependencies
         run: flutter pub get
 
-      - name: Create ExportOptions.plist (Python - no indentation issues)
+      - name: Create ExportOptions.plist
         run: |
-          python3 -c "
-          import plistlib
-          import os
-
-          data = {
-              'method': 'app-store',
-              'signingStyle': 'manual',
-              'teamID': os.environ['TEAM_ID'],
-              'provisioningProfiles': {os.environ['BUNDLE_ID']: os.environ['PROFILE_NAME']},
-              'signingCertificate': 'Apple Distribution',
-              'stripSwiftSymbols': True,
-              'uploadSymbols': True,
-          }
-
-          with open('ios/ExportOptions.plist', 'wb') as f:
-              plistlib.dump(data, f)
-
-          print('Created ios/ExportOptions.plist')
-          print('Team ID:', os.environ['TEAM_ID'])
-          print('Bundle ID:', os.environ['BUNDLE_ID'])
-          print('Profile:', os.environ['PROFILE_NAME'])
-          "
+          python3 -c "import plistlib, os; plistlib.dump({'method': 'app-store', 'signingStyle': 'manual', 'teamID': os.environ['TEAM_ID'], 'provisioningProfiles': {os.environ['BUNDLE_ID']: os.environ['PROFILE_NAME']}, 'signingCertificate': 'Apple Distribution', 'stripSwiftSymbols': True, 'uploadSymbols': True}, open('ios/ExportOptions.plist', 'wb')); print('Created ExportOptions.plist')"
 
       - name: Build iOS IPA
         run: |
