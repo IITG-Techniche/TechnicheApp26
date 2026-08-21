@@ -6,14 +6,22 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'firebase_options.dart';
 import 'providers/theme_provider.dart';
+import 'core/notifications/notification_service.dart';
+
+final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
   try {
     WidgetsFlutterBinding.ensureInitialized();
 
+    // 1. Initialize Firebase
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
+
+    // 2. Initialize Local Notifications & Timezones for offline reminders
+    NotificationService.navigatorKey = rootNavigatorKey;
+    await NotificationService().initialize();
   } catch (e) {
     debugPrint("Failed to initialize core services: $e");
   }
@@ -31,6 +39,7 @@ class MyApp extends ConsumerWidget {
     final themeMode = ref.watch(themeModeProvider);
 
     return MaterialApp(
+      navigatorKey: rootNavigatorKey,
       onGenerateRoute: (settings) => generateRoute(settings),
       debugShowCheckedModeBanner: false,
       title: 'Techniche 2026',

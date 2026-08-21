@@ -25,6 +25,7 @@ import 'package:techniche26/widgets/home/home_upcoming_events_section.dart';
 import 'package:techniche26/widgets/home/home_campus_ambassador_section.dart';
 import 'package:techniche26/widgets/home/home_merchandise_section.dart';
 import 'package:techniche26/widgets/home/home_featured_events_section.dart';
+import 'package:techniche26/features/event_reminders/presentation/reminder_picker_sheet.dart';
 
 class LandingScreen extends ConsumerStatefulWidget {
   static const String routeName = '/landing-screen';
@@ -429,26 +430,8 @@ class _LandingScreenState extends ConsumerState<LandingScreen>
   }
 
   void _setEventReminder(BuildContext context, String eventTitle) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            const Icon(Icons.notifications_active_rounded,
-                color: Colors.white, size: 20),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                'Reminder set for $eventTitle!',
-                style: const TextStyle(fontWeight: FontWeight.w600),
-              ),
-            ),
-          ],
-        ),
-        backgroundColor: const Color(0xFF175BCC),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      ),
-    );
+    final event = findEventByTitle(eventTitle) ?? EventDetail(title: eventTitle);
+    ReminderPickerSheet.show(context, event: event);
   }
 
   List<Map<String, dynamic>> _featuredDisplayEvents() {

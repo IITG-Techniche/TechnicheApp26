@@ -185,6 +185,69 @@ class EventDetail {
         galleryImages: List<String>.from(json['galleryImages'] ?? []),
       );
 
+  String get effectiveId {
+    if (id.trim().isNotEmpty) return id.trim();
+    final sanitized = title.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]+'), '_');
+    return 'event_$sanitized';
+  }
+
+  DateTime? get parsedStartDateTime {
+    if (date == null || date!.trim().isEmpty) return null;
+    try {
+      final directParsed = DateTime.tryParse(date!);
+      if (directParsed != null) return directParsed;
+
+      int year = 2026;
+      int month = 8;
+      int day = 29;
+
+      final months = {
+        'jan': 1, 'feb': 2, 'mar': 3, 'apr': 4, 'may': 5, 'jun': 6,
+        'jul': 7, 'aug': 8, 'sep': 9, 'oct': 10, 'nov': 11, 'dec': 12,
+      };
+
+      final dateParts = date!.toLowerCase().split(RegExp(r'[\s,\-/]+'));
+      for (final part in dateParts) {
+        if (int.tryParse(part) != null) {
+          final val = int.parse(part);
+          if (val > 2020) {
+            year = val;
+          } else if (val >= 1 && val <= 31) {
+            day = val;
+          }
+        } else {
+          for (final entry in months.entries) {
+            if (part.startsWith(entry.key)) {
+              month = entry.value;
+              break;
+            }
+          }
+        }
+      }
+
+      int hour = 10;
+      int minute = 0;
+      if (time != null && time!.trim().isNotEmpty) {
+        final timeClean = time!.trim().toLowerCase();
+        final isPm = timeClean.contains('pm');
+        final isAm = timeClean.contains('am');
+        final numbers = RegExp(r'\d+').allMatches(timeClean).map((m) => int.parse(m.group(0)!)).toList();
+        if (numbers.isNotEmpty) {
+          hour = numbers[0];
+          if (isPm && hour < 12) hour += 12;
+          if (isAm && hour == 12) hour = 0;
+          if (numbers.length > 1) {
+            minute = numbers[1];
+          }
+        }
+      }
+
+      return DateTime(year, month, day, hour, minute);
+    } catch (_) {
+      return null;
+    }
+  }
+
   Map<String, dynamic> toJson() => {
         'id': id,
         'title': title,
@@ -267,6 +330,22 @@ EventDetail? findEventByTitle(String title) {
     for (final subCat in mainCat.subCategories) {
       for (final event in subCat.events) {
         if (event.title.trim().toLowerCase() == cleanQuery) {
+          return event;
+        }
+      }
+    }
+  }
+  return null;
+}
+
+EventDetail? findEventById(String id) {
+  final cleanId = id.trim().toLowerCase();
+  for (final mainCat in eventData) {
+    for (final subCat in mainCat.subCategories) {
+      for (final event in subCat.events) {
+        if (event.id.trim().toLowerCase() == cleanId ||
+            event.effectiveId.trim().toLowerCase() == cleanId ||
+            event.title.trim().toLowerCase() == cleanId) {
           return event;
         }
       }

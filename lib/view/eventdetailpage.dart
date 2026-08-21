@@ -4,6 +4,9 @@ import 'package:share_plus/share_plus.dart';
 import '../constant/appTheme.dart';
 import '../model/events_data.dart';
 import 'core/map_screen.dart';
+import '../features/event_reminders/presentation/reminder_picker_sheet.dart';
+import '../features/event_reminders/domain/reminder_manager.dart';
+import '../features/event_reminders/domain/event_reminder.dart';
 
 class EventDetailPage extends StatefulWidget {
   final String eventTitle;
@@ -25,6 +28,8 @@ class _EventDetailPageState extends State<EventDetailPage> {
   final Set<int> _expandedRounds = {};
   final Set<int> _expandedFaqs = {};
 
+  EventReminder? _activeReminder;
+
   @override
   void initState() {
     super.initState();
@@ -37,6 +42,16 @@ class _EventDetailPageState extends State<EventDetailPage> {
           venue: 'L1 - Lecture Hall, Near Academic Block',
           date: '25th Aug - 6th Sep, 2026',
         );
+    _checkReminderStatus();
+  }
+
+  Future<void> _checkReminderStatus() async {
+    final reminder = await ReminderManager().getReminder(_event.effectiveId);
+    if (mounted) {
+      setState(() {
+        _activeReminder = reminder;
+      });
+    }
   }
 
   Future<void> _launchExternalUrl(String urlString) async {
@@ -89,25 +104,10 @@ class _EventDetailPageState extends State<EventDetailPage> {
   }
 
   void _setReminder() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            const Icon(Icons.notifications_active_rounded,
-                color: Colors.white, size: 20),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                'Reminder set for ${_event.title}!',
-                style: const TextStyle(fontWeight: FontWeight.w600),
-              ),
-            ),
-          ],
-        ),
-        backgroundColor: const Color(0xFF175BCC),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      ),
+    ReminderPickerSheet.show(
+      context,
+      event: _event,
+      onReminderUpdated: _checkReminderStatus,
     );
   }
 
@@ -674,13 +674,18 @@ class _EventDetailPageState extends State<EventDetailPage> {
                   child: OutlinedButton(
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(horizontal: 6),
-                      backgroundColor: isDark
-                          ? const Color(0xFF20263C)
-                          : const Color(0xFFF3F4F6),
+                      backgroundColor: _activeReminder != null
+                          ? primaryBlue.withOpacity(isDark ? 0.25 : 0.12)
+                          : (isDark
+                              ? const Color(0xFF20263C)
+                              : const Color(0xFFF3F4F6)),
                       side: BorderSide(
-                        color: isDark
-                            ? const Color(0xFF2D3550)
-                            : const Color(0xFFE5E7EB),
+                        color: _activeReminder != null
+                            ? primaryBlue
+                            : (isDark
+                                ? const Color(0xFF2D3550)
+                                : const Color(0xFFE5E7EB)),
+                        width: _activeReminder != null ? 1.5 : 1,
                       ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(24),
@@ -693,21 +698,29 @@ class _EventDetailPageState extends State<EventDetailPage> {
                       children: [
                         Flexible(
                           child: Text(
-                            'Set Reminder',
+                            _activeReminder != null
+                                ? 'Remind ${_activeReminder!.offsetMinutes}m before'
+                                : 'Set Reminder',
                             style: TextStyle(
-                              fontSize: 12.5,
+                              fontSize: 12.0,
                               fontWeight: FontWeight.w600,
                               fontFamily: AppTheme.fontGeneralSans,
-                              color: textPrimary,
+                              color: _activeReminder != null
+                                  ? primaryBlue
+                                  : textPrimary,
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
                         const SizedBox(width: 4),
-                        const Icon(
-                          Icons.notifications_active_rounded,
-                          color: Color(0xFF2563EB),
+                        Icon(
+                          _activeReminder != null
+                              ? Icons.notifications_active_rounded
+                              : Icons.notifications_none_rounded,
+                          color: _activeReminder != null
+                              ? primaryBlue
+                              : const Color(0xFF2563EB),
                           size: 16,
                         ),
                       ],
