@@ -376,7 +376,7 @@ final List<MainCategory> eventData = [
             prizePool: '₹ 1,50,000',
             teamSize: '2 - 6 Members',
             date: '21 Aug 2026',
-            time: '1:30 PM',
+            time: '1:50 PM',
             venue: 'L1 - Lecture Hall, Near Academic Block',
             mapLocationUrl: 'https://maps.google.com/?q=IIT+Guwahati+Lecture+Hall',
             whatsappUrl: 'https://chat.whatsapp.com/invite/techniche2026',
