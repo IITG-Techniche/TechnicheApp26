@@ -13,46 +13,10 @@ jobs:
   build-and-deploy-ios:
     name: Build IPA & Upload to App Store Connect
     runs-on: macos-latest
-    
+    environment: AppStore    # ← THIS IS THE FIX
     steps:
       - name: Checkout source code
         uses: actions/checkout@v4
-
-      # DEBUG: Check if secrets exist (length check, no exposure)
-      - name: Debug Secrets
-        run: |
-          echo "Checking secret availability..."
-          if [ -n "${{ secrets.IOS_P12_BASE64 }}" ]; then
-            echo "IOS_P12_BASE64: FOUND (length ${#SECRET})"
-          else
-            echo "IOS_P12_BASE64: MISSING OR EMPTY"
-          fi
-          
-          if [ -n "${{ secrets.IOS_P12_PASSWORD }}" ]; then
-            echo "IOS_P12_PASSWORD: FOUND"
-          else
-            echo "IOS_P12_PASSWORD: MISSING OR EMPTY"
-          fi
-          
-          if [ -n "${{ secrets.IOS_PROVISION_BASE64 }}" ]; then
-            echo "IOS_PROVISION_BASE64: FOUND"
-          else
-            echo "IOS_PROVISION_BASE64: MISSING OR EMPTY"
-          fi
-          
-          if [ -n "${{ secrets.APPLE_ID }}" ]; then
-            echo "APPLE_ID: FOUND"
-          else
-            echo "APPLE_ID: MISSING OR EMPTY"
-          fi
-          
-          if [ -n "${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}" ]; then
-            echo "APPLE_APP_SPECIFIC_PASSWORD: FOUND"
-          else
-            echo "APPLE_APP_SPECIFIC_PASSWORD: MISSING OR EMPTY"
-          fi
-        env:
-          SECRET: ${{ secrets.IOS_P12_BASE64 }}
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
