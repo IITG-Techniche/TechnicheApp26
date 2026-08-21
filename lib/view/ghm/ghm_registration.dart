@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:firebase_remote_config/firebase_remote_config.dart';
-import 'package:techniche26/view/landing_screen.dart';
+import 'package:techniche26/view/core/landing_screen.dart';
 
 class GHMRegistrationScreen extends StatefulWidget {
   static const String routeName = '/ghm-registration';

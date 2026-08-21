@@ -29,22 +29,14 @@
 	<key>UIMainStoryboardFile</key>
 	<string>Main</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>This app needs location access to show your position on the marathon map and find nearby events.</string>
-	<key>NSLocationAlwaysUsageDescription</key>
-	<string>This app needs location access in the background to track your marathon progress accurately even when the screen is off.</string>
-	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>This app needs location access to accurately track your runs and marathon participation in real-time.</string>
-
-	<key>NSMotionUsageDescription</key>
-	<string>This app uses motion data to detect steps and improve run tracking accuracy during the marathon.</string>
+	<string>This app needs location access to show your position on the map and navigate to event venues.</string>
 
 	<key>NSUserNotificationUsageDescription</key>
-	<string>This app uses notifications to provide real-time updates on event schedules and marathon progress.</string>
+	<string>This app uses notifications to provide real-time updates on event schedules.</string>
 
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>fetch</string>
-		<string>location</string>
 		<string>remote-notification</string>
 	</array>
 

@@ -7,7 +7,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:flutter_compass/flutter_compass.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../model/marathon_models.dart';
@@ -190,12 +189,7 @@ class LiveRunNotifier extends StateNotifier<LiveRunState> {
 
   Future<bool> requestPermissions() async {
     try {
-      // 1. Sensors (Compass)
-      if (!await Permission.sensors.isGranted) {
-        await Permission.sensors.request();
-      }
-
-      // 2. Location (Foreground)
+      // 1. Location (Foreground when-in-use)
       LocationPermission status = await Geolocator.checkPermission();
       if (status == LocationPermission.denied) {
         status = await Geolocator.requestPermission();
@@ -213,11 +207,6 @@ class LiveRunNotifier extends StateNotifier<LiveRunState> {
           errorMessage: 'Location permission is required for tracking.'
         );
         return false;
-      }
-
-      // 3. Activity Recognition (Steps/Motion)
-      if (!await Permission.activityRecognition.isGranted) {
-        await Permission.activityRecognition.request();
       }
 
       return true;
@@ -464,28 +453,13 @@ class LiveRunNotifier extends StateNotifier<LiveRunState> {
     }
 
     try {
-      // 1. Core Permissions
+      // 1. Core Permissions (Foreground location)
       if (!await requestPermissions()) return;
 
-      // 2. Extra Location / Background
+      // 2. Check Location Service Status
       if (!await Geolocator.isLocationServiceEnabled()) {
         state = state.copyWith(errorMessage: 'Please enable GPS/Location services.');
         return;
-      }
-
-      if (!await Permission.locationAlways.isGranted) {
-        await Permission.locationAlways.request();
-      }
-
-      // 3. System Optimizations
-      if (!await FlutterForegroundTask.isIgnoringBatteryOptimizations) {
-        await FlutterForegroundTask.requestIgnoreBatteryOptimization();
-      }
-
-      final NotificationPermission notificationPermissionStatus =
-          await FlutterForegroundTask.checkNotificationPermission();
-      if (notificationPermissionStatus != NotificationPermission.granted) {
-        await FlutterForegroundTask.requestNotificationPermission();
       }
     } catch (e) {
       debugPrint('Error requesting permissions: $e');

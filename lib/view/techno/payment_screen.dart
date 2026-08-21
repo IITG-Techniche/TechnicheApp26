@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 class PaymentScreen extends StatefulWidget {
+  static const String routeName = '/techno-payment';
   final String paymentUrl;
   final Function(String) onPaymentSuccess;
 

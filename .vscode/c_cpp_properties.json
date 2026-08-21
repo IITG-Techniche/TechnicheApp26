@@ -1,0 +1,18 @@
+{
+    "version": 4,
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "${workspaceFolder}/linux/flutter/ephemeral",
+                "${workspaceFolder}/linux/flutter/ephemeral/.plugin_symlinks/gtk/linux/include",
+                "${workspaceFolder}/linux/flutter/ephemeral/.plugin_symlinks/url_launcher_linux/linux/include"
+            ],
+            "defines": [],
+            "cStandard": "c11",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "linux-gcc-x64",
+            "compilerPath": ""
+        }
+    ]
+}

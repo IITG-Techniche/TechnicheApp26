@@ -3,6 +3,10 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:share_plus/share_plus.dart';
 import '../constant/appTheme.dart';
 import '../model/events_data.dart';
+import 'core/map_screen.dart';
+import '../features/event_reminders/presentation/reminder_picker_sheet.dart';
+import '../features/event_reminders/domain/reminder_manager.dart';
+import '../features/event_reminders/domain/event_reminder.dart';
 
 class EventDetailPage extends StatefulWidget {
   final String eventTitle;
@@ -24,6 +28,8 @@ class _EventDetailPageState extends State<EventDetailPage> {
   final Set<int> _expandedRounds = {};
   final Set<int> _expandedFaqs = {};
 
+  EventReminder? _activeReminder;
+
   @override
   void initState() {
     super.initState();
@@ -36,6 +42,16 @@ class _EventDetailPageState extends State<EventDetailPage> {
           venue: 'L1 - Lecture Hall, Near Academic Block',
           date: '25th Aug - 6th Sep, 2026',
         );
+    _checkReminderStatus();
+  }
+
+  Future<void> _checkReminderStatus() async {
+    final reminder = await ReminderManager().getReminder(_event.effectiveId);
+    if (mounted) {
+      setState(() {
+        _activeReminder = reminder;
+      });
+    }
   }
 
   Future<void> _launchExternalUrl(String urlString) async {
@@ -77,26 +93,21 @@ class _EventDetailPageState extends State<EventDetailPage> {
     Share.share(text);
   }
 
-  void _setReminder() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            const Icon(Icons.notifications_active_rounded,
-                color: Colors.white, size: 20),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                'Reminder set for ${_event.title}!',
-                style: const TextStyle(fontWeight: FontWeight.w600),
-              ),
-            ),
-          ],
-        ),
-        backgroundColor: const Color(0xFF175BCC),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+  void _openTechnicheMap(String? venue) {
+    if (venue == null || venue.trim().isEmpty) return;
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => MapScreen(initialVenue: venue),
       ),
+    );
+  }
+
+  void _setReminder() {
+    ReminderPickerSheet.show(
+      context,
+      event: _event,
+      onReminderUpdated: _checkReminderStatus,
     );
   }
 
@@ -104,18 +115,19 @@ class _EventDetailPageState extends State<EventDetailPage> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    // Palette tokens matching Figma exactly in both Dark & Light themes
-    final bgColor = isDark ? const Color(0xFF0E101A) : const Color(0xFFF9FAFB);
-    final cardBg = isDark ? const Color(0xFF161A29) : Colors.white;
+    // Palette tokens matching 2026 specs exactly in both Dark & Light themes
+    final bgColor = isDark ? AppTheme.darkPageBg : AppTheme.lightPageBg;
+    final cardBg = isDark ? AppTheme.darkCardsBg : AppTheme.lightCardsBg;
     final cardBorder =
-        isDark ? const Color(0xFF242A3E) : const Color(0xFFE5E7EB);
-    final textPrimary = isDark ? Colors.white : const Color(0xFF111827);
+        isDark ? const Color(0xFF282846) : const Color(0xFFE5E7EB);
+    final textPrimary =
+        isDark ? AppTheme.darkTextPrimary : AppTheme.lightTextPrimary;
     final textSecondary =
-        isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B);
+        isDark ? AppTheme.darkTextSecondary : AppTheme.lightTextSecondary;
     final iconContainerBg =
-        isDark ? const Color(0xFF1E284A) : const Color(0xFFE1EBFF);
-    final primaryBlue = const Color(0xFF175BCC);
-    final pillBg = isDark ? const Color(0xFF222942) : const Color(0xFFDCE8F8);
+        isDark ? const Color(0xFF1E284A) : AppTheme.lightChip;
+    final primaryBlue = AppTheme.primaryBlue;
+    final pillBg = isDark ? const Color(0xFF222942) : AppTheme.lightChip;
     final dummyImageBg =
         isDark ? const Color(0xFF20263A) : const Color(0xFFD9D9D9);
 
@@ -157,62 +169,65 @@ class _EventDetailPageState extends State<EventDetailPage> {
                       dummyImageBg: dummyImageBg,
                     ),
 
-                    const SizedBox(height: 28),
+                    if (_event.whoCanParticipate.isNotEmpty) ...[
+                      const SizedBox(height: 28),
+                      _buildWhoCanParticipateSection(
+                        textPrimary: textPrimary,
+                        textSecondary: textSecondary,
+                      ),
+                    ],
 
-                    // ── 4. Who all can participate ? ──
-                    _buildWhoCanParticipateSection(
-                      textPrimary: textPrimary,
-                      textSecondary: textSecondary,
-                    ),
+                    if (_event.rules.isNotEmpty) ...[
+                      const SizedBox(height: 28),
+                      _buildRulesSection(
+                        textPrimary: textPrimary,
+                        textSecondary: textSecondary,
+                      ),
+                    ],
 
-                    const SizedBox(height: 28),
+                    if (_event.faqs.isNotEmpty) ...[
+                      const SizedBox(height: 28),
+                      _buildFaqsSection(
+                        isDark: isDark,
+                        cardBg: cardBg,
+                        cardBorder: cardBorder,
+                        textPrimary: textPrimary,
+                        textSecondary: textSecondary,
+                      ),
+                    ],
 
-                    // ── 5. Rules ──
-                    _buildRulesSection(
-                      textPrimary: textPrimary,
-                      textSecondary: textSecondary,
-                    ),
+                    if (_event.coordinators.isNotEmpty) ...[
+                      const SizedBox(height: 28),
+                      _buildPersonOfContactCard(
+                        isDark: isDark,
+                        cardBg: cardBg,
+                        cardBorder: cardBorder,
+                        textPrimary: textPrimary,
+                        textSecondary: textSecondary,
+                        iconContainerBg: iconContainerBg,
+                        primaryBlue: primaryBlue,
+                      ),
+                    ],
 
-                    const SizedBox(height: 28),
+                    if (_event.prizeCategories.isNotEmpty ||
+                        (_event.prizePool != null &&
+                            _event.prizePool!.isNotEmpty)) ...[
+                      const SizedBox(height: 28),
+                      _buildPrizesSection(
+                        isDark: isDark,
+                        cardBg: cardBg,
+                        cardBorder: cardBorder,
+                        textPrimary: textPrimary,
+                        textSecondary: textSecondary,
+                        iconContainerBg: iconContainerBg,
+                      ),
+                    ],
 
-                    // ── 6. FAQs Accordion ──
-                    _buildFaqsSection(
-                      isDark: isDark,
-                      cardBg: cardBg,
-                      cardBorder: cardBorder,
-                      textPrimary: textPrimary,
-                      textSecondary: textSecondary,
-                    ),
-
-                    const SizedBox(height: 28),
-
-                    // ── 7. Person of Contact Card ──
-                    _buildPersonOfContactCard(
-                      isDark: isDark,
-                      cardBg: cardBg,
-                      cardBorder: cardBorder,
-                      textPrimary: textPrimary,
-                      textSecondary: textSecondary,
-                      iconContainerBg: iconContainerBg,
-                      primaryBlue: primaryBlue,
-                    ),
-
-                    const SizedBox(height: 28),
-
-                    // ── 8. Prizes Section ──
-                    _buildPrizesSection(
-                      isDark: isDark,
-                      cardBg: cardBg,
-                      cardBorder: cardBorder,
-                      textPrimary: textPrimary,
-                      textSecondary: textSecondary,
-                      iconContainerBg: iconContainerBg,
-                    ),
-
-                    const SizedBox(height: 28),
-
-                    // ── 9. WhatsApp Group Row ──
-                    _buildWhatsAppSection(primaryBlue: primaryBlue),
+                    if (_event.whatsappUrl != null &&
+                        _event.whatsappUrl!.trim().isNotEmpty) ...[
+                      const SizedBox(height: 28),
+                      _buildWhatsAppSection(primaryBlue: primaryBlue),
+                    ],
 
                     const SizedBox(height: 48),
                   ],
@@ -285,17 +300,21 @@ class _EventDetailPageState extends State<EventDetailPage> {
                   onPressed: () => Navigator.of(context).pop(),
                 ),
                 const SizedBox(width: 4),
-                Text(
-                  _event.title,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontFamily: AppTheme.fontUnivers,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 20,
-                    letterSpacing: 0.3,
+                Expanded(
+                  child: Text(
+                    _event.title,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontFamily: AppTheme.fontUnivers,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 18,
+                      letterSpacing: 0.3,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                const Spacer(),
+                const SizedBox(width: 4),
                 IconButton(
                   icon: const Icon(Icons.share_outlined,
                       color: Colors.white, size: 22),
@@ -322,29 +341,12 @@ class _EventDetailPageState extends State<EventDetailPage> {
     required Color primaryBlue,
     required Color pillBg,
   }) {
-    final locationText =
-        _event.venue ?? 'L1 - Lecture Hall, Near Academic Block';
+    final locationText = _event.venue;
     final mapUrl = _event.mapLocationUrl ??
-        'https://maps.google.com/?q=${Uri.encodeComponent(locationText)}';
-
-    final rounds = _event.rounds.isNotEmpty
-        ? _event.rounds
-        : [
-            const EventRound(
-              title: 'Round 1: Online test (Unstop)',
-              date: '25th Aug, 2026',
-              time: '12:00',
-              description:
-                  'Online technical evaluation and screening quiz on Unstop.',
-            ),
-            const EventRound(
-              title: 'Round 2: Strategy Ideation & Flowchart',
-              date: '27th Aug, 2026',
-              time: '12:00',
-              description:
-                  'Architecture flowchart and weapon mechanism design review.',
-            ),
-          ];
+        (locationText != null ? 'https://maps.google.com/?q=${Uri.encodeComponent(locationText)}' : null);
+    final hasLocation = locationText != null && locationText.trim().isNotEmpty;
+    final rounds = _event.rounds;
+    final hasRounds = rounds.isNotEmpty;
 
     return Container(
       width: double.infinity,
@@ -365,226 +367,243 @@ class _EventDetailPageState extends State<EventDetailPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // ── Location Row ──
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: iconContainerBg,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Icon(
-                  Icons.location_on_outlined,
-                  color: Color(0xFF175BCC),
-                  size: 22,
-                ),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
+          if (hasLocation) ...[
+            InkWell(
+              onTap: () => _openTechnicheMap(locationText),
+              borderRadius: BorderRadius.circular(16),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      locationText,
-                      style: TextStyle(
-                        fontSize: 14.5,
-                        fontWeight: FontWeight.w600,
-                        fontFamily: AppTheme.fontGeneralSans,
-                        color: textPrimary,
-                        height: 1.25,
+                    Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: iconContainerBg,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(
+                        Icons.location_on_outlined,
+                        color: Color(0xFF175BCC),
+                        size: 22,
                       ),
                     ),
-                    const SizedBox(height: 4),
-                    GestureDetector(
-                      onTap: () => _launchExternalUrl(mapUrl),
-                      child: Text(
-                        'Show in Google Maps',
-                        style: TextStyle(
-                          fontSize: 12.5,
-                          fontWeight: FontWeight.w600,
-                          fontFamily: AppTheme.fontGeneralSans,
-                          color: primaryBlue,
-                        ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            locationText!,
+                            style: TextStyle(
+                              fontSize: 14.5,
+                              fontWeight: FontWeight.w600,
+                              fontFamily: AppTheme.fontGeneralSans,
+                              color: textPrimary,
+                              height: 1.25,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Row(
+                            children: [
+                              Text(
+                                'Show on Techniche Map',
+                                style: TextStyle(
+                                  fontSize: 12.5,
+                                  fontWeight: FontWeight.w600,
+                                  fontFamily: AppTheme.fontGeneralSans,
+                                  color: primaryBlue,
+                                ),
+                              ),
+                              const SizedBox(width: 4),
+                              Icon(
+                                Icons.arrow_forward_ios_rounded,
+                                size: 11,
+                                color: primaryBlue,
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
                     ),
                   ],
                 ),
               ),
-            ],
-          ),
-
-          const SizedBox(height: 20),
+            ),
+            if (hasRounds) const SizedBox(height: 20),
+          ],
 
           // ── Schedule Section Header ──
-          Row(
-            children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: iconContainerBg,
-                  borderRadius: BorderRadius.circular(12),
+          if (hasRounds) ...[
+            Row(
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: iconContainerBg,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(
+                    Icons.calendar_month_outlined,
+                    color: Color(0xFF175BCC),
+                    size: 22,
+                  ),
                 ),
-                child: const Icon(
-                  Icons.calendar_month_outlined,
-                  color: Color(0xFF175BCC),
-                  size: 22,
+                const SizedBox(width: 14),
+                Text(
+                  'Schedule',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    fontFamily: AppTheme.fontUnivers,
+                    color: textPrimary,
+                  ),
                 ),
-              ),
-              const SizedBox(width: 14),
-              Text(
-                'Schedule',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                  fontFamily: AppTheme.fontUnivers,
-                  color: textPrimary,
-                ),
-              ),
-            ],
-          ),
+              ],
+            ),
 
-          const SizedBox(height: 14),
+            const SizedBox(height: 14),
 
-          // ── Vertical Timeline of Rounds ──
-          Padding(
-            padding: const EdgeInsets.only(left: 18),
-            child: Column(
-              children: rounds.asMap().entries.map((entry) {
-                final idx = entry.key;
-                final round = entry.value;
-                final isLast = idx == rounds.length - 1;
-                final isExpanded = _expandedRounds.contains(idx);
+            // ── Vertical Timeline of Rounds ──
+            Padding(
+              padding: const EdgeInsets.only(left: 18),
+              child: Column(
+                children: rounds.asMap().entries.map((entry) {
+                  final idx = entry.key;
+                  final round = entry.value;
+                  final isLast = idx == rounds.length - 1;
+                  final isExpanded = _expandedRounds.contains(idx);
 
-                return IntrinsicHeight(
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Timeline indicator line & dot
-                      Column(
-                        children: [
-                          Container(
-                            width: 10,
-                            height: 10,
-                            margin: const EdgeInsets.only(top: 12),
-                            decoration: const BoxDecoration(
-                              color: Color(0xFF2563EB),
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                          if (!isLast)
-                            Expanded(
-                              child: Container(
-                                width: 2,
-                                color: const Color(0xFF2563EB),
+                  return IntrinsicHeight(
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Timeline indicator line & dot
+                        Column(
+                          children: [
+                            Container(
+                              width: 10,
+                              height: 10,
+                              margin: const EdgeInsets.only(top: 12),
+                              decoration: const BoxDecoration(
+                                color: Color(0xFF2563EB),
+                                shape: BoxShape.circle,
                               ),
                             ),
-                        ],
-                      ),
-
-                      const SizedBox(width: 16),
-
-                      // Round Card & Subtitle
-                      Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.only(bottom: 14),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              GestureDetector(
-                                onTap: () {
-                                  setState(() {
-                                    if (isExpanded) {
-                                      _expandedRounds.remove(idx);
-                                    } else {
-                                      _expandedRounds.add(idx);
-                                    }
-                                  });
-                                },
+                            if (!isLast)
+                              Expanded(
                                 child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 14, vertical: 10),
-                                  decoration: BoxDecoration(
-                                    color: pillBg,
-                                    borderRadius: BorderRadius.circular(16),
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      Expanded(
-                                        child: Text(
-                                          round.title,
-                                          style: TextStyle(
-                                            fontSize: 13.5,
-                                            fontWeight: FontWeight.w600,
-                                            fontFamily:
-                                                AppTheme.fontGeneralSans,
-                                            color: textPrimary,
-                                          ),
-                                        ),
-                                      ),
-                                      Icon(
-                                        isExpanded
-                                            ? Icons.keyboard_arrow_up_rounded
-                                            : Icons.keyboard_arrow_down_rounded,
-                                        color: textPrimary,
-                                        size: 20,
-                                      ),
-                                    ],
-                                  ),
+                                  width: 2,
+                                  color: const Color(0xFF2563EB),
                                 ),
                               ),
-                              if (isExpanded &&
-                                  round.description != null) ...[
+                          ],
+                        ),
+
+                        const SizedBox(width: 16),
+
+                        // Round Card & Subtitle
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.only(bottom: 14),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                GestureDetector(
+                                  onTap: () {
+                                    setState(() {
+                                      if (isExpanded) {
+                                        _expandedRounds.remove(idx);
+                                      } else {
+                                        _expandedRounds.add(idx);
+                                      }
+                                    });
+                                  },
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 14, vertical: 10),
+                                    decoration: BoxDecoration(
+                                      color: pillBg,
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        Expanded(
+                                          child: Text(
+                                            round.title,
+                                            style: TextStyle(
+                                              fontSize: 13.5,
+                                              fontWeight: FontWeight.w600,
+                                              fontFamily:
+                                                  AppTheme.fontGeneralSans,
+                                              color: textPrimary,
+                                            ),
+                                          ),
+                                        ),
+                                        Icon(
+                                          isExpanded
+                                              ? Icons.keyboard_arrow_up_rounded
+                                              : Icons.keyboard_arrow_down_rounded,
+                                          color: textPrimary,
+                                          size: 20,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                                if (isExpanded &&
+                                    round.description != null) ...[
+                                  const SizedBox(height: 6),
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 10),
+                                    child: Text(
+                                      round.description!,
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: textSecondary,
+                                        fontFamily:
+                                            AppTheme.fontGeneralSans,
+                                        height: 1.4,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                                 const SizedBox(height: 6),
                                 Padding(
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 10),
                                   child: Text(
-                                    round.description!,
+                                    '${round.time}  |  ${round.date}',
                                     style: TextStyle(
-                                      fontSize: 12,
-                                      color: textSecondary,
+                                      fontSize: 12.5,
+                                      fontWeight: FontWeight.w500,
                                       fontFamily:
                                           AppTheme.fontGeneralSans,
-                                      height: 1.4,
+                                      color: textSecondary,
                                     ),
                                   ),
                                 ),
                               ],
-                              const SizedBox(height: 6),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 10),
-                                child: Text(
-                                  '${round.time}  |  ${round.date}',
-                                  style: TextStyle(
-                                    fontSize: 12.5,
-                                    fontWeight: FontWeight.w500,
-                                    fontFamily:
-                                        AppTheme.fontGeneralSans,
-                                    color: textSecondary,
-                                  ),
-                                ),
-                              ),
-                            ],
+                            ),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                );
-              }).toList(),
+                      ],
+                    ),
+                  );
+                }).toList(),
+              ),
             ),
-          ),
 
-          const SizedBox(height: 10),
+            const SizedBox(height: 10),
 
-          // ── Dotted Divider with center handle ──
-          _buildDottedSeparator(isDark: isDark),
+            // ── Dotted Divider with center handle ──
+            _buildDottedSeparator(isDark: isDark),
 
-          const SizedBox(height: 16),
+            const SizedBox(height: 16),
+          ],
 
           // ── Action Row: "Register now !" + Buttons ──
           Text(
@@ -609,7 +628,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
                     gradient: const LinearGradient(
                       colors: [Color(0xFF2563EB), Color(0xFF1D4ED8)],
                     ),
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(24),
                     boxShadow: [
                       BoxShadow(
                         color: const Color(0xFF2563EB).withOpacity(0.35),
@@ -623,7 +642,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
                       backgroundColor: Colors.transparent,
                       shadowColor: Colors.transparent,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(24),
                       ),
                     ),
                     onPressed: () {
@@ -654,36 +673,55 @@ class _EventDetailPageState extends State<EventDetailPage> {
                   height: 48,
                   child: OutlinedButton(
                     style: OutlinedButton.styleFrom(
-                      backgroundColor: isDark
-                          ? const Color(0xFF20263C)
-                          : const Color(0xFFF3F4F6),
+                      padding: const EdgeInsets.symmetric(horizontal: 6),
+                      backgroundColor: _activeReminder != null
+                          ? primaryBlue.withOpacity(isDark ? 0.25 : 0.12)
+                          : (isDark
+                              ? const Color(0xFF20263C)
+                              : const Color(0xFFF3F4F6)),
                       side: BorderSide(
-                        color: isDark
-                            ? const Color(0xFF2D3550)
-                            : const Color(0xFFE5E7EB),
+                        color: _activeReminder != null
+                            ? primaryBlue
+                            : (isDark
+                                ? const Color(0xFF2D3550)
+                                : const Color(0xFFE5E7EB)),
+                        width: _activeReminder != null ? 1.5 : 1,
                       ),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(24),
                       ),
                     ),
                     onPressed: _setReminder,
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text(
-                          'Set Reminder',
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            fontFamily: AppTheme.fontGeneralSans,
-                            color: textPrimary,
+                        Flexible(
+                          child: Text(
+                            _activeReminder != null
+                                ? 'Remind ${_activeReminder!.offsetMinutes}m before'
+                                : 'Set Reminder',
+                            style: TextStyle(
+                              fontSize: 12.0,
+                              fontWeight: FontWeight.w600,
+                              fontFamily: AppTheme.fontGeneralSans,
+                              color: _activeReminder != null
+                                  ? primaryBlue
+                                  : textPrimary,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                        const SizedBox(width: 6),
-                        const Icon(
-                          Icons.notifications_active_rounded,
-                          color: Color(0xFF2563EB),
-                          size: 18,
+                        const SizedBox(width: 4),
+                        Icon(
+                          _activeReminder != null
+                              ? Icons.notifications_active_rounded
+                              : Icons.notifications_none_rounded,
+                          color: _activeReminder != null
+                              ? primaryBlue
+                              : const Color(0xFF2563EB),
+                          size: 16,
                         ),
                       ],
                     ),
@@ -706,108 +744,82 @@ class _EventDetailPageState extends State<EventDetailPage> {
     required Color primaryBlue,
     required Color dummyImageBg,
   }) {
-    final desc = _event.description ??
-        'Robowars, a major event at Techniche, showcases top talents in robotics through intense competition. Participants design and develop wireless, manually controlled robots to engage in dual combat within a secure enclosed arena.';
+    final desc = _event.description;
+    final hasDesc = desc != null && desc.trim().isNotEmpty;
+    final hasImage = _event.imageAsset != null && _event.imageAsset!.trim().isNotEmpty;
+
+    if (!hasDesc && !hasImage) return const SizedBox.shrink();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Event Details',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.w700,
-            fontFamily: AppTheme.fontUnivers,
-            color: textPrimary,
+        if (hasDesc) ...[
+          Text(
+            'Event Details',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w700,
+              fontFamily: AppTheme.fontUnivers,
+              color: textPrimary,
+            ),
           ),
-        ),
-        const SizedBox(height: 10),
-        Text(
-          desc,
-          maxLines: _isDescriptionExpanded ? null : 4,
-          overflow: _isDescriptionExpanded ? null : TextOverflow.ellipsis,
-          style: TextStyle(
-            fontSize: 14,
-            fontFamily: AppTheme.fontGeneralSans,
-            color: textSecondary,
-            height: 1.5,
+          const SizedBox(height: 10),
+          Text(
+            desc!,
+            maxLines: _isDescriptionExpanded ? null : 4,
+            overflow: _isDescriptionExpanded ? null : TextOverflow.ellipsis,
+            style: TextStyle(
+              fontSize: 14,
+              fontFamily: AppTheme.fontGeneralSans,
+              color: textSecondary,
+              height: 1.5,
+            ),
           ),
-        ),
-        const SizedBox(height: 4),
-        Align(
-          alignment: Alignment.centerRight,
-          child: GestureDetector(
-            onTap: () {
-              setState(() {
-                _isDescriptionExpanded = !_isDescriptionExpanded;
-              });
-            },
-            child: Text(
-              _isDescriptionExpanded ? '- Read Less' : '+ Read More',
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w700,
-                fontFamily: AppTheme.fontGeneralSans,
-                color: primaryBlue,
+          const SizedBox(height: 4),
+          Align(
+            alignment: Alignment.centerRight,
+            child: GestureDetector(
+              onTap: () {
+                setState(() {
+                  _isDescriptionExpanded = !_isDescriptionExpanded;
+                });
+              },
+              child: Text(
+                _isDescriptionExpanded ? '- Read Less' : '+ Read More',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  fontFamily: AppTheme.fontGeneralSans,
+                  color: primaryBlue,
+                ),
               ),
             ),
           ),
-        ),
+          const SizedBox(height: 16),
+        ],
 
-        const SizedBox(height: 16),
-
-        // ── Top Large Image Placeholder ──
-        Container(
-          height: 145,
-          width: double.infinity,
-          decoration: BoxDecoration(
-            color: dummyImageBg,
-            borderRadius: BorderRadius.circular(18),
-          ),
-          clipBehavior: Clip.antiAlias,
-          child: Image.asset(
-            _event.imageAsset ?? 'assets/robotics.jpeg',
-            fit: BoxFit.cover,
-            errorBuilder: (context, error, stackTrace) => Center(
-              child: Icon(
-                Icons.image_outlined,
-                color: textSecondary.withOpacity(0.5),
-                size: 36,
+        if (hasImage) ...[
+          Container(
+            height: 145,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: dummyImageBg,
+              borderRadius: BorderRadius.circular(18),
+            ),
+            clipBehavior: Clip.antiAlias,
+            child: Image.asset(
+              _event.imageAsset!,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) => Center(
+                child: Icon(
+                  Icons.image_outlined,
+                  color: textSecondary.withOpacity(0.5),
+                  size: 36,
+                ),
               ),
             ),
           ),
-        ),
-
-        const SizedBox(height: 12),
-
-        // ── 3 Smaller Equal-Width Image Placeholders ──
-        Row(
-          children: [
-            Expanded(
-              child: _buildGalleryThumb(
-                imageAsset: 'assets/robo.png',
-                bgColor: dummyImageBg,
-                textSecondary: textSecondary,
-              ),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: _buildGalleryThumb(
-                imageAsset: 'assets/escalade.png',
-                bgColor: dummyImageBg,
-                textSecondary: textSecondary,
-              ),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: _buildGalleryThumb(
-                imageAsset: 'assets/micro.png',
-                bgColor: dummyImageBg,
-                textSecondary: textSecondary,
-              ),
-            ),
-          ],
-        ),
+        ],
       ],
     );
   }
@@ -841,17 +853,15 @@ class _EventDetailPageState extends State<EventDetailPage> {
   // ─────────────────────────────────────────────────────────────
   // 4. WHO ALL CAN PARTICIPATE ?
   // ─────────────────────────────────────────────────────────────
+  // ─────────────────────────────────────────────────────────────
+  // 4. WHO ALL CAN PARTICIPATE ?
+  // ─────────────────────────────────────────────────────────────
   Widget _buildWhoCanParticipateSection({
     required Color textPrimary,
     required Color textSecondary,
   }) {
-    final list = _event.whoCanParticipate.isNotEmpty
-        ? _event.whoCanParticipate
-        : [
-            'Any student with a valid college ID.',
-            'Teams may have up to 3 members.',
-            'Members can be from different institutes.',
-          ];
+    if (_event.whoCanParticipate.isEmpty) return const SizedBox.shrink();
+    final list = _event.whoCanParticipate;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -909,14 +919,8 @@ class _EventDetailPageState extends State<EventDetailPage> {
     required Color textPrimary,
     required Color textSecondary,
   }) {
-    final rules = _event.rules.isNotEmpty
-        ? _event.rules
-        : [
-            'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-            'sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
-            'Ut enim ad minim veniam, quis nostrud exercitation ullamco.',
-            'laboris nisi ut aliquip ex ea commodo consequat.',
-          ];
+    if (_event.rules.isEmpty) return const SizedBox.shrink();
+    final rules = _event.rules;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -977,25 +981,8 @@ class _EventDetailPageState extends State<EventDetailPage> {
     required Color textPrimary,
     required Color textSecondary,
   }) {
-    final faqs = _event.faqs.isNotEmpty
-        ? _event.faqs
-        : [
-            const EventFaq(
-              question: 'Accordion row collapsed default',
-              answer:
-                  'Detailed specifications and guidelines regarding robot dimensions, safety checks, and match schedules.',
-            ),
-            const EventFaq(
-              question: 'Accordion row collapsed default',
-              answer:
-                  'Approved battery packs, voltage limits, and wireless controller frequency rules.',
-            ),
-            const EventFaq(
-              question: 'Accordion row collapsed default',
-              answer:
-                  'Campus accommodation and transport facilities provided for all outstation finalists.',
-            ),
-          ];
+    if (_event.faqs.isEmpty) return const SizedBox.shrink();
+    final faqs = _event.faqs;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1102,14 +1089,8 @@ class _EventDetailPageState extends State<EventDetailPage> {
     required Color iconContainerBg,
     required Color primaryBlue,
   }) {
-    final coordinator = _event.coordinators.isNotEmpty
-        ? _event.coordinators.first
-        : const EventCoordinator(
-            name: 'Atharva Pratap Singh',
-            role: 'Head Organizer',
-            phone: '+91 1234567890',
-            email: 's.atharva@iitg.ac.in',
-          );
+    if (_event.coordinators.isEmpty) return const SizedBox.shrink();
+    final coordinator = _event.coordinators.first;
 
     return Container(
       width: double.infinity,
@@ -1249,26 +1230,10 @@ class _EventDetailPageState extends State<EventDetailPage> {
     required Color textSecondary,
     required Color iconContainerBg,
   }) {
-    final categories = _event.prizeCategories.isNotEmpty
-        ? _event.prizeCategories
-        : [
-            const PrizeCategory(
-              categoryName: 'Category 1: 30kg',
-              prizes: {
-                'Winner': 'Rs. XXXXX',
-                '1st Runner up': 'Rs. XXXXX',
-                '2nd Runner up': 'Rs. XXXXX',
-              },
-            ),
-            const PrizeCategory(
-              categoryName: 'Category 2: 15kg',
-              prizes: {
-                'Winner': 'Rs. XXXXX',
-                '1st Runner up': 'Rs. XXXXX',
-                '2nd Runner up': 'Rs. XXXXX',
-              },
-            ),
-          ];
+    if (_event.prizeCategories.isEmpty && (_event.prizePool == null || _event.prizePool!.isEmpty)) {
+      return const SizedBox.shrink();
+    }
+    final categories = _event.prizeCategories;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1372,8 +1337,10 @@ class _EventDetailPageState extends State<EventDetailPage> {
   // 9. WHATSAPP GROUP SECTION
   // ─────────────────────────────────────────────────────────────
   Widget _buildWhatsAppSection({required Color primaryBlue}) {
-    final whatsappUrl = _event.whatsappUrl ??
-        'https://chat.whatsapp.com/invite/techniche2026';
+    if (_event.whatsappUrl == null || _event.whatsappUrl!.trim().isEmpty) {
+      return const SizedBox.shrink();
+    }
+    final whatsappUrl = _event.whatsappUrl!;
 
     return GestureDetector(
       onTap: () => _launchExternalUrl(whatsappUrl),

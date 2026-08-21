@@ -1,0 +1,178 @@
+# Techniche App-Backend API Documentation
+
+This document outlines the REST API endpoints provided by the `app-backend` microservice specifically built for the Flutter mobile application. 
+
+**Base URL**: `http://<SERVER_IP>:3002/api`
+
+---
+
+## 1. Authentication
+
+### Google Login
+**Endpoint:** `POST /auth/google-login`  
+**Description:** Authenticates a user using their Google ID. If the user doesn't exist, an account is created automatically.
+**Auth Required:** No
+
+**Request Body (JSON):**
+```json
+{
+  "email": "student@iitg.ac.in", // Required
+  "googleId": "1234567890",      // Required
+  "name": "John Doe"             // Optional
+}
+```
+
+**Success Response (200 OK):**
+```json
+{
+  "message": "Login successful",
+  "token": "eyJhbGciOi...", 
+  "user": {
+    "id": 1,
+    "email": "student@iitg.ac.in",
+    "googleId": "1234567890",
+    "authProvider": "google",
+    "fcmToken": "device_token_abc"
+  }
+}
+```
+
+> [!IMPORTANT]  
+> Save the `token` string securely on the device. All subsequent requests require this token to be sent in the request headers as either `Authorization: Bearer <token>` or `token: <token>`.
+
+### Save FCM Token
+**Endpoint:** `POST /auth/fcm-token`  
+**Description:** Saves the Firebase Cloud Messaging (FCM) token for push notifications. The app should call this after the user has successfully logged in and granted notification permissions.
+**Auth Required:** Yes
+
+**Request Body (JSON):**
+```json
+{
+  "fcmToken": "device_token_abc"
+}
+```
+
+**Success Response (200 OK):**
+```json
+{
+  "message": "FCM token saved successfully."
+}
+```
+
+---
+
+## 2. Student Profile
+
+### Get Profile
+**Endpoint:** `GET /profile`  
+**Description:** Fetches the logged-in user's student profile.
+**Auth Required:** Yes
+
+**Success Response (200 OK):**
+```json
+{
+  "id": 5,
+  "userId": 1,
+  "name": "John Doe",
+  "rollNumber": "21000000",
+  "collegeEmail": "student@iitg.ac.in",
+  "year": "3rd Year",
+  "branch": "CSE",
+  "program": "B.Tech",
+  "phone": "9876543210",
+  "profileCompleted": true
+}
+```
+
+**Not Found Response (404 Not Found):**
+```json
+{
+  "message": "Profile not found.",
+  "profileCompleted": false
+}
+```
+
+### Update/Create Profile
+**Endpoint:** `POST /profile`  
+**Description:** Creates or updates the user's student profile. Once submitted successfully, `profileCompleted` is set to true.
+**Auth Required:** Yes
+
+**Request Body (JSON):**
+```json
+{
+  "name": "John Doe",
+  "rollNumber": "21000000",
+  "collegeEmail": "student@iitg.ac.in",
+  "year": "3rd Year",
+  "branch": "CSE",
+  "program": "B.Tech",
+  "phone": "9876543210"
+}
+```
+
+**Success Response (200 OK):**
+```json
+{
+  "message": "Profile updated successfully",
+  "profile": { ... }
+}
+```
+
+---
+
+## 3. Event Registration (Comedy Night)
+
+### Check Registration Status
+**Endpoint:** `GET /comedy/status`  
+**Description:** Checks if the user is registered for Comedy Night and returns their current ticket status. Initially, before a user registers, this will return `registered: false`.
+**Auth Required:** Yes
+
+**Success Response - Not Registered (Initial State) (200 OK):**
+```json
+{
+  "registered": false
+}
+```
+
+**Success Response - Registered (200 OK):**
+```json
+{
+  "registered": true,
+  "status": "WAITLISTED", // or "CONFIRMED"
+  "ticketCode": null      // Populated once confirmed
+}
+```
+
+### Register for Comedy Night
+**Endpoint:** `POST /comedy/register`  
+**Description:** Registers the user for Comedy Night. The user must have completed their profile first. Once this endpoint is successfully called, the user's status becomes `WAITLISTED`.
+**Auth Required:** Yes
+**Request Body:** None
+
+**Success Response (200 OK):**
+```json
+{
+  "message": "Registration successful. You are currently WAITLISTED.",
+  "registration": {
+    "eventId": 1,
+    "userId": 1,
+    "status": "WAITLISTED",
+    "ticketCode": null,
+    "...": "profile snapshot details..."
+  }
+}
+```
+
+**Error Responses (400 Bad Request):**
+*If profile is missing/incomplete:*
+```json
+{
+  "message": "Please complete your profile first."
+}
+```
+*If already registered:*
+```json
+{
+  "message": "You are already registered."
+}
+```

@@ -11,6 +11,20 @@ class EventRound {
     required this.time,
     this.description,
   });
+
+  factory EventRound.fromJson(Map<String, dynamic> json) => EventRound(
+        title: json['title'] ?? '',
+        date: json['date'] ?? '',
+        time: json['time'] ?? '',
+        description: json['description'],
+      );
+
+  Map<String, dynamic> toJson() => {
+        'title': title,
+        'date': date,
+        'time': time,
+        'description': description,
+      };
 }
 
 class EventFaq {
@@ -21,6 +35,16 @@ class EventFaq {
     required this.question,
     required this.answer,
   });
+
+  factory EventFaq.fromJson(Map<String, dynamic> json) => EventFaq(
+        question: json['question'] ?? '',
+        answer: json['answer'] ?? '',
+      );
+
+  Map<String, dynamic> toJson() => {
+        'question': question,
+        'answer': answer,
+      };
 }
 
 class PrizeCategory {
@@ -31,6 +55,16 @@ class PrizeCategory {
     required this.categoryName,
     required this.prizes,
   });
+
+  factory PrizeCategory.fromJson(Map<String, dynamic> json) => PrizeCategory(
+        categoryName: json['categoryName'] ?? '',
+        prizes: Map<String, String>.from(json['prizes'] ?? {}),
+      );
+
+  Map<String, dynamic> toJson() => {
+        'categoryName': categoryName,
+        'prizes': prizes,
+      };
 }
 
 class EventCoordinator {
@@ -45,9 +79,24 @@ class EventCoordinator {
     required this.phone,
     this.email,
   });
+
+  factory EventCoordinator.fromJson(Map<String, dynamic> json) => EventCoordinator(
+        name: json['name'] ?? '',
+        role: json['role'] ?? '',
+        phone: json['phone'] ?? '',
+        email: json['email'],
+      );
+
+  Map<String, dynamic> toJson() => {
+        'name': name,
+        'role': role,
+        'phone': phone,
+        'email': email,
+      };
 }
 
 class EventDetail {
+  final String id;
   final String title;
   final String? subtitle;
   final String? description;
@@ -73,6 +122,7 @@ class EventDetail {
   final List<String> galleryImages;
 
   const EventDetail({
+    this.id = '',
     required this.title,
     this.subtitle,
     this.description,
@@ -97,6 +147,139 @@ class EventDetail {
     this.whatsappUrl,
     this.galleryImages = const [],
   });
+
+  factory EventDetail.fromJson(Map<String, dynamic> json) => EventDetail(
+        id: json['id'] ?? '',
+        title: json['title'] ?? '',
+        subtitle: json['subtitle'],
+        description: json['description'],
+        imageAsset: json['imageAsset'],
+        category: json['category'],
+        prizePool: json['prizePool'],
+        teamSize: json['teamSize'],
+        date: json['date'],
+        time: json['time'],
+        venue: json['venue'],
+        mapLocationUrl: json['mapLocationUrl'],
+        rules: List<String>.from(json['rules'] ?? []),
+        whoCanParticipate: List<String>.from(json['whoCanParticipate'] ?? []),
+        rounds: (json['rounds'] as List? ?? [])
+            .map((r) => EventRound.fromJson(r))
+            .toList(),
+        faqs: (json['faqs'] as List? ?? [])
+            .map((f) => EventFaq.fromJson(f))
+            .toList(),
+        prizeCategories: (json['prizeCategories'] as List? ?? [])
+            .map((p) => PrizeCategory.fromJson(p))
+            .toList(),
+        prizeBreakdown: json['prizeBreakdown'] != null
+            ? Map<String, String>.from(json['prizeBreakdown'])
+            : null,
+        coordinators: (json['coordinators'] as List? ?? [])
+            .map((c) => EventCoordinator.fromJson(c))
+            .toList(),
+        redirectUrl: json['redirectUrl'],
+        rulebookUrl: json['rulebookUrl'],
+        problemStatementUrl: json['problemStatementUrl'],
+        whatsappUrl: json['whatsappUrl'],
+        galleryImages: List<String>.from(json['galleryImages'] ?? []),
+      );
+
+  String get effectiveId {
+    if (id.trim().isNotEmpty) return id.trim();
+    final sanitized = title.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]+'), '_');
+    return 'event_$sanitized';
+  }
+
+  DateTime? get parsedStartDateTime {
+    if (date == null || date!.trim().isEmpty) return null;
+    try {
+      final directParsed = DateTime.tryParse(date!);
+      if (directParsed != null) return directParsed;
+
+      final now = DateTime.now();
+      int year = now.year;
+      int month = now.month;
+      int day = now.day;
+
+      final months = {
+        'jan': 1, 'feb': 2, 'mar': 3, 'apr': 4, 'may': 5, 'jun': 6,
+        'jul': 7, 'aug': 8, 'sep': 9, 'oct': 10, 'nov': 11, 'dec': 12,
+      };
+
+      final dateLower = date!.toLowerCase();
+      if (!dateLower.contains('today')) {
+        final dateParts = dateLower.split(RegExp(r'[\s,\-/]+'));
+        for (final part in dateParts) {
+          if (int.tryParse(part) != null) {
+            final val = int.parse(part);
+            if (val > 2020) {
+              year = val;
+            } else if (val >= 1 && val <= 31) {
+              day = val;
+            }
+          } else {
+            for (final entry in months.entries) {
+              if (part.startsWith(entry.key)) {
+                month = entry.value;
+                break;
+              }
+            }
+          }
+        }
+      }
+
+      int hour = 13;
+      int minute = 30;
+      if (time != null && time!.trim().isNotEmpty) {
+        final timeClean = time!.trim().toLowerCase();
+        final isPm = timeClean.contains('pm');
+        final isAm = timeClean.contains('am');
+        final numbers = RegExp(r'\d+').allMatches(timeClean).map((m) => int.parse(m.group(0)!)).toList();
+        if (numbers.isNotEmpty) {
+          hour = numbers[0];
+          if (isPm && hour < 12) hour += 12;
+          if (isAm && hour == 12) hour = 0;
+          if (numbers.length > 1) {
+            minute = numbers[1];
+          } else {
+            minute = 0;
+          }
+        }
+      }
+
+      return DateTime(year, month, day, hour, minute);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'title': title,
+        'subtitle': subtitle,
+        'description': description,
+        'imageAsset': imageAsset,
+        'category': category,
+        'prizePool': prizePool,
+        'teamSize': teamSize,
+        'date': date,
+        'time': time,
+        'venue': venue,
+        'mapLocationUrl': mapLocationUrl,
+        'rules': rules,
+        'whoCanParticipate': whoCanParticipate,
+        'rounds': rounds.map((r) => r.toJson()).toList(),
+        'faqs': faqs.map((f) => f.toJson()).toList(),
+        'prizeCategories': prizeCategories.map((p) => p.toJson()).toList(),
+        'prizeBreakdown': prizeBreakdown,
+        'coordinators': coordinators.map((c) => c.toJson()).toList(),
+        'redirectUrl': redirectUrl,
+        'rulebookUrl': rulebookUrl,
+        'problemStatementUrl': problemStatementUrl,
+        'whatsappUrl': whatsappUrl,
+        'galleryImages': galleryImages,
+      };
 }
 
 class SubCategory {
@@ -109,6 +292,20 @@ class SubCategory {
     required this.imageAsset,
     required this.events,
   });
+
+  factory SubCategory.fromJson(Map<String, dynamic> json) => SubCategory(
+        title: json['title'] ?? '',
+        imageAsset: json['imageAsset'] ?? '',
+        events: (json['events'] as List? ?? [])
+            .map((e) => EventDetail.fromJson(e))
+            .toList(),
+      );
+
+  Map<String, dynamic> toJson() => {
+        'title': title,
+        'imageAsset': imageAsset,
+        'events': events.map((e) => e.toJson()).toList(),
+      };
 }
 
 class MainCategory {
@@ -119,6 +316,18 @@ class MainCategory {
     required this.title,
     required this.subCategories,
   });
+
+  factory MainCategory.fromJson(Map<String, dynamic> json) => MainCategory(
+        title: json['title'] ?? '',
+        subCategories: (json['subCategories'] as List? ?? [])
+            .map((s) => SubCategory.fromJson(s))
+            .toList(),
+      );
+
+  Map<String, dynamic> toJson() => {
+        'title': title,
+        'subCategories': subCategories.map((s) => s.toJson()).toList(),
+      };
 }
 
 EventDetail? findEventByTitle(String title) {
@@ -127,6 +336,22 @@ EventDetail? findEventByTitle(String title) {
     for (final subCat in mainCat.subCategories) {
       for (final event in subCat.events) {
         if (event.title.trim().toLowerCase() == cleanQuery) {
+          return event;
+        }
+      }
+    }
+  }
+  return null;
+}
+
+EventDetail? findEventById(String id) {
+  final cleanId = id.trim().toLowerCase();
+  for (final mainCat in eventData) {
+    for (final subCat in mainCat.subCategories) {
+      for (final event in subCat.events) {
+        if (event.id.trim().toLowerCase() == cleanId ||
+            event.effectiveId.trim().toLowerCase() == cleanId ||
+            event.title.trim().toLowerCase() == cleanId) {
           return event;
         }
       }
@@ -150,8 +375,8 @@ final List<MainCategory> eventData = [
             imageAsset: 'assets/robo.png',
             prizePool: '₹ 1,50,000',
             teamSize: '2 - 6 Members',
-            date: 'Sep 4 - Sep 6, 2026',
-            time: '10:00 AM - 6:00 PM',
+            date: '21 Aug 2026',
+            time: '2:30 PM',
             venue: 'L1 - Lecture Hall, Near Academic Block',
             mapLocationUrl: 'https://maps.google.com/?q=IIT+Guwahati+Lecture+Hall',
             whatsappUrl: 'https://chat.whatsapp.com/invite/techniche2026',
@@ -160,9 +385,9 @@ final List<MainCategory> eventData = [
             rounds: [
               EventRound(
                 title: 'Round 1: Online test (Unstop)',
-                date: '25th Aug, 2026',
-                time: '12:00',
-                description: 'Screening round testing mechanical aptitude, circuit design, and safety guidelines.',
+                date: '21st Aug, 2026',
+                time: '2:30 PM',
+                description: 'Screening round testing mechanical aptitude, circuit design, and safety guidelines starting today at 2:30 PM.',
               ),
               EventRound(
                 title: 'Round 2: Strategy Ideation & Flowchart',
@@ -243,8 +468,8 @@ final List<MainCategory> eventData = [
             imageAsset: 'assets/robotics.jpeg',
             prizePool: '₹ 60,000',
             teamSize: '2 - 4 Members',
-            date: 'Sep 5, 2026',
-            time: '11:00 AM - 4:00 PM',
+            date: '21 Aug 2026',
+            time: '3:30 PM',
             venue: 'Olympic Swimming Pool Complex, IIT Guwahati',
             description:
                 'Aquawars challenges participants to design autonomous or remote-controlled amphibious and aquatic robots capable of navigating turbulent water obstacles, retrieving submerged payloads, and completing high-precision naval maneuvers.',
@@ -277,8 +502,8 @@ final List<MainCategory> eventData = [
             imageAsset: 'assets/robotics.jpeg',
             prizePool: '₹ 75,000',
             teamSize: '2 - 5 Members',
-            date: 'Sep 5, 2026',
-            time: '9:00 AM - 2:00 PM',
+            date: '21 Aug 2026',
+            time: '4:00 PM',
             venue: 'Gymkhana Ground, IIT Guwahati',
             description:
                 'UVDC tests your engineering prowess in designing unmanned aerial or ground vehicles capable of waypoint navigation, payload delivery, and dynamic obstacle avoidance in unpredictable terrain.',
@@ -308,8 +533,8 @@ final List<MainCategory> eventData = [
             imageAsset: 'assets/robotics.jpeg',
             prizePool: '₹ 50,000',
             teamSize: '1 - 4 Members',
-            date: 'Sep 6, 2026',
-            time: '10:00 AM - 3:00 PM',
+            date: '21 Aug 2026',
+            time: '5:00 PM',
             venue: 'Auditorium Foyer, IIT Guwahati',
             description:
                 'Build lightning-fast autonomous rovers that can detect line paths, dynamic loops, sharp turns, bridges, and cross-junctions with sub-millisecond PID tuning.',
@@ -339,8 +564,8 @@ final List<MainCategory> eventData = [
             imageAsset: 'assets/micro.png',
             prizePool: '₹ 40,000',
             teamSize: '1 - 3 Members',
-            date: 'Sep 6, 2026',
-            time: '2:00 PM - 5:00 PM',
+            date: '21 Aug 2026',
+            time: '5:30 PM',
             venue: 'Core 4 Lobby, IIT Guwahati',
             description:
                 'Micro Mouse is the quintessential robotics challenge: an autonomous vehicular robot that maps, calculates optimal shortest path algorithms (FloodFill, Dijkstra, A*), and dashes to the maze center at blistering speeds.',
@@ -370,8 +595,8 @@ final List<MainCategory> eventData = [
             imageAsset: 'assets/escalade.png',
             prizePool: '₹ 80,000',
             teamSize: '2 - 4 Members',
-            date: 'Sep 4, 2026',
-            time: '1:00 PM - 6:00 PM',
+            date: '21 Aug 2026',
+            time: '6:00 PM',
             venue: 'Amphitheatre, IIT Guwahati',
             description:
                 'Design a high-torque mechanical climber capable of ascending steep inclinations, climbing vertical cables, crossing suspended ladders, and carrying payloads across rugged synthetic terrain.',
@@ -406,9 +631,9 @@ final List<MainCategory> eventData = [
             imageAsset: 'assets/funniche.png',
             prizePool: '₹ 35,000',
             teamSize: '4 Players (Squad)',
-            date: 'Sep 4 - Sep 5, 2026',
-            time: '4:00 PM Onwards',
-            venue: 'SAC Gaming Arena / Online',
+            date: '28 Aug 2026',
+            time: '4:00 PM',
+            venue: 'SAC Gaming Arena, IIT Guwahati',
             description:
                 'Squad up for the most intense battle royale esports tournament of Techniche. Drop into Erangel and Miramar, clutch gunfights, and claim the Chicken Dinner.',
             rules: [
@@ -437,9 +662,9 @@ final List<MainCategory> eventData = [
             imageAsset: 'assets/funniche.png',
             prizePool: '₹ 45,000',
             teamSize: '5 Players (+1 Sub)',
-            date: 'Sep 5 - Sep 6, 2026',
-            time: '11:00 AM Onwards',
-            venue: 'Computer Center LAN Arena, IITG',
+            date: '29 Aug 2026',
+            time: '11:00 AM',
+            venue: 'Computer Center LAN Arena, IIT Guwahati',
             description:
                 'Lock in your duelists, initiate executes, and outplay your opponents in the Premier Techniche Valorant LAN tournament. Standard competitive plant/defuse format.',
             rules: [
@@ -468,9 +693,9 @@ final List<MainCategory> eventData = [
             imageAsset: 'assets/funniche.png',
             prizePool: '₹ 20,000',
             teamSize: 'Individual (1 Player)',
-            date: 'Sep 5, 2026',
-            time: '10:00 AM',
-            venue: 'Conference Hall, Old SAC',
+            date: '29 Aug 2026',
+            time: '2:30 PM',
+            venue: 'Conference Hall, Old SAC, IIT Guwahati',
             description:
                 'FIDE-rated swiss-style chess championship testing strategic acumen, tactical calculation, and endgame mastery.',
             rules: [
@@ -498,7 +723,7 @@ final List<MainCategory> eventData = [
             imageAsset: 'assets/funniche.png',
             prizePool: '₹ 15,000',
             teamSize: 'Individual (1 Player)',
-            date: 'Sep 6, 2026',
+            date: '30 Aug 2026',
             time: '3:00 PM',
             venue: 'SAC Lounge, IIT Guwahati',
             description:
@@ -539,9 +764,9 @@ final List<MainCategory> eventData = [
             imageAsset: 'assets/stpi.jpg',
             prizePool: '₹ 50,000',
             teamSize: '1 - 4 Members',
-            date: 'Sep 5, 2026',
-            time: '10:00 AM - 4:00 PM',
-            venue: 'Core 1 Lecture Hall, IITG',
+            date: '28 Aug 2026',
+            time: '10:00 AM',
+            venue: 'Core 1 Lecture Hall, IIT Guwahati',
             description:
                 'Develop IoT-enabled agricultural solutions such as smart soil moisture monitoring, automated irrigation, crop health detection, and supply chain telemetry.',
             rules: [
@@ -569,9 +794,9 @@ final List<MainCategory> eventData = [
             imageAsset: 'assets/stpi.jpg',
             prizePool: '₹ 50,000',
             teamSize: '1 - 4 Members',
-            date: 'Sep 4 - Sep 5, 2026',
-            time: '24 Hours Hackathon',
-            venue: 'Computer Center, IITG',
+            date: '28 Aug 2026',
+            time: '2:00 PM',
+            venue: 'Computer Center, IIT Guwahati',
             description:
                 'Create captivating 2D/3D games, immersive narrative experiences, or interactive entertainment apps using Unity, Unreal, Godot, or WebGL.',
             rules: [
@@ -599,9 +824,9 @@ final List<MainCategory> eventData = [
             imageAsset: 'assets/stpi.jpg',
             prizePool: '₹ 50,000',
             teamSize: '1 - 4 Members',
-            date: 'Sep 5, 2026',
+            date: '29 Aug 2026',
             time: '11:00 AM',
-            venue: 'Design Department, IITG',
+            venue: 'Design Department, IIT Guwahati',
             description:
                 'Build interactive augmented reality or virtual reality applications for education, healthcare, industrial simulation, or architectural visualization.',
             rules: [
@@ -629,9 +854,9 @@ final List<MainCategory> eventData = [
             imageAsset: 'assets/stpi.jpg',
             prizePool: '₹ 50,000',
             teamSize: '1 - 3 Members',
-            date: 'Sep 4 - Sep 6, 2026',
-            time: 'Full Fest Challenge',
-            venue: 'Online / Lab 3',
+            date: '29 Aug 2026',
+            time: '3:00 PM',
+            venue: 'Core 2 Computer Lab, IIT Guwahati',
             description:
                 'Tackle complex real-world datasets with machine learning, deep learning, LLMs, and computer vision models to solve predictive problems.',
             rules: [
@@ -659,9 +884,9 @@ final List<MainCategory> eventData = [
             imageAsset: 'assets/stpi.jpg',
             prizePool: '₹ 40,000',
             teamSize: 'Individual (1 Participant)',
-            date: 'Sep 5, 2026',
-            time: '2:00 PM - 6:00 PM',
-            venue: 'Design Dept Media Lab, IITG',
+            date: '30 Aug 2026',
+            time: '10:30 AM',
+            venue: 'Design Dept Media Lab, IIT Guwahati',
             description:
                 'Craft breathtaking motion graphics, visual brand identity, UI/UX concept designs, and 3D renders addressing a prompt released on spot.',
             rules: [
@@ -689,9 +914,9 @@ final List<MainCategory> eventData = [
             imageAsset: 'assets/stpi.jpg',
             prizePool: '₹ 40,000',
             teamSize: '1 - 3 Members',
-            date: 'Sep 6, 2026',
-            time: '10:00 AM',
-            venue: 'Civil Engineering Seminar Hall',
+            date: '30 Aug 2026',
+            time: '2:00 PM',
+            venue: 'Civil Engineering Seminar Hall, IIT Guwahati',
             description:
                 'Harness satellite imagery, geospatial databases (QGIS, ArcGIS, Mapbox), and spatial analysis to solve urban planning and disaster relief challenges.',
             rules: [
@@ -729,8 +954,8 @@ final List<MainCategory> eventData = [
             imageAsset: 'assets/techno.png',
             prizePool: '₹ 1,00,000 + Medals',
             teamSize: '2 Students',
-            date: 'Sep 5, 2026',
-            time: '9:00 AM - 1:00 PM',
+            date: '29 Aug 2026',
+            time: '9:00 AM',
             venue: 'Lecture Hall Complex, IIT Guwahati',
             description:
                 'Technothlon Junior Squad is the ultimate test of logical reasoning, mental agility, and intuitive problem-solving for school students from classes 9 and 10.',
@@ -760,11 +985,11 @@ final List<MainCategory> eventData = [
             imageAsset: 'assets/techno.png',
             prizePool: '₹ 1,00,000 + Medals',
             teamSize: '2 Students',
-            date: 'Sep 5, 2026',
-            time: '2:00 PM - 6:00 PM',
+            date: '29 Aug 2026',
+            time: '2:00 PM',
             venue: 'Lecture Hall Complex, IIT Guwahati',
             description:
-                'Technothlon Hauts Squad challenges senior high-school minds with groundbreaking puzzles, algorithmic deduction, and cryptic mathematical reasoning.',
+                'Technothlon Hauts Squad challenges senior high-school minds with groundbreaking puzzles, algorithmic deduction, and critical mathematical reasoning.',
             rules: [
               'Teams must consist of exactly 2 students from classes 11 or 12.',
               'Top teams qualify for the Grand Finale held on IIT Guwahati campus.'
@@ -802,9 +1027,9 @@ final List<MainCategory> eventData = [
             imageAsset: 'assets/webdev.jpg',
             prizePool: 'Certified Workshop',
             teamSize: 'Individual',
-            date: 'Sep 4 - Sep 5, 2026',
-            time: '10:00 AM - 5:00 PM',
-            venue: 'Computer Center Lab 1, IITG',
+            date: '28 Aug 2026',
+            time: '10:00 AM',
+            venue: 'Computer Center Lab 1, IIT Guwahati',
             description:
                 'Comprehensive hands-on workshop covering modern web architecture, frontend react frameworks, backend APIs, authentication, state management, and continuous cloud deployment.',
             rules: [
@@ -827,9 +1052,9 @@ final List<MainCategory> eventData = [
             imageAsset: 'assets/arduino.jpg',
             prizePool: 'Certified Workshop',
             teamSize: 'Individual',
-            date: 'Sep 5, 2026',
-            time: '9:30 AM - 4:30 PM',
-            venue: 'Electronics Lab, IITG',
+            date: '28 Aug 2026',
+            time: '2:30 PM',
+            venue: 'Electronics Lab, IIT Guwahati',
             description:
                 'Learn microcontroller programming from scratch. Build real hardware projects with sensors, actuators, LCD displays, motor drivers, and serial communication.',
             redirectUrl:
@@ -848,9 +1073,9 @@ final List<MainCategory> eventData = [
             imageAsset: 'assets/genai.jpg',
             prizePool: 'Certified Workshop',
             teamSize: 'Individual',
-            date: 'Sep 5 - Sep 6, 2026',
-            time: '10:00 AM - 4:00 PM',
-            venue: 'Auditorium Hall, IITG',
+            date: '29 Aug 2026',
+            time: '10:00 AM',
+            venue: 'Auditorium Hall, IIT Guwahati',
             description:
                 'Deep dive into Large Language Models, fine-tuning, retrieval-augmented generation (RAG), and designing autonomous multi-agent AI systems with practical code examples.',
             redirectUrl:
@@ -869,9 +1094,9 @@ final List<MainCategory> eventData = [
             imageAsset: 'assets/cybersec.jpg',
             prizePool: 'Certified Workshop',
             teamSize: 'Individual',
-            date: 'Sep 6, 2026',
-            time: '10:00 AM - 5:00 PM',
-            venue: 'Computer Center Lab 2, IITG',
+            date: '30 Aug 2026',
+            time: '11:00 AM',
+            venue: 'Computer Center Lab 2, IIT Guwahati',
             description:
                 'Master the fundamentals of network security, web vulnerability scanning (OWASP Top 10), reverse engineering, cryptography, and real-time capture-the-flag exercises.',
             redirectUrl:
@@ -895,6 +1120,8 @@ final List<MainCategory> eventData = [
             imageAsset: 'assets/techexpo.jpg',
             prizePool: '₹ 50,000',
             teamSize: '1 - 4 Students',
+            date: '28 Aug 2026',
+            time: '10:00 AM',
             venue: 'Exhibition Hall A, IIT Guwahati',
             description:
                 'An esteemed platform for young school innovators to showcase working scientific models, green technology prototypes, and engineering inventions.',
@@ -906,6 +1133,8 @@ final List<MainCategory> eventData = [
             imageAsset: 'assets/techexpo.jpg',
             prizePool: '₹ 1,50,000',
             teamSize: '1 - 5 Members',
+            date: '29 Aug 2026',
+            time: '10:00 AM',
             venue: 'Exhibition Hall B, IIT Guwahati',
             description:
                 'Showcase cutting-edge academic research projects, hardware patents, and deep-tech prototypes to renowned scientists, investors, and industrial leaders.',
@@ -921,6 +1150,8 @@ final List<MainCategory> eventData = [
             subtitle: 'Defense Technology & Weaponry Exhibition',
             category: 'Exhibitions',
             imageAsset: 'assets/army-expo.jpg',
+            date: '29 Aug 2026',
+            time: '11:30 AM',
             venue: 'Main Helipad Grounds, IIT Guwahati',
             description:
                 'Experience state-of-the-art defense technology, artillery, tactical communication gear, and specialized military vehicles presented directly by the Indian Army.',
@@ -936,6 +1167,8 @@ final List<MainCategory> eventData = [
             subtitle: 'Fleet of Roadsters Roaring in Campus',
             category: 'Exhibitions',
             imageAsset: 'assets/road-show.webp',
+            date: '30 Aug 2026',
+            time: '3:30 PM',
             venue: 'Core 1 Boulevard, IIT Guwahati',
             description:
                 'Witness an electrifying collection of exotic supercars, vintage classics, custom superbikes, and high-performance racing beasts revving through the campus.',
@@ -957,8 +1190,8 @@ final List<MainCategory> eventData = [
             category: 'Lecture Series',
             imageAsset: 'assets/ash.jpg',
             venue: 'Main Auditorium, IIT Guwahati',
-            date: 'Sep 5, 2026',
-            time: '5:00 PM',
+            date: '28 Aug 2026',
+            time: '5:30 PM',
             description:
                 'Candid talk on building hyper-scale fintech companies, disrupting Indian retail payments, venture investments, and founder resilience.',
           ),
@@ -974,8 +1207,8 @@ final List<MainCategory> eventData = [
             category: 'Lecture Series',
             imageAsset: 'assets/revamp.jpg',
             venue: 'Main Auditorium, IIT Guwahati',
-            date: 'Sep 6, 2026',
-            time: '11:00 AM',
+            date: '29 Aug 2026',
+            time: '5:00 PM',
             description:
                 'Insights into EV engineering, modular chassis design, manufacturing innovation, and the future of clean urban mobility in India.',
           ),
@@ -991,8 +1224,8 @@ final List<MainCategory> eventData = [
             category: 'Lecture Series',
             imageAsset: 'assets/asus.jpg',
             venue: 'Main Auditorium, IIT Guwahati',
-            date: 'Sep 6, 2026',
-            time: '3:00 PM',
+            date: '30 Aug 2026',
+            time: '4:30 PM',
             description:
                 'Exploring consumer tech innovations, gaming ecosystem growth in India, and leadership strategies in competitive global tech brands.',
           ),
@@ -1012,6 +1245,8 @@ final List<MainCategory> eventData = [
             subtitle: 'Connect with Industry Titans & Fellow Founders',
             category: 'Nexus',
             imageAsset: 'assets/nexus.jpg',
+            date: '28 Aug 2026',
+            time: '6:00 PM',
             venue: 'Conference Center, IIT Guwahati',
             description:
                 'Structured networking session bringing together startup founders, investors, researchers, and aspiring tech enthusiasts.',
@@ -1021,6 +1256,8 @@ final List<MainCategory> eventData = [
             subtitle: 'Real-world Corporate Problem Solving',
             category: 'Nexus',
             imageAsset: 'assets/nexus.jpg',
+            date: '29 Aug 2026',
+            time: '1:30 PM',
             venue: 'Seminar Hall 3, IIT Guwahati',
             description:
                 'Collaborate in multidisciplinary teams to tackle real-world industry case studies with mentorship from corporate executives.',
@@ -1030,6 +1267,8 @@ final List<MainCategory> eventData = [
             subtitle: '1-on-1 Guidance with Domain Experts',
             category: 'Nexus',
             imageAsset: 'assets/nexus.jpg',
+            date: '30 Aug 2026',
+            time: '11:00 AM',
             venue: 'SAC Executive Lounge, IIT Guwahati',
             description:
                 'Get personalized feedback on your startup pitch, research thesis, career trajectory, and technical roadmaps from experienced mentors.',
@@ -1050,6 +1289,8 @@ final List<MainCategory> eventData = [
             subtitle: 'Saving Lives Across Northeast India',
             category: 'Initiatives',
             imageAsset: 'assets/ghm.png',
+            date: '28 Aug 2026',
+            time: '9:00 AM',
             venue: 'IIT Guwahati Hospital Complex',
             description:
                 'Join Techniche in our mission to support local healthcare centers and save lives through a mega blood donation campaign in collaboration with GMCH.',
@@ -1059,6 +1300,8 @@ final List<MainCategory> eventData = [
             subtitle: 'Zero Hunger Community Initiative',
             category: 'Initiatives',
             imageAsset: 'assets/ghm.png',
+            date: '30 Aug 2026',
+            time: '10:00 AM',
             venue: 'Guwahati City & Neighboring Villages',
             description:
                 'Techniche’s social initiative aimed at redistributing meals and groceries to underprivileged communities and orphanages.',
