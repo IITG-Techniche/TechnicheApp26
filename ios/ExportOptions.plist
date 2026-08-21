@@ -5,11 +5,11 @@
     <key>method</key>
     <string>app-store</string>
     <key>teamID</key>
-    <string>ABCDE12345</string>
+    <string>ABZGC66QRD</string>
     <key>provisioningProfiles</key>
     <dict>
         <key>com.techniche.techniche-app</key>
-        <string>Techniche</string>
+        <string>Avinash Gupta</string>
     </dict>
     <key>signingStyle</key>
     <string>manual</string>
