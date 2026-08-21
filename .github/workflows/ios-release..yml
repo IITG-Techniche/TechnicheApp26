@@ -22,11 +22,14 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: ${{ github.event.inputs.flutter_version }}
-          channel: 'stable'
+          flutter-version: ${{ inputs.flutter_version }}
+          channel: stable
           cache: true
 
-      - name: Cache pub dependencies
+      - name: Flutter version
+        run: flutter --version
+
+      - name: Cache Pub dependencies
         uses: actions/cache@v4
         with:
           path: |
@@ -42,10 +45,21 @@ jobs:
       - name: Cache CocoaPods
         uses: actions/cache@v4
         with:
-          path: ios/Pods
+          path: |
+            ios/Pods
+            ~/Library/Caches/CocoaPods
           key: ${{ runner.os }}-pods-${{ hashFiles('ios/Podfile.lock') }}
           restore-keys: |
             ${{ runner.os }}-pods-
+
+      - name: Install CocoaPods
+        working-directory: ios
+        run: |
+          pod install --repo-update
+
+      # -------------------------------------------------------
+      # CODE SIGNING
+      # -------------------------------------------------------
 
       - name: Install Apple Distribution Certificate
         uses: Apple-Actions/import-codesign-certs@v2
@@ -54,36 +68,216 @@ jobs:
           p12-password: ${{ secrets.IOS_P12_PASSWORD }}
 
       - name: Install Provisioning Profile
+        env:
+          IOS_PROVISION_BASE64: ${{ secrets.IOS_PROVISION_BASE64 }}
         run: |
-          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
-          echo "${{ secrets.IOS_PROVISION_BASE64 }}" | base64 --decode > ~/Library/MobileDevice/Provisioning\ Profiles/build_pp.mobileprovision
-          echo "Installed profile:"
-          ls -la ~/Library/MobileDevice/Provisioning\ Profiles/
+          set -e
 
-      - name: Disable Automatic Signing in Xcode
-        run: |
-          sed -i '' 's/CODE_SIGN_STYLE = Automatic/CODE_SIGN_STYLE = Manual/g' ios/Runner.xcodeproj/project.pbxproj
+          PROFILE_DIR="$HOME/Library/MobileDevice/Provisioning Profiles"
+          PROFILE_PATH="$PROFILE_DIR/build_pp.mobileprovision"
 
-      - name: Clean Xcode Signing Settings
+          mkdir -p "$PROFILE_DIR"
+          echo "$IOS_PROVISION_BASE64" | base64 --decode > "$PROFILE_PATH"
+
+          echo "=== Provisioning Profile ==="
+          security cms -D -i "$PROFILE_PATH" > /tmp/profile.plist
+
+          PROFILE_NAME=$(/usr/libexec/PlistBuddy -c "Print :Name" /tmp/profile.plist)
+          PROFILE_UUID=$(/usr/libexec/PlistBuddy -c "Print :UUID" /tmp/profile.plist)
+          TEAM_ID=$(/usr/libexec/PlistBuddy -c "Print :TeamIdentifier:0" /tmp/profile.plist)
+          BUNDLE_ID=$(/usr/libexec/PlistBuddy -c "Print :Entitlements:application-identifier" /tmp/profile.plist | sed "s/^${TEAM_ID}\\.//")
+
+          echo "Profile Name: $PROFILE_NAME"
+          echo "Profile UUID: $PROFILE_UUID"
+          echo "Team ID: $TEAM_ID"
+          echo "Bundle ID: $BUNDLE_ID"
+
+          echo "PROFILE_NAME=$PROFILE_NAME" >> "$GITHUB_ENV"
+          echo "PROFILE_UUID=$PROFILE_UUID" >> "$GITHUB_ENV"
+          echo "TEAM_ID=$TEAM_ID" >> "$GITHUB_ENV"
+          echo "BUNDLE_ID=$BUNDLE_ID" >> "$GITHUB_ENV"
+
+      # -------------------------------------------------------
+      # SIGN IN WITH APPLE ENTITLEMENTS (Python - no indentation issues)
+      # -------------------------------------------------------
+
+      - name: Configure Sign In with Apple entitlements
         run: |
+          python3 -c "
+          import plistlib
+          import os
+          os.makedirs('ios/Runner', exist_ok=True)
+          data = {'com.apple.developer.applesignin': ['Default']}
+          with open('ios/Runner/Runner.entitlements', 'wb') as f:
+              plistlib.dump(data, f)
+          print('Created ios/Runner/Runner.entitlements')
+          "
+
+      # -------------------------------------------------------
+      # CONFIGURE XCODE SIGNING
+      # -------------------------------------------------------
+
+      - name: Configure Xcode project signing
+        run: |
+          set -e
+          PROJECT="ios/Runner.xcodeproj/project.pbxproj"
+
           echo "=== Before cleanup ==="
-          grep -n -i "PROVISIONING_PROFILE\|Ayush Ranjan" ios/Runner.xcodeproj/project.pbxproj || true
-          
-          sed -i '' 's/PROVISIONING_PROFILE_SPECIFIER = ".*";/PROVISIONING_PROFILE_SPECIFIER = ""; /g' ios/Runner.xcodeproj/project.pbxproj
-          sed -i '' 's/Ayush Ranjan//g' ios/Runner.xcodeproj/project.pbxproj
-          sed -i '' 's/PROVISIONING_PROFILE = ".*";/PROVISIONING_PROFILE = ""; /g' ios/Runner.xcodeproj/project.pbxproj
-          
+          grep -nE "CODE_SIGN_STYLE|CODE_SIGN_IDENTITY|DEVELOPMENT_TEAM|PROVISIONING_PROFILE|CODE_SIGN_ENTITLEMENTS" "$PROJECT" || true
+
+          # Disable automatic signing
+          sed -i '' 's/CODE_SIGN_STYLE = Automatic;/CODE_SIGN_STYLE = Manual;/g' "$PROJECT"
+
+          # Remove old signing entries
+          sed -i '' '/PROVISIONING_PROFILE = /d' "$PROJECT"
+          sed -i '' '/PROVISIONING_PROFILE_SPECIFIER = /d' "$PROJECT"
+          sed -i '' '/DEVELOPMENT_TEAM = /d' "$PROJECT"
+          sed -i '' '/CODE_SIGN_ENTITLEMENTS = /d' "$PROJECT"
+
+          # Inject actual values using Python (no indentation issues)
+          python3 -c "
+          from pathlib import Path
+          import os
+
+          path = Path('ios/Runner.xcodeproj/project.pbxproj')
+          text = path.read_text()
+
+          team_id = os.environ['TEAM_ID']
+          profile_name = os.environ['PROFILE_NAME']
+
+          old = 'CODE_SIGN_STYLE = Manual;'
+          new = f'''CODE_SIGN_STYLE = Manual;
+\t\t\t\tCODE_SIGN_IDENTITY = \"Apple Distribution\";
+\t\t\t\tDEVELOPMENT_TEAM = {team_id};
+\t\t\t\tPROVISIONING_PROFILE_SPECIFIER = \"{profile_name}\";
+\t\t\t\tCODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;'''
+
+          text = text.replace(old, new)
+          path.write_text(text)
+          print('Updated project.pbxproj')
+          "
+
           echo "=== After cleanup ==="
-          grep -n -i "PROVISIONING_PROFILE\|Ayush Ranjan" ios/Runner.xcodeproj/project.pbxproj || true
+          grep -nE "CODE_SIGN_STYLE|CODE_SIGN_IDENTITY|DEVELOPMENT_TEAM|PROVISIONING_PROFILE|CODE_SIGN_ENTITLEMENTS" "$PROJECT" || true
+
+      # -------------------------------------------------------
+      # VERIFY SIGNING
+      # -------------------------------------------------------
+
+      - name: Verify signing identity
+        run: |
+          echo "=== Available signing identities ==="
+          security find-identity -v -p codesigning
+
+      - name: Verify provisioning profile
+        run: |
+          echo "=== Installed profiles ==="
+          ls -la "$HOME/Library/MobileDevice/Provisioning Profiles"
+          echo "Name: $PROFILE_NAME"
+          echo "UUID: $PROFILE_UUID"
+          echo "Team: $TEAM_ID"
+
+      # -------------------------------------------------------
+      # BUILD
+      # -------------------------------------------------------
+
+      - name: Clean Flutter
+        run: flutter clean
+
+      - name: Install Flutter dependencies
+        run: flutter pub get
+
+      - name: Create ExportOptions.plist (Python - no indentation issues)
+        run: |
+          python3 -c "
+          import plistlib
+          import os
+
+          data = {
+              'method': 'app-store',
+              'signingStyle': 'manual',
+              'teamID': os.environ['TEAM_ID'],
+              'provisioningProfiles': {os.environ['BUNDLE_ID']: os.environ['PROFILE_NAME']},
+              'signingCertificate': 'Apple Distribution',
+              'stripSwiftSymbols': True,
+              'uploadSymbols': True,
+          }
+
+          with open('ios/ExportOptions.plist', 'wb') as f:
+              plistlib.dump(data, f)
+
+          print('Created ios/ExportOptions.plist')
+          print('Team ID:', os.environ['TEAM_ID'])
+          print('Bundle ID:', os.environ['BUNDLE_ID'])
+          print('Profile:', os.environ['PROFILE_NAME'])
+          "
 
       - name: Build iOS IPA
         run: |
-          flutter build ipa --release --export-options-plist=ios/ExportOptions.plist
+          flutter build ipa \
+            --release \
+            --export-options-plist=ios/ExportOptions.plist
+
+      # -------------------------------------------------------
+      # VERIFY IPA
+      # -------------------------------------------------------
+
+      - name: Find generated IPA
+        id: ipa
+        run: |
+          set -e
+          IPA_PATH=$(find build/ios/ipa -type f -name "*.ipa" | head -n 1)
+
+          if [ -z "$IPA_PATH" ]; then
+            echo "ERROR: IPA was not generated."
+            find build/ios -maxdepth 5 -type f -print
+            exit 1
+          fi
+
+          echo "IPA: $IPA_PATH"
+          echo "ipa_path=$IPA_PATH" >> "$GITHUB_OUTPUT"
+
+      - name: Verify IPA signing
+        env:
+          IPA_PATH: ${{ steps.ipa.outputs.ipa_path }}
+        run: |
+          set -e
+          TEMP_DIR=$(mktemp -d)
+          unzip -q "$IPA_PATH" -d "$TEMP_DIR"
+          APP_PATH=$(find "$TEMP_DIR/Payload" -maxdepth 1 -name "*.app" | head -n 1)
+
+          echo "=== Code signature ==="
+          codesign -dvv "$APP_PATH" 2>&1 || true
+
+          echo "=== Entitlements ==="
+          codesign -d --entitlements - "$APP_PATH" 2>&1 || true
+
+      # -------------------------------------------------------
+      # APP STORE CONNECT UPLOAD
+      # -------------------------------------------------------
 
       - name: Upload IPA to App Store Connect
+        env:
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          IPA_PATH: ${{ steps.ipa.outputs.ipa_path }}
         run: |
-          xcrun altool --upload-app --type ios \
-            -f build/ios/ipa/*.ipa \
-            -u "${{ secrets.APPLE_ID }}" \
-            -p "${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}" \
+          set -e
+          xcrun altool \
+            --upload-app \
+            --type ios \
+            --file "$IPA_PATH" \
+            --username "$APPLE_ID" \
+            --password "$APPLE_APP_SPECIFIC_PASSWORD" \
             --verbose
+
+      # -------------------------------------------------------
+      # SAVE ARTIFACT
+      # -------------------------------------------------------
+
+      - name: Upload IPA artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-ipa-${{ github.run_number }}
+          path: build/ios/ipa/*.ipa
+          if-no-files-found: error
