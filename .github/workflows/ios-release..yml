@@ -13,11 +13,14 @@ jobs:
   build-and-deploy-ios:
     name: Build IPA & Upload to App Store Connect
     runs-on: macos-latest
-    environment: AppStore    # ← THIS IS THE FIX
+    environment: AppStore
+
     steps:
+      # 1. Checkout
       - name: Checkout source code
         uses: actions/checkout@v4
 
+      # 2. Setup Flutter (cached)
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
@@ -25,24 +28,55 @@ jobs:
           channel: 'stable'
           cache: true
 
+      # 3. Cache pub dependencies
+      - name: Cache pub dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.pub-cache
+            .dart_tool
+          key: ${{ runner.os }}-pub-${{ hashFiles('**/pubspec.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pub-
+
+      # 4. Install Flutter dependencies
       - name: Install Flutter dependencies
         run: flutter pub get
 
+      # 5. Cache CocoaPods
+      - name: Cache CocoaPods
+        uses: actions/cache@v4
+        with:
+          path: ios/Pods
+          key: ${{ runner.os }}-pods-${{ hashFiles('ios/Podfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pods-
+
+      # 6. Install Apple Distribution Certificate
       - name: Install Apple Distribution Certificate
         uses: Apple-Actions/import-codesign-certs@v2
         with:
           p12-file-base64: ${{ secrets.IOS_P12_BASE64 }}
           p12-password: ${{ secrets.IOS_P12_PASSWORD }}
 
+      # 7. Install Provisioning Profile
       - name: Install Provisioning Profile
         run: |
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
           echo "${{ secrets.IOS_PROVISION_BASE64 }}" | base64 --decode > ~/Library/MobileDevice/Provisioning\ Profiles/build_pp.mobileprovision
 
+      # 8. Disable Automatic Signing (fixes the Xcode conflict)
+      - name: Disable Automatic Signing in Xcode
+        run: |
+          sed -i '' 's/CODE_SIGN_STYLE = Automatic/CODE_SIGN_STYLE = Manual/g' ios/Runner.xcodeproj/project.pbxproj
+          echo "Signing style updated to Manual"
+
+      # 9. Build IPA
       - name: Build iOS IPA
         run: |
           flutter build ipa --release --export-options-plist=ios/ExportOptions.plist
 
+      # 10. Upload to App Store Connect
       - name: Upload IPA to App Store Connect
         run: |
           xcrun altool --upload-app --type ios \
