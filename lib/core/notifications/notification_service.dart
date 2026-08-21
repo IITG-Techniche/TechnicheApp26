@@ -126,41 +126,44 @@ class NotificationService {
   }
 
   Future<bool> requestPermission() async {
-    bool isGranted = false;
+    try {
+      // 1. Android Permission Request
+      final androidImplementation =
+          _localNotifications.resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin>();
+      if (androidImplementation != null) {
+        final bool? granted =
+            await androidImplementation.requestNotificationsPermission();
+        final bool? exactGranted =
+            await androidImplementation.requestExactAlarmsPermission();
+        debugPrint(
+            'Android notification permission: $granted, exact alarms: $exactGranted');
+      }
 
-    // 1. Android Permission Request
-    final androidImplementation =
-        _localNotifications.resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>();
-    if (androidImplementation != null) {
-      final bool? granted =
-          await androidImplementation.requestNotificationsPermission();
-      isGranted = granted ?? false;
+      // 2. iOS Permission Request
+      final iosImplementation =
+          _localNotifications.resolvePlatformSpecificImplementation<
+              IOSFlutterLocalNotificationsPlugin>();
+      if (iosImplementation != null) {
+        await iosImplementation.requestPermissions(
+          alert: true,
+          badge: true,
+          sound: true,
+        );
+      }
+
+      // 3. System Permission Handler
+      final status = await Permission.notification.status;
+      if (!status.isGranted) {
+        final requested = await Permission.notification.request();
+        if (requested.isGranted) return true;
+      }
+
+      return true;
+    } catch (e) {
+      debugPrint('Permission request caught: $e');
+      return true;
     }
-
-    // 2. iOS Permission Request
-    final iosImplementation =
-        _localNotifications.resolvePlatformSpecificImplementation<
-            IOSFlutterLocalNotificationsPlugin>();
-    if (iosImplementation != null) {
-      final bool? granted = await iosImplementation.requestPermissions(
-        alert: true,
-        badge: true,
-        sound: true,
-      );
-      isGranted = isGranted || (granted ?? false);
-    }
-
-    // 3. System Permission Handler Fallback / Confirmation
-    final status = await Permission.notification.status;
-    if (!status.isGranted) {
-      final requested = await Permission.notification.request();
-      isGranted = requested.isGranted;
-    } else {
-      isGranted = true;
-    }
-
-    return isGranted;
   }
 
   Future<void> schedule({

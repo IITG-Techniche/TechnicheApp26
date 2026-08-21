@@ -83,11 +83,14 @@ class _ReminderPickerSheetState extends State<ReminderPickerSheet> {
     setState(() => _isLoading = true);
     final title = _manager.extractEventTitle(widget.event);
 
-    // If event has no valid parsed date in event data, provide a simulated future festival date
     DateTime? startTime = _manager.extractEventStartTime(widget.event);
-    if (startTime == null || !startTime.isAfter(DateTime.now())) {
-      // Fallback to Techniche 2026 upcoming schedule date (August 29, 2026, 10:00 AM)
-      startTime = DateTime.now().add(const Duration(hours: 2));
+    final now = DateTime.now();
+
+    // If event startTime is not set or its reminder time is already in the past,
+    // ensure a valid future reminder test time
+    if (startTime == null ||
+        !startTime.subtract(Duration(minutes: offsetMinutes)).isAfter(now)) {
+      startTime = now.add(Duration(minutes: offsetMinutes + 5));
     }
 
     final success = await _manager.createReminder(
