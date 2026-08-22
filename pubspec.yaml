@@ -75,6 +75,7 @@ flutter:
     - assets/data/
     - assets/onboarding/
     - assets/ghm/
+    - assets/workshops/
 
   fonts:
     - family: Orbitron

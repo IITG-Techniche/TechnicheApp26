@@ -185,75 +185,6 @@ class EventDetail {
         galleryImages: List<String>.from(json['galleryImages'] ?? []),
       );
 
-  String get effectiveId {
-    if (id.trim().isNotEmpty) return id.trim();
-    final sanitized = title.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]+'), '_');
-    return 'event_$sanitized';
-  }
-
-  DateTime? get parsedStartDateTime {
-    if (date == null || date!.trim().isEmpty) return null;
-    try {
-      final directParsed = DateTime.tryParse(date!);
-      if (directParsed != null) return directParsed;
-
-      final now = DateTime.now();
-      int year = now.year;
-      int month = now.month;
-      int day = now.day;
-
-      final months = {
-        'jan': 1, 'feb': 2, 'mar': 3, 'apr': 4, 'may': 5, 'jun': 6,
-        'jul': 7, 'aug': 8, 'sep': 9, 'oct': 10, 'nov': 11, 'dec': 12,
-      };
-
-      final dateLower = date!.toLowerCase();
-      if (!dateLower.contains('today')) {
-        final dateParts = dateLower.split(RegExp(r'[\s,\-/]+'));
-        for (final part in dateParts) {
-          if (int.tryParse(part) != null) {
-            final val = int.parse(part);
-            if (val > 2020) {
-              year = val;
-            } else if (val >= 1 && val <= 31) {
-              day = val;
-            }
-          } else {
-            for (final entry in months.entries) {
-              if (part.startsWith(entry.key)) {
-                month = entry.value;
-                break;
-              }
-            }
-          }
-        }
-      }
-
-      int hour = 13;
-      int minute = 30;
-      if (time != null && time!.trim().isNotEmpty) {
-        final timeClean = time!.trim().toLowerCase();
-        final isPm = timeClean.contains('pm');
-        final isAm = timeClean.contains('am');
-        final numbers = RegExp(r'\d+').allMatches(timeClean).map((m) => int.parse(m.group(0)!)).toList();
-        if (numbers.isNotEmpty) {
-          hour = numbers[0];
-          if (isPm && hour < 12) hour += 12;
-          if (isAm && hour == 12) hour = 0;
-          if (numbers.length > 1) {
-            minute = numbers[1];
-          } else {
-            minute = 0;
-          }
-        }
-      }
-
-      return DateTime(year, month, day, hour, minute);
-    } catch (_) {
-      return null;
-    }
-  }
-
   Map<String, dynamic> toJson() => {
         'id': id,
         'title': title,
@@ -344,22 +275,6 @@ EventDetail? findEventByTitle(String title) {
   return null;
 }
 
-EventDetail? findEventById(String id) {
-  final cleanId = id.trim().toLowerCase();
-  for (final mainCat in eventData) {
-    for (final subCat in mainCat.subCategories) {
-      for (final event in subCat.events) {
-        if (event.id.trim().toLowerCase() == cleanId ||
-            event.effectiveId.trim().toLowerCase() == cleanId ||
-            event.title.trim().toLowerCase() == cleanId) {
-          return event;
-        }
-      }
-    }
-  }
-  return null;
-}
-
 final List<MainCategory> eventData = [
   MainCategory(
     title: 'Competitions',
@@ -375,8 +290,8 @@ final List<MainCategory> eventData = [
             imageAsset: 'assets/robo.png',
             prizePool: '₹ 1,50,000',
             teamSize: '2 - 6 Members',
-            date: '21 Aug 2026',
-            time: '2:30 PM',
+            date: 'Sep 4 - Sep 6, 2026',
+            time: '10:00 AM - 6:00 PM',
             venue: 'L1 - Lecture Hall, Near Academic Block',
             mapLocationUrl: 'https://maps.google.com/?q=IIT+Guwahati+Lecture+Hall',
             whatsappUrl: 'https://chat.whatsapp.com/invite/techniche2026',
@@ -385,9 +300,9 @@ final List<MainCategory> eventData = [
             rounds: [
               EventRound(
                 title: 'Round 1: Online test (Unstop)',
-                date: '21st Aug, 2026',
-                time: '2:30 PM',
-                description: 'Screening round testing mechanical aptitude, circuit design, and safety guidelines starting today at 2:30 PM.',
+                date: '25th Aug, 2026',
+                time: '12:00',
+                description: 'Screening round testing mechanical aptitude, circuit design, and safety guidelines.',
               ),
               EventRound(
                 title: 'Round 2: Strategy Ideation & Flowchart',
@@ -468,8 +383,8 @@ final List<MainCategory> eventData = [
             imageAsset: 'assets/robotics.jpeg',
             prizePool: '₹ 60,000',
             teamSize: '2 - 4 Members',
-            date: '21 Aug 2026',
-            time: '3:30 PM',
+            date: 'Sep 5, 2026',
+            time: '11:00 AM - 4:00 PM',
             venue: 'Olympic Swimming Pool Complex, IIT Guwahati',
             description:
                 'Aquawars challenges participants to design autonomous or remote-controlled amphibious and aquatic robots capable of navigating turbulent water obstacles, retrieving submerged payloads, and completing high-precision naval maneuvers.',
@@ -502,8 +417,8 @@ final List<MainCategory> eventData = [
             imageAsset: 'assets/robotics.jpeg',
             prizePool: '₹ 75,000',
             teamSize: '2 - 5 Members',
-            date: '21 Aug 2026',
-            time: '4:00 PM',
+            date: 'Sep 5, 2026',
+            time: '9:00 AM - 2:00 PM',
             venue: 'Gymkhana Ground, IIT Guwahati',
             description:
                 'UVDC tests your engineering prowess in designing unmanned aerial or ground vehicles capable of waypoint navigation, payload delivery, and dynamic obstacle avoidance in unpredictable terrain.',
@@ -533,8 +448,8 @@ final List<MainCategory> eventData = [
             imageAsset: 'assets/robotics.jpeg',
             prizePool: '₹ 50,000',
             teamSize: '1 - 4 Members',
-            date: '21 Aug 2026',
-            time: '5:00 PM',
+            date: 'Sep 6, 2026',
+            time: '10:00 AM - 3:00 PM',
             venue: 'Auditorium Foyer, IIT Guwahati',
             description:
                 'Build lightning-fast autonomous rovers that can detect line paths, dynamic loops, sharp turns, bridges, and cross-junctions with sub-millisecond PID tuning.',
@@ -564,8 +479,8 @@ final List<MainCategory> eventData = [
             imageAsset: 'assets/micro.png',
             prizePool: '₹ 40,000',
             teamSize: '1 - 3 Members',
-            date: '21 Aug 2026',
-            time: '5:30 PM',
+            date: 'Sep 6, 2026',
+            time: '2:00 PM - 5:00 PM',
             venue: 'Core 4 Lobby, IIT Guwahati',
             description:
                 'Micro Mouse is the quintessential robotics challenge: an autonomous vehicular robot that maps, calculates optimal shortest path algorithms (FloodFill, Dijkstra, A*), and dashes to the maze center at blistering speeds.',
@@ -595,8 +510,8 @@ final List<MainCategory> eventData = [
             imageAsset: 'assets/escalade.png',
             prizePool: '₹ 80,000',
             teamSize: '2 - 4 Members',
-            date: '21 Aug 2026',
-            time: '6:00 PM',
+            date: 'Sep 4, 2026',
+            time: '1:00 PM - 6:00 PM',
             venue: 'Amphitheatre, IIT Guwahati',
             description:
                 'Design a high-torque mechanical climber capable of ascending steep inclinations, climbing vertical cables, crossing suspended ladders, and carrying payloads across rugged synthetic terrain.',
@@ -631,9 +546,9 @@ final List<MainCategory> eventData = [
             imageAsset: 'assets/funniche.png',
             prizePool: '₹ 35,000',
             teamSize: '4 Players (Squad)',
-            date: '28 Aug 2026',
-            time: '4:00 PM',
-            venue: 'SAC Gaming Arena, IIT Guwahati',
+            date: 'Sep 4 - Sep 5, 2026',
+            time: '4:00 PM Onwards',
+            venue: 'SAC Gaming Arena / Online',
             description:
                 'Squad up for the most intense battle royale esports tournament of Techniche. Drop into Erangel and Miramar, clutch gunfights, and claim the Chicken Dinner.',
             rules: [
@@ -662,9 +577,9 @@ final List<MainCategory> eventData = [
             imageAsset: 'assets/funniche.png',
             prizePool: '₹ 45,000',
             teamSize: '5 Players (+1 Sub)',
-            date: '29 Aug 2026',
-            time: '11:00 AM',
-            venue: 'Computer Center LAN Arena, IIT Guwahati',
+            date: 'Sep 5 - Sep 6, 2026',
+            time: '11:00 AM Onwards',
+            venue: 'Computer Center LAN Arena, IITG',
             description:
                 'Lock in your duelists, initiate executes, and outplay your opponents in the Premier Techniche Valorant LAN tournament. Standard competitive plant/defuse format.',
             rules: [
@@ -693,9 +608,9 @@ final List<MainCategory> eventData = [
             imageAsset: 'assets/funniche.png',
             prizePool: '₹ 20,000',
             teamSize: 'Individual (1 Player)',
-            date: '29 Aug 2026',
-            time: '2:30 PM',
-            venue: 'Conference Hall, Old SAC, IIT Guwahati',
+            date: 'Sep 5, 2026',
+            time: '10:00 AM',
+            venue: 'Conference Hall, Old SAC',
             description:
                 'FIDE-rated swiss-style chess championship testing strategic acumen, tactical calculation, and endgame mastery.',
             rules: [
@@ -723,7 +638,7 @@ final List<MainCategory> eventData = [
             imageAsset: 'assets/funniche.png',
             prizePool: '₹ 15,000',
             teamSize: 'Individual (1 Player)',
-            date: '30 Aug 2026',
+            date: 'Sep 6, 2026',
             time: '3:00 PM',
             venue: 'SAC Lounge, IIT Guwahati',
             description:
@@ -764,9 +679,9 @@ final List<MainCategory> eventData = [
             imageAsset: 'assets/stpi.jpg',
             prizePool: '₹ 50,000',
             teamSize: '1 - 4 Members',
-            date: '28 Aug 2026',
-            time: '10:00 AM',
-            venue: 'Core 1 Lecture Hall, IIT Guwahati',
+            date: 'Sep 5, 2026',
+            time: '10:00 AM - 4:00 PM',
+            venue: 'Core 1 Lecture Hall, IITG',
             description:
                 'Develop IoT-enabled agricultural solutions such as smart soil moisture monitoring, automated irrigation, crop health detection, and supply chain telemetry.',
             rules: [
@@ -794,9 +709,9 @@ final List<MainCategory> eventData = [
             imageAsset: 'assets/stpi.jpg',
             prizePool: '₹ 50,000',
             teamSize: '1 - 4 Members',
-            date: '28 Aug 2026',
-            time: '2:00 PM',
-            venue: 'Computer Center, IIT Guwahati',
+            date: 'Sep 4 - Sep 5, 2026',
+            time: '24 Hours Hackathon',
+            venue: 'Computer Center, IITG',
             description:
                 'Create captivating 2D/3D games, immersive narrative experiences, or interactive entertainment apps using Unity, Unreal, Godot, or WebGL.',
             rules: [
@@ -824,9 +739,9 @@ final List<MainCategory> eventData = [
             imageAsset: 'assets/stpi.jpg',
             prizePool: '₹ 50,000',
             teamSize: '1 - 4 Members',
-            date: '29 Aug 2026',
+            date: 'Sep 5, 2026',
             time: '11:00 AM',
-            venue: 'Design Department, IIT Guwahati',
+            venue: 'Design Department, IITG',
             description:
                 'Build interactive augmented reality or virtual reality applications for education, healthcare, industrial simulation, or architectural visualization.',
             rules: [
@@ -854,9 +769,9 @@ final List<MainCategory> eventData = [
             imageAsset: 'assets/stpi.jpg',
             prizePool: '₹ 50,000',
             teamSize: '1 - 3 Members',
-            date: '29 Aug 2026',
-            time: '3:00 PM',
-            venue: 'Core 2 Computer Lab, IIT Guwahati',
+            date: 'Sep 4 - Sep 6, 2026',
+            time: 'Full Fest Challenge',
+            venue: 'Online / Lab 3',
             description:
                 'Tackle complex real-world datasets with machine learning, deep learning, LLMs, and computer vision models to solve predictive problems.',
             rules: [
@@ -884,9 +799,9 @@ final List<MainCategory> eventData = [
             imageAsset: 'assets/stpi.jpg',
             prizePool: '₹ 40,000',
             teamSize: 'Individual (1 Participant)',
-            date: '30 Aug 2026',
-            time: '10:30 AM',
-            venue: 'Design Dept Media Lab, IIT Guwahati',
+            date: 'Sep 5, 2026',
+            time: '2:00 PM - 6:00 PM',
+            venue: 'Design Dept Media Lab, IITG',
             description:
                 'Craft breathtaking motion graphics, visual brand identity, UI/UX concept designs, and 3D renders addressing a prompt released on spot.',
             rules: [
@@ -914,9 +829,9 @@ final List<MainCategory> eventData = [
             imageAsset: 'assets/stpi.jpg',
             prizePool: '₹ 40,000',
             teamSize: '1 - 3 Members',
-            date: '30 Aug 2026',
-            time: '2:00 PM',
-            venue: 'Civil Engineering Seminar Hall, IIT Guwahati',
+            date: 'Sep 6, 2026',
+            time: '10:00 AM',
+            venue: 'Civil Engineering Seminar Hall',
             description:
                 'Harness satellite imagery, geospatial databases (QGIS, ArcGIS, Mapbox), and spatial analysis to solve urban planning and disaster relief challenges.',
             rules: [
@@ -954,8 +869,8 @@ final List<MainCategory> eventData = [
             imageAsset: 'assets/techno.png',
             prizePool: '₹ 1,00,000 + Medals',
             teamSize: '2 Students',
-            date: '29 Aug 2026',
-            time: '9:00 AM',
+            date: 'Sep 5, 2026',
+            time: '9:00 AM - 1:00 PM',
             venue: 'Lecture Hall Complex, IIT Guwahati',
             description:
                 'Technothlon Junior Squad is the ultimate test of logical reasoning, mental agility, and intuitive problem-solving for school students from classes 9 and 10.',
@@ -985,11 +900,11 @@ final List<MainCategory> eventData = [
             imageAsset: 'assets/techno.png',
             prizePool: '₹ 1,00,000 + Medals',
             teamSize: '2 Students',
-            date: '29 Aug 2026',
-            time: '2:00 PM',
+            date: 'Sep 5, 2026',
+            time: '2:00 PM - 6:00 PM',
             venue: 'Lecture Hall Complex, IIT Guwahati',
             description:
-                'Technothlon Hauts Squad challenges senior high-school minds with groundbreaking puzzles, algorithmic deduction, and critical mathematical reasoning.',
+                'Technothlon Hauts Squad challenges senior high-school minds with groundbreaking puzzles, algorithmic deduction, and cryptic mathematical reasoning.',
             rules: [
               'Teams must consist of exactly 2 students from classes 11 or 12.',
               'Top teams qualify for the Grand Finale held on IIT Guwahati campus.'
@@ -1017,90 +932,420 @@ final List<MainCategory> eventData = [
     title: 'Workshops',
     subCategories: [
       SubCategory(
-        title: 'Full Stack Web Development',
-        imageAsset: 'assets/webdev.jpg',
+        title: "Bioinformatics & Cancer Research Workshop",
+        imageAsset: 'assets/workshops/world-technocon-bioinformatics-cancer-research.webp',
         events: const [
           EventDetail(
-            title: 'Full Stack Web Development',
-            subtitle: 'Hands-on Bootcamp: Next.js, APIs & Cloud Deployment',
-            category: 'Workshops',
-            imageAsset: 'assets/webdev.jpg',
-            prizePool: 'Certified Workshop',
-            teamSize: 'Individual',
-            date: '28 Aug 2026',
-            time: '10:00 AM',
-            venue: 'Computer Center Lab 1, IIT Guwahati',
-            description:
-                'Comprehensive hands-on workshop covering modern web architecture, frontend react frameworks, backend APIs, authentication, state management, and continuous cloud deployment.',
-            rules: [
-              'Participants should bring their own laptops with Node.js and VS Code pre-installed.',
-              'Certificate of participation will be provided by IIT Guwahati Techniche.'
-            ],
-            redirectUrl:
-                'https://unstop.com/workshops-webinars/full-stack-web-development-bootcamp-iit-guwahati-1541887',
+            title: "Bioinformatics & Cancer Research Workshop",
+            subtitle: "Explore computational biology, genomic data analysis, and cutting-edge cancer research methodologies.",
+            category: "Workshops",
+            imageAsset: 'assets/workshops/world-technocon-bioinformatics-cancer-research.webp',
+            prizePool: "Certified Workshop",
+            teamSize: "Individual",
+            date: "29-08-2026",
+            time: "10:30 AM - 5:30 PM",
+            venue: "IIT Guwahati",
+            description: "Explore computational biology, genomic data analysis, and cutting-edge cancer research methodologies.",
+            redirectUrl: "https://technocon.org/events/iit-guwahati-august-2026/bioinformatics-and-cancer-research-workshop-at-iit-guwahati-august-2026",
           ),
         ],
       ),
       SubCategory(
-        title: 'Arduino Project Development',
-        imageAsset: 'assets/arduino.jpg',
+        title: "CRISPR in Computational Genomics Workshop",
+        imageAsset: 'assets/workshops/world-technocon-crispr-in-computational-genomics.webp',
         events: const [
           EventDetail(
-            title: 'Arduino Project Development',
-            subtitle: 'Microcontrollers, Embedded Systems & Hardware Interfacing',
-            category: 'Workshops',
-            imageAsset: 'assets/arduino.jpg',
-            prizePool: 'Certified Workshop',
-            teamSize: 'Individual',
-            date: '28 Aug 2026',
-            time: '2:30 PM',
-            venue: 'Electronics Lab, IIT Guwahati',
-            description:
-                'Learn microcontroller programming from scratch. Build real hardware projects with sensors, actuators, LCD displays, motor drivers, and serial communication.',
-            redirectUrl:
-                'https://unstop.com/workshops-webinars/arduino-project-development-workshop-iit-guwahati-1541858',
+            title: "CRISPR in Computational Genomics Workshop",
+            subtitle: "Hands-on insights into gene editing technologies, CRISPR toolkits, and computational gene sequencing.",
+            category: "Workshops",
+            imageAsset: 'assets/workshops/world-technocon-crispr-in-computational-genomics.webp',
+            prizePool: "Certified Workshop",
+            teamSize: "Individual",
+            date: "29-08-2026",
+            time: "10:30 AM - 5:30 PM",
+            venue: "IIT Guwahati",
+            description: "Hands-on insights into gene editing technologies, CRISPR toolkits, and computational gene sequencing.",
+            redirectUrl: "https://technocon.org/events/iit-guwahati-august-2026/quantum-computing-basics-workshop-at-iit-guwahati-august-2026",
           ),
         ],
       ),
       SubCategory(
-        title: 'Generative AI',
-        imageAsset: 'assets/genai.jpg',
+        title: "Human Resource Mastery Workshop",
+        imageAsset: 'assets/workshops/world-technocon-human-resource-mastery-from-fundamentals.webp',
         events: const [
           EventDetail(
-            title: 'Generative AI & Agentic Systems',
-            subtitle: 'LLMs, Prompt Engineering, RAG & Autonomous Agents',
-            category: 'Workshops',
-            imageAsset: 'assets/genai.jpg',
-            prizePool: 'Certified Workshop',
-            teamSize: 'Individual',
-            date: '29 Aug 2026',
-            time: '10:00 AM',
-            venue: 'Auditorium Hall, IIT Guwahati',
-            description:
-                'Deep dive into Large Language Models, fine-tuning, retrieval-augmented generation (RAG), and designing autonomous multi-agent AI systems with practical code examples.',
-            redirectUrl:
-                'https://unstop.com/workshops-webinars/generative-ai-agentic-ai-workshop-iit-guwahati-1541805',
+            title: "Human Resource Mastery Workshop",
+            subtitle: "Master modern HR strategies, talent acquisition, performance management, and organizational analytics.",
+            category: "Workshops",
+            imageAsset: 'assets/workshops/world-technocon-human-resource-mastery-from-fundamentals.webp',
+            prizePool: "Certified Workshop",
+            teamSize: "Individual",
+            date: "29-08-2026",
+            time: "10:30 AM - 5:30 PM",
+            venue: "IIT Guwahati",
+            description: "Master modern HR strategies, talent acquisition, performance management, and organizational analytics.",
+            redirectUrl: "https://technocon.org/events/iit-guwahati-august-2026/human-resource-mastery-workshop-at-iit-guwahati-august-2026",
           ),
         ],
       ),
       SubCategory(
-        title: 'Cybersecurity',
-        imageAsset: 'assets/cybersec.jpg',
+        title: "Generative AI Masterclass (17+ AI Tools)",
+        imageAsset: 'assets/workshops/world-technocon-generative-ai-masterclass-master-17.webp',
         events: const [
           EventDetail(
-            title: 'Cybersecurity & Ethical Hacking',
-            subtitle: 'Penetration Testing, Network Defense & CTF Masterclass',
-            category: 'Workshops',
-            imageAsset: 'assets/cybersec.jpg',
-            prizePool: 'Certified Workshop',
-            teamSize: 'Individual',
-            date: '30 Aug 2026',
-            time: '11:00 AM',
-            venue: 'Computer Center Lab 2, IIT Guwahati',
-            description:
-                'Master the fundamentals of network security, web vulnerability scanning (OWASP Top 10), reverse engineering, cryptography, and real-time capture-the-flag exercises.',
-            redirectUrl:
-                'https://unstop.com/workshops-webinars/cybersecurity-and-ethical-hacking-workshop-iit-guwahati-1541776',
+            title: "Generative AI Masterclass (17+ AI Tools)",
+            subtitle: "Learn to supercharge productivity by mastering 17+ state-of-the-art Generative AI platforms and workflows.",
+            category: "Workshops",
+            imageAsset: 'assets/workshops/world-technocon-generative-ai-masterclass-master-17.webp',
+            prizePool: "Certified Workshop",
+            teamSize: "Individual",
+            date: "29-08-2026",
+            time: "10:30 AM - 5:30 PM",
+            venue: "IIT Guwahati",
+            description: "Learn to supercharge productivity by mastering 17+ state-of-the-art Generative AI platforms and workflows.",
+            redirectUrl: "https://technocon.org/events/iit-guwahati-august-2026/generative-ai-masterclass-workshop-at-iit-guwahati-august-2026",
+          ),
+        ],
+      ),
+      SubCategory(
+        title: "Data Science Mastery",
+        imageAsset: 'assets/workshops/world-technocon-data-science-mastery-3.webp',
+        events: const [
+          EventDetail(
+            title: "Data Science Mastery",
+            subtitle: "Deep dive into data manipulation, statistical modeling, machine learning pipelines, and Python analytics.",
+            category: "Workshops",
+            imageAsset: 'assets/workshops/world-technocon-data-science-mastery-3.webp',
+            prizePool: "Certified Workshop",
+            teamSize: "Individual",
+            date: "29-08-2026",
+            time: "10:30 AM - 5:30 PM",
+            venue: "IIT Guwahati",
+            description: "Deep dive into data manipulation, statistical modeling, machine learning pipelines, and Python analytics.",
+            redirectUrl: "https://technocon.org/events/iit-guwahati-august-2026/data-science-mastery-workshop-at-iit-guwahati-august-2026",
+          ),
+        ],
+      ),
+      SubCategory(
+        title: "AI in Film and Reels Making Workshop",
+        imageAsset: 'assets/workshops/world-technocon-ai-in-film-and-reels-making-copy-mrx4ey73.webp',
+        events: const [
+          EventDetail(
+            title: "AI in Film and Reels Making Workshop",
+            subtitle: "Harness AI video generators, voice synthesizers, and editing algorithms to create viral short films and reels.",
+            category: "Workshops",
+            imageAsset: 'assets/workshops/world-technocon-ai-in-film-and-reels-making-copy-mrx4ey73.webp',
+            prizePool: "Certified Workshop",
+            teamSize: "Individual",
+            date: "29-08-2026",
+            time: "10:30 AM - 5:30 PM",
+            venue: "IIT Guwahati",
+            description: "Harness AI video generators, voice synthesizers, and editing algorithms to create viral short films and reels.",
+            redirectUrl: "https://technocon.org/events/iit-guwahati-august-2026/ai-in-film-and-reels-making-workshop-at-iit-guwahati-august-2026",
+          ),
+        ],
+      ),
+      SubCategory(
+        title: "Diabetology & Metabolic Disorders",
+        imageAsset: 'assets/workshops/world-technocon-generative-ai-chatgpt-mastery-2.webp',
+        events: const [
+          EventDetail(
+            title: "Diabetology & Metabolic Disorders",
+            subtitle: "Clinical and technological perspectives on metabolic health, continuous glucose monitoring, and diabetes management.",
+            category: "Workshops",
+            imageAsset: 'assets/workshops/world-technocon-generative-ai-chatgpt-mastery-2.webp',
+            prizePool: "Certified Workshop",
+            teamSize: "Individual",
+            date: "29-08-2026",
+            time: "10:30 AM - 5:30 PM",
+            venue: "IIT Guwahati",
+            description: "Clinical and technological perspectives on metabolic health, continuous glucose monitoring, and diabetes management.",
+            redirectUrl: "https://technocon.org/events/iit-guwahati-august-2026/diabetology-and-metabolic-disorders-workshop-at-iit-guwahati-august-2026",
+          ),
+        ],
+      ),
+      SubCategory(
+        title: "Claude For Non-Technical Professionals",
+        imageAsset: 'assets/workshops/world-technocon-claude-for-non-technical-professionals.webp',
+        events: const [
+          EventDetail(
+            title: "Claude For Non-Technical Professionals",
+            subtitle: "Empower non-coders to automate writing, data summarization, project management, and reasoning with Claude AI.",
+            category: "Workshops",
+            imageAsset: 'assets/workshops/world-technocon-claude-for-non-technical-professionals.webp',
+            prizePool: "Certified Workshop",
+            teamSize: "Individual",
+            date: "29-08-2026",
+            time: "10:30 AM - 5:30 PM",
+            venue: "IIT Guwahati",
+            description: "Empower non-coders to automate writing, data summarization, project management, and reasoning with Claude AI.",
+            redirectUrl: "https://technocon.org/events/iit-guwahati-august-2026/claude-for-non-technical-professionals-workshop-at-visvesvaraya-national-institute-of-technology",
+          ),
+        ],
+      ),
+      SubCategory(
+        title: "Agentic AI Masterclass",
+        imageAsset: 'assets/workshops/world-technocon-agentic-ai-masterclass-3-copy-mrx4eu55.webp',
+        events: const [
+          EventDetail(
+            title: "Agentic AI Masterclass",
+            subtitle: "Build autonomous AI agents, multi-agent frameworks, task loops, and tool-augmented AI models.",
+            category: "Workshops",
+            imageAsset: 'assets/workshops/world-technocon-agentic-ai-masterclass-3-copy-mrx4eu55.webp',
+            prizePool: "Certified Workshop",
+            teamSize: "Individual",
+            date: "29-08-2026",
+            time: "10:30 AM - 5:30 PM",
+            venue: "IIT Guwahati",
+            description: "Build autonomous AI agents, multi-agent frameworks, task loops, and tool-augmented AI models.",
+            redirectUrl: "https://technocon.org/events/iit-guwahati-august-2026/agentic-ai-masterclass-workshop-at-iit-guwahati-august-2026",
+          ),
+        ],
+      ),
+      SubCategory(
+        title: "Innovation & Startup Ideas",
+        imageAsset: 'assets/workshops/world-technocon-innovation-startup-ideas-2.webp',
+        events: const [
+          EventDetail(
+            title: "Innovation & Startup Ideas",
+            subtitle: "Transform raw ideas into scalable startups, craft pitch decks, validate product-market fit, and seek venture capital.",
+            category: "Workshops",
+            imageAsset: 'assets/workshops/world-technocon-innovation-startup-ideas-2.webp',
+            prizePool: "Certified Workshop",
+            teamSize: "Individual",
+            date: "29-08-2026",
+            time: "10:30 AM - 5:30 PM",
+            venue: "IIT Guwahati",
+            description: "Transform raw ideas into scalable startups, craft pitch decks, validate product-market fit, and seek venture capital.",
+            redirectUrl: "https://technocon.org/events/iit-guwahati-august-2026/innovation-startup-ideas-workshop-at-iit-guwahati-august-2026",
+          ),
+        ],
+      ),
+      SubCategory(
+        title: "Digital Marketing with Instagram Meta Ads",
+        imageAsset: 'assets/workshops/world-technocon-digital-marketing-with-google-ads-and-seo.webp',
+        events: const [
+          EventDetail(
+            title: "Digital Marketing with Instagram Meta Ads",
+            subtitle: "Master audience targeting, creative ad design, performance analytics, and ROI optimization on Instagram & Meta.",
+            category: "Workshops",
+            imageAsset: 'assets/workshops/world-technocon-digital-marketing-with-google-ads-and-seo.webp',
+            prizePool: "Certified Workshop",
+            teamSize: "Individual",
+            date: "29-08-2026",
+            time: "10:30 AM - 5:30 PM",
+            venue: "IIT Guwahati",
+            description: "Master audience targeting, creative ad design, performance analytics, and ROI optimization on Instagram & Meta.",
+            redirectUrl: "https://technocon.org/events/iit-guwahati-august-2026/digital-marketing-google-ads-seo-workshop-at-iit-guwahati-august-2026",
+          ),
+        ],
+      ),
+      SubCategory(
+        title: "AI in Drug Discovery Workshop",
+        imageAsset: 'assets/workshops/world-technocon-ai-in-drug-discovery.webp',
+        events: const [
+          EventDetail(
+            title: "AI in Drug Discovery Workshop",
+            subtitle: "Discover how machine learning, molecular docking, and AI accelerate drug design and clinical trials.",
+            category: "Workshops",
+            imageAsset: 'assets/workshops/world-technocon-ai-in-drug-discovery.webp',
+            prizePool: "Certified Workshop",
+            teamSize: "Individual",
+            date: "30-08-2026",
+            time: "10:30 AM - 5:30 PM",
+            venue: "IIT Guwahati",
+            description: "Discover how machine learning, molecular docking, and AI accelerate drug design and clinical trials.",
+            redirectUrl: "https://technocon.org/events/iit-guwahati-august-2026/ai-for-healthcare-workshop-at-iit-guwahati-august-2026",
+          ),
+        ],
+      ),
+      SubCategory(
+        title: "Digital Marketing With Google Ads & SEO",
+        imageAsset: 'assets/workshops/world-technocon-google-ads-seo-mastery-2.webp',
+        events: const [
+          EventDetail(
+            title: "Digital Marketing With Google Ads & SEO",
+            subtitle: "Rank #1 on search engines with technical SEO, keyword research, and high-converting Google Search & Display campaigns.",
+            category: "Workshops",
+            imageAsset: 'assets/workshops/world-technocon-google-ads-seo-mastery-2.webp',
+            prizePool: "Certified Workshop",
+            teamSize: "Individual",
+            date: "30-08-2026",
+            time: "10:30 AM - 5:30 PM",
+            venue: "IIT Guwahati",
+            description: "Rank #1 on search engines with technical SEO, keyword research, and high-converting Google Search & Display campaigns.",
+            redirectUrl: "https://technocon.org/events/iit-guwahati-august-2026/digital-marketing-mastery-workshop-at-iit-guwahati-august-2026",
+          ),
+        ],
+      ),
+      SubCategory(
+        title: "UX Design with AI",
+        imageAsset: 'assets/workshops/world-technocon-ux-design-with-ai-3.webp',
+        events: const [
+          EventDetail(
+            title: "UX Design with AI",
+            subtitle: "Integrate generative design tools, wireframing AI, and user research agents into high-converting UX workflows.",
+            category: "Workshops",
+            imageAsset: 'assets/workshops/world-technocon-ux-design-with-ai-3.webp',
+            prizePool: "Certified Workshop",
+            teamSize: "Individual",
+            date: "30-08-2026",
+            time: "10:30 AM - 5:30 PM",
+            venue: "IIT Guwahati",
+            description: "Integrate generative design tools, wireframing AI, and user research agents into high-converting UX workflows.",
+            redirectUrl: "https://technocon.org/events/iit-guwahati-august-2026/ux-design-with-ai-workshop-at-iit-guwahati-august-2026",
+          ),
+        ],
+      ),
+      SubCategory(
+        title: "Entrepreneurship Essentials",
+        imageAsset: 'assets/workshops/world-technocon-innovation-startup-ideas-2.webp',
+        events: const [
+          EventDetail(
+            title: "Entrepreneurship Essentials",
+            subtitle: "Essential business foundations: business models, legal structuring, financial planning, and operational scaling.",
+            category: "Workshops",
+            imageAsset: 'assets/workshops/world-technocon-innovation-startup-ideas-2.webp',
+            prizePool: "Certified Workshop",
+            teamSize: "Individual",
+            date: "30-08-2026",
+            time: "10:30 AM - 5:30 PM",
+            venue: "IIT Guwahati",
+            description: "Essential business foundations: business models, legal structuring, financial planning, and operational scaling.",
+            redirectUrl: "https://technocon.org/events/iit-guwahati-august-2026/entrepreneurship-essentials-workshop-at-iit-guwahati-august-2026",
+          ),
+        ],
+      ),
+      SubCategory(
+        title: "Ethical Hacking & Cyber Security Workshop",
+        imageAsset: 'assets/workshops/world-technocon-agentic-ai-masterclass-3-copy-mrx4eu55.webp',
+        events: const [
+          EventDetail(
+            title: "Ethical Hacking & Cyber Security Workshop",
+            subtitle: "Practical penetration testing, network vulnerability assessment, cryptography, and cyber defense tactics.",
+            category: "Workshops",
+            imageAsset: 'assets/workshops/world-technocon-agentic-ai-masterclass-3-copy-mrx4eu55.webp',
+            prizePool: "Certified Workshop",
+            teamSize: "Individual",
+            date: "30-08-2026",
+            time: "10:30 AM - 5:30 PM",
+            venue: "IIT Guwahati",
+            description: "Practical penetration testing, network vulnerability assessment, cryptography, and cyber defense tactics.",
+            redirectUrl: "https://technocon.org/events/iit-guwahati-august-2026/ethical-hacking-cyber-security-workshop-at-iit-guwahati-august-2026",
+          ),
+        ],
+      ),
+      SubCategory(
+        title: "Fashion Design & Entrepreneurship",
+        imageAsset: 'assets/workshops/world-technocon-ux-design-with-ai-3.webp',
+        events: const [
+          EventDetail(
+            title: "Fashion Design & Entrepreneurship",
+            subtitle: "Combine fashion aesthetics, sustainable textile technology, brand identity, and e-commerce scaling.",
+            category: "Workshops",
+            imageAsset: 'assets/workshops/world-technocon-ux-design-with-ai-3.webp',
+            prizePool: "Certified Workshop",
+            teamSize: "Individual",
+            date: "30-08-2026",
+            time: "10:30 AM - 5:30 PM",
+            venue: "IIT Guwahati",
+            description: "Combine fashion aesthetics, sustainable textile technology, brand identity, and e-commerce scaling.",
+            redirectUrl: "https://technocon.org/events/iit-guwahati-august-2026/fashion-design-entrepreneurship-workshop-at-iit-guwahati-august-2026",
+          ),
+        ],
+      ),
+      SubCategory(
+        title: "AI & ML Fundamentals Workshop",
+        imageAsset: 'assets/workshops/world-technocon-data-science-mastery-3.webp',
+        events: const [
+          EventDetail(
+            title: "AI & ML Fundamentals Workshop",
+            subtitle: "Core algorithms: regression, classification, neural networks, supervised/unsupervised learning fundamentals.",
+            category: "Workshops",
+            imageAsset: 'assets/workshops/world-technocon-data-science-mastery-3.webp',
+            prizePool: "Certified Workshop",
+            teamSize: "Individual",
+            date: "30-08-2026",
+            time: "10:30 AM - 5:30 PM",
+            venue: "IIT Guwahati",
+            description: "Core algorithms: regression, classification, neural networks, supervised/unsupervised learning fundamentals.",
+            redirectUrl: "https://technocon.org/events/iit-guwahati-august-2026/aiml-fundamentals-workshop-at-iit-guwahati-august-2026",
+          ),
+        ],
+      ),
+      SubCategory(
+        title: "Interior Design Basics & Entrepreneurship",
+        imageAsset: 'assets/workshops/world-technocon-generative-ai-masterclass-master-17.webp',
+        events: const [
+          EventDetail(
+            title: "Interior Design Basics & Entrepreneurship",
+            subtitle: "3D interior modeling, space planning, materials selection, and launching a freelance interior design enterprise.",
+            category: "Workshops",
+            imageAsset: 'assets/workshops/world-technocon-generative-ai-masterclass-master-17.webp',
+            prizePool: "Certified Workshop",
+            teamSize: "Individual",
+            date: "30-08-2026",
+            time: "10:30 AM - 5:30 PM",
+            venue: "IIT Guwahati",
+            description: "3D interior modeling, space planning, materials selection, and launching a freelance interior design enterprise.",
+            redirectUrl: "https://technocon.org/events/iit-guwahati-august-2026/interior-design-entrepreneurship-workshop-at-iit-guwahati-august-2026",
+          ),
+        ],
+      ),
+      SubCategory(
+        title: "Drone Building Workshop",
+        imageAsset: 'assets/workshops/world-technocon-bioinformatics-cancer-research.webp',
+        events: const [
+          EventDetail(
+            title: "Drone Building Workshop",
+            subtitle: "Hands-on UAV drone assembly, flight controller programming, telemetry tuning, and aerial dynamics.",
+            category: "Workshops",
+            imageAsset: 'assets/workshops/world-technocon-bioinformatics-cancer-research.webp',
+            prizePool: "Certified Workshop",
+            teamSize: "Individual",
+            date: "30-08-2026",
+            time: "10:30 AM - 5:30 PM",
+            venue: "IIT Guwahati",
+            description: "Hands-on UAV drone assembly, flight controller programming, telemetry tuning, and aerial dynamics.",
+            redirectUrl: "https://technocon.org/events/iit-guwahati-august-2026/drone-building-workshop-at-iit-guwahati-august-2026",
+          ),
+        ],
+      ),
+      SubCategory(
+        title: "No-Code App Development using AI / Vibe Coding",
+        imageAsset: 'assets/workshops/world-technocon-generative-ai-chatgpt-mastery-2.webp',
+        events: const [
+          EventDetail(
+            title: "No-Code App Development using AI / Vibe Coding",
+            subtitle: "Build full-fledged web and mobile apps using AI prompt engineering, low-code tools, and modern vibe coding.",
+            category: "Workshops",
+            imageAsset: 'assets/workshops/world-technocon-generative-ai-chatgpt-mastery-2.webp',
+            prizePool: "Certified Workshop",
+            teamSize: "Individual",
+            date: "30-08-2026",
+            time: "10:30 AM - 5:30 PM",
+            venue: "IIT Guwahati",
+            description: "Build full-fledged web and mobile apps using AI prompt engineering, low-code tools, and modern vibe coding.",
+            redirectUrl: "https://technocon.org/events/iit-guwahati-august-2026/no-code-app-development-ai-workshop-at-iit-guwahati-august-2026",
+          ),
+        ],
+      ),
+      SubCategory(
+        title: "AI for Healthcare Professionals Workshop",
+        imageAsset: 'assets/workshops/world-technocon-ai-in-drug-discovery.webp',
+        events: const [
+          EventDetail(
+            title: "AI for Healthcare Professionals Workshop",
+            subtitle: "Applications of medical AI in diagnostics, patient management systems, and clinical workflow automation.",
+            category: "Workshops",
+            imageAsset: 'assets/workshops/world-technocon-ai-in-drug-discovery.webp',
+            prizePool: "Certified Workshop",
+            teamSize: "Individual",
+            date: "30-08-2026",
+            time: "10:30 AM - 5:30 PM",
+            venue: "IIT Guwahati",
+            description: "Applications of medical AI in diagnostics, patient management systems, and clinical workflow automation.",
+            redirectUrl: "https://technocon.org/events/iit-guwahati-august-2026/ai-for-hr-professionals-workshop-at-iit-guwahati-august-2026",
           ),
         ],
       ),
@@ -1120,8 +1365,6 @@ final List<MainCategory> eventData = [
             imageAsset: 'assets/techexpo.jpg',
             prizePool: '₹ 50,000',
             teamSize: '1 - 4 Students',
-            date: '28 Aug 2026',
-            time: '10:00 AM',
             venue: 'Exhibition Hall A, IIT Guwahati',
             description:
                 'An esteemed platform for young school innovators to showcase working scientific models, green technology prototypes, and engineering inventions.',
@@ -1133,8 +1376,6 @@ final List<MainCategory> eventData = [
             imageAsset: 'assets/techexpo.jpg',
             prizePool: '₹ 1,50,000',
             teamSize: '1 - 5 Members',
-            date: '29 Aug 2026',
-            time: '10:00 AM',
             venue: 'Exhibition Hall B, IIT Guwahati',
             description:
                 'Showcase cutting-edge academic research projects, hardware patents, and deep-tech prototypes to renowned scientists, investors, and industrial leaders.',
@@ -1150,8 +1391,6 @@ final List<MainCategory> eventData = [
             subtitle: 'Defense Technology & Weaponry Exhibition',
             category: 'Exhibitions',
             imageAsset: 'assets/army-expo.jpg',
-            date: '29 Aug 2026',
-            time: '11:30 AM',
             venue: 'Main Helipad Grounds, IIT Guwahati',
             description:
                 'Experience state-of-the-art defense technology, artillery, tactical communication gear, and specialized military vehicles presented directly by the Indian Army.',
@@ -1167,8 +1406,6 @@ final List<MainCategory> eventData = [
             subtitle: 'Fleet of Roadsters Roaring in Campus',
             category: 'Exhibitions',
             imageAsset: 'assets/road-show.webp',
-            date: '30 Aug 2026',
-            time: '3:30 PM',
             venue: 'Core 1 Boulevard, IIT Guwahati',
             description:
                 'Witness an electrifying collection of exotic supercars, vintage classics, custom superbikes, and high-performance racing beasts revving through the campus.',
@@ -1190,8 +1427,8 @@ final List<MainCategory> eventData = [
             category: 'Lecture Series',
             imageAsset: 'assets/ash.jpg',
             venue: 'Main Auditorium, IIT Guwahati',
-            date: '28 Aug 2026',
-            time: '5:30 PM',
+            date: 'Sep 5, 2026',
+            time: '5:00 PM',
             description:
                 'Candid talk on building hyper-scale fintech companies, disrupting Indian retail payments, venture investments, and founder resilience.',
           ),
@@ -1207,8 +1444,8 @@ final List<MainCategory> eventData = [
             category: 'Lecture Series',
             imageAsset: 'assets/revamp.jpg',
             venue: 'Main Auditorium, IIT Guwahati',
-            date: '29 Aug 2026',
-            time: '5:00 PM',
+            date: 'Sep 6, 2026',
+            time: '11:00 AM',
             description:
                 'Insights into EV engineering, modular chassis design, manufacturing innovation, and the future of clean urban mobility in India.',
           ),
@@ -1224,8 +1461,8 @@ final List<MainCategory> eventData = [
             category: 'Lecture Series',
             imageAsset: 'assets/asus.jpg',
             venue: 'Main Auditorium, IIT Guwahati',
-            date: '30 Aug 2026',
-            time: '4:30 PM',
+            date: 'Sep 6, 2026',
+            time: '3:00 PM',
             description:
                 'Exploring consumer tech innovations, gaming ecosystem growth in India, and leadership strategies in competitive global tech brands.',
           ),
@@ -1245,8 +1482,6 @@ final List<MainCategory> eventData = [
             subtitle: 'Connect with Industry Titans & Fellow Founders',
             category: 'Nexus',
             imageAsset: 'assets/nexus.jpg',
-            date: '28 Aug 2026',
-            time: '6:00 PM',
             venue: 'Conference Center, IIT Guwahati',
             description:
                 'Structured networking session bringing together startup founders, investors, researchers, and aspiring tech enthusiasts.',
@@ -1256,8 +1491,6 @@ final List<MainCategory> eventData = [
             subtitle: 'Real-world Corporate Problem Solving',
             category: 'Nexus',
             imageAsset: 'assets/nexus.jpg',
-            date: '29 Aug 2026',
-            time: '1:30 PM',
             venue: 'Seminar Hall 3, IIT Guwahati',
             description:
                 'Collaborate in multidisciplinary teams to tackle real-world industry case studies with mentorship from corporate executives.',
@@ -1267,8 +1500,6 @@ final List<MainCategory> eventData = [
             subtitle: '1-on-1 Guidance with Domain Experts',
             category: 'Nexus',
             imageAsset: 'assets/nexus.jpg',
-            date: '30 Aug 2026',
-            time: '11:00 AM',
             venue: 'SAC Executive Lounge, IIT Guwahati',
             description:
                 'Get personalized feedback on your startup pitch, research thesis, career trajectory, and technical roadmaps from experienced mentors.',
@@ -1289,8 +1520,6 @@ final List<MainCategory> eventData = [
             subtitle: 'Saving Lives Across Northeast India',
             category: 'Initiatives',
             imageAsset: 'assets/ghm.png',
-            date: '28 Aug 2026',
-            time: '9:00 AM',
             venue: 'IIT Guwahati Hospital Complex',
             description:
                 'Join Techniche in our mission to support local healthcare centers and save lives through a mega blood donation campaign in collaboration with GMCH.',
@@ -1300,8 +1529,6 @@ final List<MainCategory> eventData = [
             subtitle: 'Zero Hunger Community Initiative',
             category: 'Initiatives',
             imageAsset: 'assets/ghm.png',
-            date: '30 Aug 2026',
-            time: '10:00 AM',
             venue: 'Guwahati City & Neighboring Villages',
             description:
                 'Techniche’s social initiative aimed at redistributing meals and groceries to underprivileged communities and orphanages.',
