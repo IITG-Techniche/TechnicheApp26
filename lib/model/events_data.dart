@@ -211,6 +211,75 @@ class EventDetail {
         'whatsappUrl': whatsappUrl,
         'galleryImages': galleryImages,
       };
+
+  String get effectiveId {
+    if (id.trim().isNotEmpty) return id.trim();
+    final clean = title
+        .toLowerCase()
+        .replaceAll(RegExp(r'[^a-z0-9]+'), '_')
+        .replaceAll(RegExp(r'^_+|_+$'), '');
+    return 'event_$clean';
+  }
+
+  DateTime? get parsedStartDateTime {
+    if (date == null || date!.trim().isEmpty) return null;
+    final dateStr = date!.trim().toLowerCase();
+    final timeStr = time?.trim().toLowerCase() ?? '10:00 am';
+
+    int year = 2026;
+    int month = 8;
+    int day = 28;
+
+    if (dateStr.contains('today')) {
+      final now = DateTime.now();
+      year = now.year;
+      month = now.month;
+      day = now.day;
+    } else {
+      final dayMatch = RegExp(r'\b(\d{1,2})\b').firstMatch(dateStr);
+      if (dayMatch != null) {
+        day = int.tryParse(dayMatch.group(1)!) ?? 28;
+      }
+
+      if (dateStr.contains('aug')) {
+        month = 8;
+      } else if (dateStr.contains('sep')) {
+        month = 9;
+      } else if (dateStr.contains('oct')) {
+        month = 10;
+      } else if (dateStr.contains('jul')) {
+        month = 7;
+      } else if (dateStr.contains('nov')) {
+        month = 11;
+      } else if (dateStr.contains('dec')) {
+        month = 12;
+      }
+
+      final yearMatch = RegExp(r'\b(202\d)\b').firstMatch(dateStr);
+      if (yearMatch != null) {
+        year = int.tryParse(yearMatch.group(1)!) ?? 2026;
+      }
+    }
+
+    int hour = 10;
+    int minute = 0;
+    final timeMatch =
+        RegExp(r'(\d{1,2})(?::(\d{2}))?\s*(am|pm)?', caseSensitive: false)
+            .firstMatch(timeStr);
+    if (timeMatch != null) {
+      int parsedHour = int.tryParse(timeMatch.group(1)!) ?? 10;
+      minute = int.tryParse(timeMatch.group(2) ?? '0') ?? 0;
+      final meridian = timeMatch.group(3)?.toLowerCase();
+      if (meridian == 'pm' && parsedHour < 12) {
+        parsedHour += 12;
+      } else if (meridian == 'am' && parsedHour == 12) {
+        parsedHour = 0;
+      }
+      hour = parsedHour;
+    }
+
+    return DateTime(year, month, day, hour, minute);
+  }
 }
 
 class SubCategory {
@@ -261,12 +330,28 @@ class MainCategory {
       };
 }
 
+EventDetail? findEventById(String id) {
+  final cleanId = id.trim().toLowerCase();
+  for (final mainCat in eventData) {
+    for (final subCat in mainCat.subCategories) {
+      for (final event in subCat.events) {
+        if (event.effectiveId == cleanId || event.id == id) {
+          return event;
+        }
+      }
+    }
+  }
+  return null;
+}
+
 EventDetail? findEventByTitle(String title) {
   final cleanQuery = title.trim().toLowerCase();
   for (final mainCat in eventData) {
     for (final subCat in mainCat.subCategories) {
       for (final event in subCat.events) {
-        if (event.title.trim().toLowerCase() == cleanQuery) {
+        if (event.title.trim().toLowerCase() == cleanQuery ||
+            cleanQuery.contains(event.title.trim().toLowerCase()) ||
+            event.title.trim().toLowerCase().contains(cleanQuery)) {
           return event;
         }
       }
