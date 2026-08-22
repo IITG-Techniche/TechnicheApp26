@@ -20,118 +20,92 @@ class HomeUpcomingEventsSection extends StatelessWidget {
     required String image,
     required String date,
     required String venue,
+    required double cardHeight,
   }) {
-    final textPrimary = isDark ? Colors.white : const Color(0XFF232930);
+    final textPrimary = isDark ? Colors.white : const Color(0xFF1E293B);
     final textSecondary =
-        isDark ? const Color(0xFF94A3B8) : const Color(0xFF6D7985);
+        isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B);
 
     return GestureDetector(
       onTap: () => onEventTap(title),
       child: Container(
         width: double.infinity,
-        margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+        margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
         child: Stack(
           children: [
-            // Background Image
+            // 1. Full-bleed Event Poster Image
             Positioned.fill(
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(24),
+                borderRadius: BorderRadius.circular(20),
                 child: Image.asset(
                   image,
                   fit: BoxFit.cover,
                   errorBuilder: (_, __, ___) => Container(
-                    color: const Color(0xFF002B5B),
+                    color: const Color(0xFF0F172A),
                     child: const Center(
-                      child: Icon(Icons.smart_toy_outlined,
-                          size: 64, color: Colors.white38),
+                      child: Icon(
+                        Icons.smart_toy_outlined,
+                        size: 64,
+                        color: Colors.white38,
+                      ),
                     ),
                   ),
                 ),
               ),
             ),
-            // Dark overlay gradient
+
+            // 2. Subtle Dark Gradient Overlay at Bottom
             Positioned.fill(
               child: Container(
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(24),
+                  borderRadius: BorderRadius.circular(20),
                   gradient: LinearGradient(
                     colors: [
+                      Colors.transparent,
+                      Colors.black.withOpacity(0.15),
                       Colors.black.withOpacity(0.55),
-                      Colors.black.withOpacity(0.1),
-                      Colors.black.withOpacity(0.5),
                     ],
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
+                    stops: const [0.5, 0.75, 1.0],
                   ),
                 ),
               ),
             ),
-            // Sleek category tag badge at top left
+
+            // 3. Floating Bottom Info Card
             Positioned(
-              top: 20,
-              left: 20,
+              left: 10,
+              right: 10,
+              bottom: 10,
               child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.55),
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: Colors.white24, width: 1),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 12,
                 ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      width: 6,
-                      height: 6,
-                      decoration: const BoxDecoration(
-                        color: Color(0xFF38BDF8),
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                    const SizedBox(width: 6),
-                    const Text(
-                      'FLAGSHIP EVENT',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 1.0,
-                        fontFamily: 'General Sans',
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            // Floating Info card at the bottom
-            Positioned(
-              left: 14,
-              right: 14,
-              bottom: 14,
-              child: Container(
-                padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
                   color: isDark ? const Color(0xFF0F172A) : Colors.white,
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(16),
                   border: Border.all(
                     color: isDark
-                        ? const Color(0xFF334155).withOpacity(0.4)
-                        : const Color(0xFFE2E8F0),
+                        ? const Color(0xFF1E293B)
+                        : const Color(0xFFF1F5F9),
                     width: 1,
                   ),
                   boxShadow: [
                     BoxShadow(
                       color: isDark
-                          ? Colors.black.withOpacity(0.3)
+                          ? Colors.black54
                           : Colors.black.withOpacity(0.08),
-                      blurRadius: 8,
+                      blurRadius: 10,
                       offset: const Offset(0, 4),
                     ),
                   ],
                 ),
                 child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
+                    // Text Column: Date, Title, Venue
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -146,7 +120,7 @@ class HomeUpcomingEventsSection extends StatelessWidget {
                               fontFamily: 'General Sans',
                             ),
                           ),
-                          const SizedBox(height: 4),
+                          const SizedBox(height: 3),
                           Text(
                             title,
                             style: TextStyle(
@@ -156,11 +130,11 @@ class HomeUpcomingEventsSection extends StatelessWidget {
                               fontFamily: 'General Sans',
                             ),
                           ),
-                          const SizedBox(height: 4),
+                          const SizedBox(height: 3),
                           Row(
                             children: [
                               Icon(
-                                Icons.location_on,
+                                Icons.location_on_outlined,
                                 size: 13,
                                 color: textSecondary,
                               ),
@@ -182,24 +156,41 @@ class HomeUpcomingEventsSection extends StatelessWidget {
                         ],
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    // Bell button
+
+                    const SizedBox(width: 10),
+
+                    // Squircle Bell Reminder Button (Matching Figma Design)
                     GestureDetector(
                       onTap: () => onSetReminder(title),
                       child: Container(
-                        width: 36,
-                        height: 36,
+                        width: 38,
+                        height: 38,
                         decoration: BoxDecoration(
-                          color: isDark
-                              ? const Color(0xFF1E293B)
-                              : const Color(0xFFE4F0FF),
-                          shape: BoxShape.circle,
+                          gradient: isDark
+                              ? null
+                              : const LinearGradient(
+                                  colors: [
+                                    Color(0xFFDCEBFE),
+                                    Color(0xFFEFF6FF),
+                                  ],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                ),
+                          color: isDark ? const Color(0xFF1E293B) : null,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: isDark
+                                ? const Color(0xFF334155)
+                                : const Color(0xFFBFDBFE),
+                            width: 0.8,
+                          ),
                         ),
                         child: Icon(
                           Icons.notifications_none_rounded,
-                          size: 20,
-                          color:
-                              isDark ? Colors.white : const Color(0xFF0D256B),
+                          size: 19,
+                          color: isDark
+                              ? Colors.white
+                              : const Color(0xFF1E293B),
                         ),
                       ),
                     ),
@@ -215,6 +206,10 @@ class HomeUpcomingEventsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final double widthRatio = (screenWidth / 390.0).clamp(0.85, 1.25);
+    final double cardHeight = (400.0 * widthRatio).clamp(360.0, 440.0);
+
     final textSecondary =
         isDark ? const Color(0xFF94A3B8) : const Color(0xFF6D7985);
 
@@ -222,11 +217,15 @@ class HomeUpcomingEventsSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.only(left: 24.0, top: 2.0, bottom: 15.0),
+          padding: EdgeInsets.only(
+            left: 20.0 * widthRatio,
+            top: 6.0,
+            bottom: 12.0 * widthRatio,
+          ),
           child: Text(
             'Upcoming Events',
             style: TextStyle(
-              fontSize: 24,
+              fontSize: 22 * widthRatio,
               fontWeight: FontWeight.bold,
               color: textSecondary,
               fontFamily: AppTheme.fontUnivers,
@@ -235,10 +234,10 @@ class HomeUpcomingEventsSection extends StatelessWidget {
         ),
         CarouselSlider(
           options: CarouselOptions(
-            height: 427,
+            height: cardHeight,
             enlargeCenterPage: true,
-            viewportFraction: 0.72,
-            enlargeFactor: 0.2,
+            viewportFraction: 0.74,
+            enlargeFactor: 0.18,
             enableInfiniteScroll: true,
             scrollPhysics: const BouncingScrollPhysics(),
           ),
@@ -249,6 +248,7 @@ class HomeUpcomingEventsSection extends StatelessWidget {
               image: 'assets/robo.png',
               date: '21 Aug (Today) | 2:30 PM',
               venue: 'L1 - Lecture Hall, IIT Guwahati',
+              cardHeight: cardHeight,
             ),
             _buildUpcomingEventCard(
               context,
@@ -256,6 +256,7 @@ class HomeUpcomingEventsSection extends StatelessWidget {
               image: 'assets/robotics.jpeg',
               date: '21 Aug (Today) | 3:30 PM',
               venue: 'Olympic Swimming Pool Complex',
+              cardHeight: cardHeight,
             ),
             _buildUpcomingEventCard(
               context,
@@ -263,10 +264,11 @@ class HomeUpcomingEventsSection extends StatelessWidget {
               image: 'assets/escalade.png',
               date: '21 Aug (Today) | 4:30 PM',
               venue: 'Amphitheatre, IIT Guwahati',
+              cardHeight: cardHeight,
             ),
           ],
         ),
-        const SizedBox(height: 25),
+        const SizedBox(height: 20),
       ],
     );
   }

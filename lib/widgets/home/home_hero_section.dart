@@ -48,8 +48,8 @@ class HomeHeroSection extends ConsumerWidget {
 
     // Responsive ratios based on standard 390 x 844 design canvas
     final double widthRatio = (screenWidth / 390.0).clamp(0.85, 1.25);
-    final double profileSize = 36.0 * widthRatio;
-    final double actionButtonSize = 48.0 * widthRatio;
+    final double profileSize = 38.0 * widthRatio;
+    final double actionButtonSize = 44.0 * widthRatio;
     final double heroHeight = (screenWidth * (337.0 / 368.0)).clamp(300.0, 420.0);
 
     final userState = ref.watch(userProvider);
