@@ -1,27 +1,21 @@
 import 'package:flutter/material.dart';
 
-class LegacyPage extends StatelessWidget {
+class LegacyScreen extends StatelessWidget {
   static const String routeName = '/legacy';
-
-  const LegacyPage({super.key});
-
-
+  const LegacyScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      backgroundColor: Colors.black,
-      body: Center(
-        child: Text(
-          'Schedule',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 28,
-            fontWeight: FontWeight.w700,
-            fontFamily: 'Univers',
-          ),
-        ),
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Scaffold(
+      backgroundColor: isDark ? const Color(0xFF070B19) : Colors.white,
+      appBar: AppBar(
+        title: const Text('LEGACY'),
+        elevation: 0,
+        backgroundColor: isDark ? const Color(0xFF070B19) : Colors.white,
+        surfaceTintColor: Colors.transparent,
       ),
+      body: const SizedBox.expand(),
     );
   }
 }

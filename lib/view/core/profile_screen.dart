@@ -5,9 +5,12 @@ import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:techniche26/providers/user_provider.dart';
+import 'package:techniche26/providers/theme_provider.dart';
 import 'package:techniche26/constant/appTheme.dart';
 import 'package:techniche26/utils/errorHandler.dart';
 import 'package:techniche26/view/auth/login_screen.dart';
+import 'package:techniche26/view/team/app_dev_team_screen.dart';
+import 'package:techniche26/view/team/heads_team_screen.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   static const String routeName = '/profile';
@@ -35,8 +38,23 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   String _selectedProgram = 'B.Tech';
   bool _isSaving = false;
 
-  final List<String> _years = ['1st Year', '2nd Year', '3rd Year', '4th Year', '5th Year', 'Other'];
-  final List<String> _programs = ['B.Tech', 'B.Des', 'M.Tech', 'Ph.D', 'M.Sc', 'M.Des', 'Other'];
+  final List<String> _years = [
+    '1st Year',
+    '2nd Year',
+    '3rd Year',
+    '4th Year',
+    '5th Year',
+    'Other'
+  ];
+  final List<String> _programs = [
+    'B.Tech',
+    'B.Des',
+    'M.Tech',
+    'Ph.D',
+    'M.Sc',
+    'M.Des',
+    'Other'
+  ];
 
   @override
   void initState() {
@@ -78,14 +96,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       if (account != null) {
         if (mounted) {
           final success = await ref.read(userProvider.notifier).signInWithGoogle(
-            context: context,
-            email: account.email,
-            googleId: account.id,
-            name: account.displayName,
-          );
+                context: context,
+                email: account.email,
+                googleId: account.id,
+                name: account.displayName,
+              );
 
           if (success && mounted) {
-            // Sync FCM
             final prefs = await SharedPreferences.getInstance();
             final fcm = prefs.getString('fcm_token');
             if (fcm != null && fcm.isNotEmpty) {
@@ -99,7 +116,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     } catch (e) {
       debugPrint("Google Sign-In Error: $e");
       if (mounted) {
-        showMessage(context, "Google Sign-In failed due to an internet or connection issue.", isError: true);
+        showMessage(context,
+            "Google Sign-In failed due to an internet or connection issue.",
+            isError: true);
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -118,18 +137,19 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
       String? fullName;
       if (credential.givenName != null || credential.familyName != null) {
-        fullName = '${credential.givenName ?? ''} ${credential.familyName ?? ''}'.trim();
+        fullName =
+            '${credential.givenName ?? ''} ${credential.familyName ?? ''}'.trim();
         if (fullName.isEmpty) fullName = null;
       }
 
       if (mounted) {
         final success = await ref.read(userProvider.notifier).signInWithApple(
-          context: context,
-          appleId: credential.userIdentifier ?? '',
-          email: credential.email,
-          name: fullName,
-          identityToken: credential.identityToken,
-        );
+              context: context,
+              appleId: credential.userIdentifier ?? '',
+              email: credential.email,
+              name: fullName,
+              identityToken: credential.identityToken,
+            );
 
         if (success && mounted) {
           final prefs = await SharedPreferences.getInstance();
@@ -144,7 +164,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     } catch (e) {
       debugPrint("Apple Sign-In Error: $e");
       if (mounted) {
-        showMessage(context, "Apple Sign-In failed due to an internet or connection issue.", isError: true);
+        showMessage(context,
+            "Apple Sign-In failed due to an internet or connection issue.",
+            isError: true);
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -157,7 +179,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       builder: (ctx) => AlertDialog(
         title: const Text(
           'Delete Account',
-          style: TextStyle(fontFamily: AppTheme.fontUnivers, fontWeight: FontWeight.bold),
+          style: TextStyle(
+              fontFamily: AppTheme.fontUnivers, fontWeight: FontWeight.bold),
         ),
         content: const Text(
           'Are you sure you want to permanently delete your account and remove all your data? This action cannot be undone.',
@@ -198,25 +221,33 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       if (await canLaunchUrl(url)) {
         await launchUrl(url, mode: LaunchMode.externalApplication);
       } else {
-        if (mounted) showMessage(context, "Privacy Policy: https://techniche.org.in/privacy");
+        if (mounted) {
+          showMessage(context, "Privacy Policy: https://techniche.org.in/privacy");
+        }
       }
     } catch (_) {
-      if (mounted) showMessage(context, "Privacy Policy: https://techniche.org.in/privacy");
+      if (mounted) {
+        showMessage(context, "Privacy Policy: https://techniche.org.in/privacy");
+      }
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
     final user = ref.watch(userProvider);
+    final themeMode = ref.watch(themeModeProvider);
+    final isDark = themeMode == ThemeMode.dark;
+
+    final backgroundColor =
+        isDark ? const Color(0xFF070B19) : const Color(0xFFF8F9FA);
 
     return Scaffold(
-      backgroundColor: AppTheme.backgroundGray,
+      backgroundColor: backgroundColor,
       extendBodyBehindAppBar: false,
       appBar: AppBar(
         title: const Text('MY PROFILE'),
         elevation: 0,
-        backgroundColor: AppTheme.backgroundGray,
+        backgroundColor: backgroundColor,
         surfaceTintColor: Colors.transparent,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
@@ -224,305 +255,142 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         ),
       ),
       body: SafeArea(
-        child: user.isAuthenticated
-            ? (_isEditing || !user.profileCompleted
-                ? _buildEditProfileForm(user)
-                : _buildProfileDetailsView(user))
-            : _buildGuestView(),
+        child: user.isAuthenticated && (_isEditing || !user.profileCompleted)
+            ? _buildEditProfileForm(user, isDark)
+            : _buildProfileMainView(user, isDark),
       ),
     );
   }
 
-  // ──── GUEST VIEW ────
-  Widget _buildGuestView() {
-    return Center(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(28.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              height: 120,
-              width: 120,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.06),
-                    blurRadius: 20,
-                    offset: const Offset(0, 10),
-                  ),
-                ],
-              ),
-              child: const Icon(
-                Icons.account_circle_outlined,
-                size: 80,
-                color: AppTheme.primaryBlue,
-              ),
-            ),
-            const SizedBox(height: 24),
-            const Text(
-              'Guest Mode',
-              style: TextStyle(
-                fontFamily: AppTheme.fontUnivers,
-                fontSize: 24,
-                fontWeight: FontWeight.w700,
-                color: AppTheme.textMain,
-              ),
-            ),
-            const SizedBox(height: 12),
-            const Text(
-              'You are currently exploring the app as a guest. Please log in to complete your profile, register for events, workshops, and manage your account.',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontFamily: AppTheme.fontGeneralSans,
-                fontSize: 14,
-                color: AppTheme.textSecondary,
-                height: 1.4,
-              ),
-            ),
-            const SizedBox(height: 40),
-            if (_isLoading)
-              const CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(AppTheme.primaryBlue),
-              )
-            else ...[
-              ElevatedButton(
-                onPressed: _handleGoogleSignIn,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  foregroundColor: AppTheme.textMain,
-                  side: BorderSide(color: Colors.grey.shade300),
-                  elevation: 2,
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Image.network(
-                      'https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg',
-                      height: 20,
-                      width: 20,
-                      errorBuilder: (context, error, stackTrace) {
-                        return const Icon(Icons.g_mobiledata, size: 20, color: Colors.blue);
-                      },
+  // ──── MAIN PROFILE VIEW ────
+  Widget _buildProfileMainView(UserState user, bool isDark) {
+    final cardColor = isDark ? const Color(0xFF0F172A) : Colors.white;
+    final borderColor =
+        isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0);
+    final textPrimary = isDark ? Colors.white : AppTheme.textMain;
+    final textSecondary =
+        isDark ? const Color(0xFF94A3B8) : AppTheme.textSecondary;
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 12.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 1. User Header or Guest Card
+          if (user.isAuthenticated)
+            _buildUserHeaderCard(user, cardColor, borderColor, textPrimary, textSecondary, isDark)
+          else
+            _buildGuestPromptCard(cardColor, borderColor, textPrimary, textSecondary, isDark),
+
+          const SizedBox(height: 20),
+
+          // 2. Academic / Personal Details (Only if Authenticated & Complete)
+          if (user.isAuthenticated && user.profileCompleted) ...[
+            _buildAcademicDetailsCard(user, cardColor, borderColor, textPrimary, textSecondary),
+            const SizedBox(height: 20),
+          ],
+
+          // 3. App Settings (Theme Mode Toggle)
+          _buildSettingsSection(cardColor, borderColor, textPrimary, textSecondary, isDark),
+
+          const SizedBox(height: 20),
+
+          // 4. Team & Developers Section
+          _buildTeamSection(cardColor, borderColor, textPrimary, textSecondary, isDark),
+
+          const SizedBox(height: 24),
+
+          // 5. Account & Auth Actions
+          if (user.isAuthenticated) ...[
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () {
+                      _populateFields();
+                      setState(() => _isEditing = true);
+                    },
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: Color(0xFF3B82F6)),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
-                    const SizedBox(width: 12),
-                    const Text(
-                      'Sign In with Google',
+                    child: const Text(
+                      'Edit Profile',
                       style: TextStyle(
                         fontFamily: AppTheme.fontGeneralSans,
                         fontWeight: FontWeight.w600,
-                        fontSize: 15,
+                        color: Color(0xFF3B82F6),
                       ),
                     ),
-                  ],
-                ),
-              ),
-              if (Theme.of(context).platform == TargetPlatform.iOS) ...[
-                const SizedBox(height: 12),
-                SizedBox(
-                  width: 230,
-                  child: SignInWithAppleButton(
-                    onPressed: _handleAppleSignIn,
-                    style: SignInWithAppleButtonStyle.black,
-                    borderRadius: BorderRadius.circular(12),
-                    height: 48,
                   ),
                 ),
-              ],
-            ],
-          ],
-        ),
-      ),
-    );
-  }
-
-  // ──── DETAILS VIEW ────
-  Widget _buildProfileDetailsView(UserState user) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(20.0),
-      child: Column(
-        children: [
-          // Profile Card Header
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.04),
-                  blurRadius: 15,
-                  offset: const Offset(0, 5),
-                ),
-              ],
-            ),
-            child: Column(
-              children: [
-                CircleAvatar(
-                  radius: 40,
-                  backgroundColor: AppTheme.primaryBlue.withOpacity(0.1),
-                  child: Text(
-                    user.name.isNotEmpty ? user.name[0].toUpperCase() : 'U',
-                    style: const TextStyle(
-                      fontFamily: AppTheme.fontUnivers,
-                      fontSize: 32,
-                      fontWeight: FontWeight.bold,
-                      color: AppTheme.primaryBlue,
+                const SizedBox(width: 14),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () async {
+                      await ref.read(userProvider.notifier).signOut();
+                      if (mounted) {
+                        Navigator.pushNamedAndRemoveUntil(
+                          context,
+                          LoginScreen.routeName,
+                          (route) => false,
+                        );
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.redAccent,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: const Text(
+                      'Sign Out',
+                      style: TextStyle(
+                        fontFamily: AppTheme.fontGeneralSans,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                 ),
-                const SizedBox(height: 16),
-                Text(
-                  user.name,
-                  style: const TextStyle(
-                    fontFamily: AppTheme.fontUnivers,
-                    fontSize: 22,
-                    fontWeight: FontWeight.w700,
-                    color: AppTheme.textMain,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  user.email,
-                  style: const TextStyle(
-                    fontFamily: AppTheme.fontGeneralSans,
-                    fontSize: 14,
-                    color: AppTheme.textSecondary,
-                  ),
-                ),
               ],
             ),
-          ),
-          const SizedBox(height: 20),
-
-          // Academic / Personal details
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.04),
-                  blurRadius: 15,
-                  offset: const Offset(0, 5),
-                ),
-              ],
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Academic Details',
+            const SizedBox(height: 16),
+            Center(
+              child: TextButton.icon(
+                onPressed: _confirmAndDeleteAccount,
+                icon: const Icon(Icons.delete_forever_rounded, size: 18, color: Colors.red),
+                label: const Text(
+                  'Delete Account',
                   style: TextStyle(
-                    fontFamily: AppTheme.fontUnivers,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    color: AppTheme.textMain,
+                    fontFamily: AppTheme.fontGeneralSans,
+                    color: Colors.red,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 13,
                   ),
                 ),
-                const Divider(height: 24),
-                _buildDetailRow('Roll Number', user.rollNumber, Icons.badge),
-                _buildDetailRow('College Email', user.collegeEmail, Icons.alternate_email),
-                _buildDetailRow('Program & Year', '${user.program} - ${user.year}', Icons.school),
-                _buildDetailRow('Branch', user.branch, Icons.book),
-                _buildDetailRow('Phone', user.phone, Icons.phone),
-              ],
+              ),
             ),
-          ),
-          const SizedBox(height: 24),
+          ],
 
-          // Action Buttons
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton(
-                  onPressed: () {
-                    _populateFields();
-                    setState(() => _isEditing = true);
-                  },
-                  style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: AppTheme.primaryBlue),
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: const Text(
-                    'Edit Profile',
-                    style: TextStyle(
-                      fontFamily: AppTheme.fontGeneralSans,
-                      fontWeight: FontWeight.w600,
-                      color: AppTheme.primaryBlue,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: () async {
-                    await ref.read(userProvider.notifier).signOut();
-                    if (context.mounted) {
-                      Navigator.pushNamedAndRemoveUntil(
-                        context,
-                        LoginScreen.routeName,
-                        (route) => false,
-                      );
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.redAccent,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: const Text(
-                    'Sign Out',
-                    style: TextStyle(
-                      fontFamily: AppTheme.fontGeneralSans,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          // Delete Account Button (App Store Guideline 5.1.1(v) compliance)
-          TextButton.icon(
-            onPressed: _confirmAndDeleteAccount,
-            icon: const Icon(Icons.delete_forever_rounded, size: 18, color: Colors.red),
-            label: const Text(
-              'Delete Account',
-              style: TextStyle(
-                fontFamily: AppTheme.fontGeneralSans,
-                color: Colors.red,
-                fontWeight: FontWeight.w600,
-                fontSize: 13,
-              ),
-            ),
-          ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 8),
+
           // Privacy Policy Link
-          TextButton(
-            onPressed: _openPrivacyPolicy,
-            child: const Text(
-              'Privacy Policy',
-              style: TextStyle(
-                fontFamily: AppTheme.fontGeneralSans,
-                color: AppTheme.textSecondary,
-                fontSize: 12,
-                decoration: TextDecoration.underline,
+          Center(
+            child: TextButton(
+              onPressed: _openPrivacyPolicy,
+              child: Text(
+                'Privacy Policy',
+                style: TextStyle(
+                  fontFamily: AppTheme.fontGeneralSans,
+                  color: textSecondary,
+                  fontSize: 12,
+                  decoration: TextDecoration.underline,
+                ),
               ),
             ),
           ),
@@ -532,34 +400,254 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     );
   }
 
-  Widget _buildDetailRow(String label, String value, IconData icon) {
+  // ──── USER HEADER CARD ────
+  Widget _buildUserHeaderCard(
+    UserState user,
+    Color cardColor,
+    Color borderColor,
+    Color textPrimary,
+    Color textSecondary,
+    bool isDark,
+  ) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: cardColor,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: borderColor, width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: isDark ? Colors.black45 : Colors.black.withOpacity(0.04),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          CircleAvatar(
+            radius: 34,
+            backgroundColor: const Color(0xFF3B82F6).withOpacity(0.15),
+            child: Text(
+              user.name.isNotEmpty ? user.name[0].toUpperCase() : 'U',
+              style: const TextStyle(
+                fontFamily: AppTheme.fontUnivers,
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF3B82F6),
+              ),
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  user.name.isNotEmpty ? user.name : 'Techniche Participant',
+                  style: TextStyle(
+                    fontFamily: AppTheme.fontUnivers,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
+                    color: textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  user.email.isNotEmpty ? user.email : user.collegeEmail,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontFamily: AppTheme.fontGeneralSans,
+                    fontSize: 13,
+                    color: textSecondary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ──── GUEST PROMPT CARD ────
+  Widget _buildGuestPromptCard(
+    Color cardColor,
+    Color borderColor,
+    Color textPrimary,
+    Color textSecondary,
+    bool isDark,
+  ) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: cardColor,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: borderColor, width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: isDark ? Colors.black45 : Colors.black.withOpacity(0.04),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          CircleAvatar(
+            radius: 30,
+            backgroundColor: const Color(0xFF3B82F6).withOpacity(0.12),
+            child: const Icon(
+              Icons.person_outline_rounded,
+              size: 32,
+              color: Color(0xFF3B82F6),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'Guest Mode',
+            style: TextStyle(
+              fontFamily: AppTheme.fontUnivers,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: textPrimary,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Sign in to complete your profile, register for events, and manage workshop bookings.',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontFamily: AppTheme.fontGeneralSans,
+              fontSize: 13,
+              color: textSecondary,
+              height: 1.3,
+            ),
+          ),
+          const SizedBox(height: 16),
+          if (_isLoading)
+            const CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
+            )
+          else ...[
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: _handleGoogleSignIn,
+                icon: Image.network(
+                  'https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg',
+                  height: 18,
+                  width: 18,
+                  errorBuilder: (_, __, ___) =>
+                      const Icon(Icons.g_mobiledata, size: 20, color: Colors.blue),
+                ),
+                label: const Text('Sign In with Google'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.white,
+                  foregroundColor: textPrimary,
+                  side: BorderSide(color: borderColor),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+            ),
+            if (Theme.of(context).platform == TargetPlatform.iOS) ...[
+              const SizedBox(height: 8),
+              SizedBox(
+                width: double.infinity,
+                child: SignInWithAppleButton(
+                  onPressed: _handleAppleSignIn,
+                  style: isDark
+                      ? SignInWithAppleButtonStyle.white
+                      : SignInWithAppleButtonStyle.black,
+                  borderRadius: BorderRadius.circular(12),
+                  height: 44,
+                ),
+              ),
+            ],
+          ],
+        ],
+      ),
+    );
+  }
+
+  // ──── ACADEMIC DETAILS CARD ────
+  Widget _buildAcademicDetailsCard(
+    UserState user,
+    Color cardColor,
+    Color borderColor,
+    Color textPrimary,
+    Color textSecondary,
+  ) {
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: cardColor,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: borderColor, width: 1),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Academic Details',
+            style: TextStyle(
+              fontFamily: AppTheme.fontUnivers,
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              color: textPrimary,
+            ),
+          ),
+          const Divider(height: 20),
+          _buildDetailRow('Roll Number', user.rollNumber, Icons.badge_outlined, textPrimary, textSecondary),
+          _buildDetailRow('College Email', user.collegeEmail, Icons.alternate_email, textPrimary, textSecondary),
+          _buildDetailRow('Program & Year', '${user.program} - ${user.year}', Icons.school_outlined, textPrimary, textSecondary),
+          _buildDetailRow('Branch', user.branch, Icons.book_outlined, textPrimary, textSecondary),
+          _buildDetailRow('Phone', user.phone, Icons.phone_outlined, textPrimary, textSecondary),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDetailRow(
+    String label,
+    String value,
+    IconData icon,
+    Color textPrimary,
+    Color textSecondary,
+  ) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      padding: const EdgeInsets.symmetric(vertical: 6.0),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, size: 20, color: AppTheme.textSecondary),
-          const SizedBox(width: 12),
+          Icon(icon, size: 18, color: textSecondary),
+          const SizedBox(width: 10),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   label,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontFamily: AppTheme.fontGeneralSans,
-                    fontSize: 12,
-                    color: AppTheme.textSecondary,
+                    fontSize: 11,
+                    color: textSecondary,
                   ),
                 ),
-                const SizedBox(height: 2),
+                const SizedBox(height: 1),
                 Text(
                   value.isNotEmpty ? value : 'Not provided',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontFamily: AppTheme.fontGeneralSans,
-                    fontSize: 14,
+                    fontSize: 13,
                     fontWeight: FontWeight.w600,
-                    color: AppTheme.textMain,
+                    color: textPrimary,
                   ),
                 ),
               ],
@@ -570,8 +658,273 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     );
   }
 
-  // ──── EDIT/COMPLETE VIEW ────
-  Widget _buildEditProfileForm(UserState user) {
+  // ──── SETTINGS SECTION (DARK/LIGHT MODE SWITCH) ────
+  Widget _buildSettingsSection(
+    Color cardColor,
+    Color borderColor,
+    Color textPrimary,
+    Color textSecondary,
+    bool isDark,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(left: 4.0, bottom: 8.0),
+          child: Text(
+            'PREFERENCES',
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              fontFamily: AppTheme.fontGeneralSans,
+              letterSpacing: 1.0,
+              color: textSecondary,
+            ),
+          ),
+        ),
+        Container(
+          decoration: BoxDecoration(
+            color: cardColor,
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(color: borderColor, width: 1),
+          ),
+          child: ListTile(
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            leading: Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: isDark
+                    ? const Color(0xFF38BDF8).withOpacity(0.15)
+                    : const Color(0xFFF59E0B).withOpacity(0.15),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                isDark ? Icons.dark_mode_rounded : Icons.light_mode_rounded,
+                color: isDark ? const Color(0xFF38BDF8) : const Color(0xFFF59E0B),
+                size: 22,
+              ),
+            ),
+            title: Text(
+              isDark ? 'Dark Mode' : 'Bright Mode',
+              style: TextStyle(
+                fontFamily: AppTheme.fontUnivers,
+                fontWeight: FontWeight.bold,
+                fontSize: 15,
+                color: textPrimary,
+              ),
+            ),
+            subtitle: Text(
+              isDark ? 'Dark theme active' : 'Light theme active',
+              style: TextStyle(
+                fontFamily: AppTheme.fontGeneralSans,
+                fontSize: 12,
+                color: textSecondary,
+              ),
+            ),
+            trailing: Switch.adaptive(
+              value: isDark,
+              activeColor: const Color(0xFF38BDF8),
+              onChanged: (val) {
+                ref.read(themeModeProvider.notifier).setThemeMode(
+                      val ? ThemeMode.dark : ThemeMode.light,
+                    );
+              },
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ──── MEET THE TEAM & APP DEVELOPER SECTION ────
+  Widget _buildTeamSection(
+    Color cardColor,
+    Color borderColor,
+    Color textPrimary,
+    Color textSecondary,
+    bool isDark,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(left: 4.0, bottom: 8.0),
+          child: Text(
+            'MEET THE TEAM',
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              fontFamily: AppTheme.fontGeneralSans,
+              letterSpacing: 1.0,
+              color: textSecondary,
+            ),
+          ),
+        ),
+        Container(
+          decoration: BoxDecoration(
+            color: cardColor,
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(color: borderColor, width: 1),
+          ),
+          child: Column(
+            children: [
+              // 1. AppDev Team
+              ListTile(
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+                leading: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF3B82F6).withOpacity(0.12),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.terminal_rounded,
+                    color: Color(0xFF3B82F6),
+                    size: 22,
+                  ),
+                ),
+                title: Text(
+                  'AppDev Team',
+                  style: TextStyle(
+                    fontFamily: AppTheme.fontUnivers,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 15,
+                    color: textPrimary,
+                  ),
+                ),
+                subtitle: Text(
+                  'Core developers behind the app',
+                  style: TextStyle(
+                    fontFamily: AppTheme.fontGeneralSans,
+                    fontSize: 12,
+                    color: textSecondary,
+                  ),
+                ),
+                trailing: Icon(
+                  Icons.arrow_forward_ios_rounded,
+                  size: 16,
+                  color: textSecondary,
+                ),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const AppDevTeamScreen(),
+                    ),
+                  );
+                },
+              ),
+
+              Divider(height: 1, indent: 64, color: borderColor),
+
+              // 2. Heads
+              ListTile(
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+                leading: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF8B5CF6).withOpacity(0.12),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.groups_rounded,
+                    color: Color(0xFF8B5CF6),
+                    size: 22,
+                  ),
+                ),
+                title: Text(
+                  'Heads',
+                  style: TextStyle(
+                    fontFamily: AppTheme.fontUnivers,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 15,
+                    color: textPrimary,
+                  ),
+                ),
+                subtitle: Text(
+                  'Techniche convenors and module heads',
+                  style: TextStyle(
+                    fontFamily: AppTheme.fontGeneralSans,
+                    fontSize: 12,
+                    color: textSecondary,
+                  ),
+                ),
+                trailing: Icon(
+                  Icons.arrow_forward_ios_rounded,
+                  size: 16,
+                  color: textSecondary,
+                ),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const HeadsTeamScreen(),
+                    ),
+                  );
+                },
+              ),
+
+              Divider(height: 1, indent: 64, color: borderColor),
+
+              // 3. App Developer (Direct entry)
+              ListTile(
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+                leading: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF10B981).withOpacity(0.12),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.code_rounded,
+                    color: Color(0xFF10B981),
+                    size: 22,
+                  ),
+                ),
+                title: Text(
+                  'App Developer',
+                  style: TextStyle(
+                    fontFamily: AppTheme.fontUnivers,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 15,
+                    color: textPrimary,
+                  ),
+                ),
+                subtitle: Text(
+                  'Explore developer credits & profiles',
+                  style: TextStyle(
+                    fontFamily: AppTheme.fontGeneralSans,
+                    fontSize: 12,
+                    color: textSecondary,
+                  ),
+                ),
+                trailing: Icon(
+                  Icons.arrow_forward_ios_rounded,
+                  size: 16,
+                  color: textSecondary,
+                ),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const AppDevTeamScreen(),
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ──── EDIT/COMPLETE FORM ────
+  Widget _buildEditProfileForm(UserState user, bool isDark) {
+    final textPrimary = isDark ? Colors.white : AppTheme.textMain;
+    final textSecondary =
+        isDark ? const Color(0xFF94A3B8) : AppTheme.textSecondary;
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20.0),
       child: Form(
@@ -581,20 +934,20 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           children: [
             Text(
               user.profileCompleted ? 'Update Profile' : 'Complete Your Profile',
-              style: const TextStyle(
+              style: TextStyle(
                 fontFamily: AppTheme.fontUnivers,
                 fontSize: 20,
                 fontWeight: FontWeight.w700,
-                color: AppTheme.textMain,
+                color: textPrimary,
               ),
             ),
             const SizedBox(height: 6),
-            const Text(
+            Text(
               'Please fill out these details to register for comedy night and other exclusive event privileges.',
               style: TextStyle(
                 fontFamily: AppTheme.fontGeneralSans,
                 fontSize: 13,
-                color: AppTheme.textSecondary,
+                color: textSecondary,
               ),
             ),
             const SizedBox(height: 24),
@@ -602,24 +955,24 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             _buildFormTextField('Full Name', _nameCtrl, Icons.person, (val) {
               if (val == null || val.trim().isEmpty) return 'Enter your name';
               return null;
-            }),
+            }, isDark),
             _buildFormTextField('Roll Number', _rollCtrl, Icons.badge, (val) {
               if (val == null || val.trim().isEmpty) return 'Enter your IITG Roll number';
               return null;
-            }),
+            }, isDark),
             _buildFormTextField('College Email', _emailCtrl, Icons.email, (val) {
               if (val == null || val.trim().isEmpty) return 'Enter your college email';
               if (!val.trim().endsWith('@iitg.ac.in')) return 'Email must end with @iitg.ac.in';
               return null;
-            }),
+            }, isDark),
             _buildFormTextField('Branch', _branchCtrl, Icons.book, (val) {
               if (val == null || val.trim().isEmpty) return 'Enter your academic branch (e.g. CSE)';
               return null;
-            }),
+            }, isDark),
             _buildFormTextField('Phone Number', _phoneCtrl, Icons.phone, (val) {
               if (val == null || val.trim().isEmpty) return 'Enter your contact number';
               return null;
-            }, keyboardType: TextInputType.phone),
+            }, isDark, keyboardType: TextInputType.phone),
 
             const SizedBox(height: 12),
             // Dropdowns
@@ -629,11 +982,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
+                      Text(
                         'Year',
                         style: TextStyle(
                           fontFamily: AppTheme.fontGeneralSans,
-                          color: AppTheme.textMain,
+                          color: textPrimary,
                           fontWeight: FontWeight.bold,
                           fontSize: 14,
                         ),
@@ -642,17 +995,18 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 12),
                         decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: isDark ? const Color(0xFF0F172A) : Colors.white,
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.grey.shade300),
+                          border: Border.all(
+                              color: isDark ? const Color(0xFF1E293B) : Colors.grey.shade300),
                         ),
                         child: DropdownButtonHideUnderline(
                           child: DropdownButton<String>(
                             value: _selectedYear,
-                            dropdownColor: Colors.white,
-                            style: const TextStyle(
+                            dropdownColor: isDark ? const Color(0xFF0F172A) : Colors.white,
+                            style: TextStyle(
                               fontFamily: AppTheme.fontGeneralSans,
-                              color: AppTheme.textMain,
+                              color: textPrimary,
                             ),
                             items: _years.map((y) {
                               return DropdownMenuItem(value: y, child: Text(y));
@@ -671,11 +1025,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
+                      Text(
                         'Program',
                         style: TextStyle(
                           fontFamily: AppTheme.fontGeneralSans,
-                          color: AppTheme.textMain,
+                          color: textPrimary,
                           fontWeight: FontWeight.bold,
                           fontSize: 14,
                         ),
@@ -684,17 +1038,18 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 12),
                         decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: isDark ? const Color(0xFF0F172A) : Colors.white,
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.grey.shade300),
+                          border: Border.all(
+                              color: isDark ? const Color(0xFF1E293B) : Colors.grey.shade300),
                         ),
                         child: DropdownButtonHideUnderline(
                           child: DropdownButton<String>(
                             value: _selectedProgram,
-                            dropdownColor: Colors.white,
-                            style: const TextStyle(
+                            dropdownColor: isDark ? const Color(0xFF0F172A) : Colors.white,
+                            style: TextStyle(
                               fontFamily: AppTheme.fontGeneralSans,
-                              color: AppTheme.textMain,
+                              color: textPrimary,
                             ),
                             items: _programs.map((p) {
                               return DropdownMenuItem(value: p, child: Text(p));
@@ -710,14 +1065,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 ),
               ],
             ),
-            const SizedBox(height: 40),
+            const SizedBox(height: 36),
 
             SizedBox(
               width: double.infinity,
               height: 52,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.primaryBlue,
+                  backgroundColor: const Color(0xFF3B82F6),
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -729,16 +1084,18 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         if (_formKey.currentState!.validate()) {
                           setState(() => _isSaving = true);
                           try {
-                            final success = await ref.read(userProvider.notifier).completeProfile(
-                              context: context,
-                              name: _nameCtrl.text.trim(),
-                              rollNumber: _rollCtrl.text.trim(),
-                              collegeEmail: _emailCtrl.text.trim(),
-                              year: _selectedYear,
-                              branch: _branchCtrl.text.trim(),
-                              program: _selectedProgram,
-                              phone: _phoneCtrl.text.trim(),
-                            );
+                            final success = await ref
+                                .read(userProvider.notifier)
+                                .completeProfile(
+                                  context: context,
+                                  name: _nameCtrl.text.trim(),
+                                  rollNumber: _rollCtrl.text.trim(),
+                                  collegeEmail: _emailCtrl.text.trim(),
+                                  year: _selectedYear,
+                                  branch: _branchCtrl.text.trim(),
+                                  program: _selectedProgram,
+                                  phone: _phoneCtrl.text.trim(),
+                                );
 
                             if (success && mounted) {
                               setState(() {
@@ -759,7 +1116,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                         ),
                       )
-                    : const Text('Save Details', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    : const Text('Save Details',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
               ),
             ),
             if (user.profileCompleted) ...[
@@ -769,12 +1127,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 height: 52,
                 child: OutlinedButton(
                   style: OutlinedButton.styleFrom(
-                    side: BorderSide(color: Colors.grey.shade400),
+                    side: BorderSide(
+                        color: isDark ? const Color(0xFF334155) : Colors.grey.shade400),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: const Text('Cancel', style: TextStyle(color: Colors.black54, fontSize: 16)),
+                  child: Text('Cancel',
+                      style: TextStyle(color: textSecondary, fontSize: 16)),
                   onPressed: () {
                     setState(() {
                       _isEditing = false;
@@ -794,9 +1154,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     String label,
     TextEditingController controller,
     IconData icon,
-    String? Function(String?)? validator, {
+    String? Function(String?)? validator,
+    bool isDark, {
     TextInputType keyboardType = TextInputType.text,
   }) {
+    final textPrimary = isDark ? Colors.white : AppTheme.textMain;
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 18.0),
       child: Column(
@@ -804,9 +1167,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         children: [
           Text(
             label,
-            style: const TextStyle(
+            style: TextStyle(
               fontFamily: AppTheme.fontGeneralSans,
-              color: AppTheme.textMain,
+              color: textPrimary,
               fontWeight: FontWeight.bold,
               fontSize: 14,
             ),
@@ -816,22 +1179,24 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             controller: controller,
             validator: validator,
             keyboardType: keyboardType,
-            style: const TextStyle(color: AppTheme.textMain),
+            style: TextStyle(color: textPrimary),
             decoration: InputDecoration(
-              prefixIcon: Icon(icon, color: AppTheme.primaryBlue),
+              prefixIcon: Icon(icon, color: const Color(0xFF3B82F6)),
               filled: true,
-              fillColor: Colors.white,
+              fillColor: isDark ? const Color(0xFF0F172A) : Colors.white,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: Colors.grey.shade300),
+                borderSide: BorderSide(
+                    color: isDark ? const Color(0xFF1E293B) : Colors.grey.shade300),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: Colors.grey.shade300),
+                borderSide: BorderSide(
+                    color: isDark ? const Color(0xFF1E293B) : Colors.grey.shade300),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: AppTheme.primaryBlue),
+                borderSide: const BorderSide(color: Color(0xFF3B82F6)),
               ),
             ),
           ),

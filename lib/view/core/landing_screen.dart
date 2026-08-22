@@ -5,7 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:techniche26/widgets/ca_bottom_nav_bar.dart';
 import 'package:techniche26/view/events/events_screen.dart';
-import 'package:techniche26/view/core/utilities_screen.dart';
+import 'package:techniche26/view/core/schedule_screen.dart';
 import 'package:techniche26/view/core/legacy_screen.dart';
 import 'package:techniche26/view/core/map_screen.dart';
 import 'package:techniche26/controller/riverpod_controller/ca_auth_riverpod_controller.dart';
@@ -325,10 +325,10 @@ class _LandingScreenState extends ConsumerState<LandingScreen>
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final List<Widget> screens = <Widget>[
       const EventsScreen(isTab: true),
-      const LegacyPage(),
+      const SchedulePage(),
       _buildHomeContent(context, isDark),
       MapScreen(initialVenue: widget.initialVenue),
-      const UtilitiesScreen(),
+      const LegacyScreen(),
     ];
 
     final selectedIndex = ref.watch(bottomNavSelectedIndexProvider);
@@ -368,7 +368,7 @@ class _LandingScreenState extends ConsumerState<LandingScreen>
               GlowingBottomNavBarItem(
                   icon: Icons.map_rounded, label: 'Map'),
               GlowingBottomNavBarItem(
-                  icon: Icons.workspace_premium_sharp, label: 'Utilities'),
+                  icon: Icons.auto_awesome_rounded, label: 'Legacy'),
             ],
           ),
         ),

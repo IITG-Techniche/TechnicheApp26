@@ -1,15 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:techniche26/providers/navigation_provider.dart';
-import 'package:techniche26/view/marathon/marathon_main.dart';
 import 'package:techniche26/view/auth/ca_auth_screen.dart';
 import 'package:techniche26/view/events/events_screen.dart';
-import 'package:techniche26/view/techno/papers_display.dart';
-import 'package:techniche26/view/core/utilities_screen.dart';
 import 'package:techniche26/view/events/workshops_screen.dart';
 
 class AppDrawer extends ConsumerWidget {
-  const AppDrawer({Key? key}) : super(key: key);
+  const AppDrawer({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -44,18 +41,6 @@ class AppDrawer extends ConsumerWidget {
                   title: 'Workshops',
                   routeName: WorkshopsScreen.routeName,
                 ),
-                _buildDrawerItem(
-                  context: context,
-                  icon: Icons.quiz_rounded,
-                  title: 'Technothlon PYQs',
-                  routeName: TechnothlonPyqScreen.routeName,
-                ),
-                _buildDrawerItem(
-                  context: context,
-                  icon: Icons.how_to_reg_rounded,
-                  title: 'Techno Registration',
-                  routeName: '/techno-registration',
-                ),
                 const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 20, vertical: 8),
                   child: Divider(color: Color(0xFFE8E8E8), height: 1),
@@ -72,12 +57,6 @@ class AppDrawer extends ConsumerWidget {
                   title: 'My Profile',
                   routeName: '/profile',
                 ),
-                // _buildDrawerItem(
-                //   context: context,
-                //   icon: Icons.directions_run_rounded,
-                //   title: 'Marathon Practice',
-                //   routeName: MarathonMainScreen.routeName,
-                // ),
                 const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 20, vertical: 8),
                   child: Divider(color: Color(0xFFE8E8E8), height: 1),
@@ -88,12 +67,6 @@ class AppDrawer extends ConsumerWidget {
                   icon: Icons.shopping_bag_rounded,
                   title: 'Merchandise',
                   routeName: '/merch',
-                ),
-                _buildDrawerItem(
-                  context: context,
-                  icon: Icons.settings_suggest_rounded,
-                  title: 'Utilities',
-                  routeName: UtilitiesScreen.routeName,
                 ),
               ],
             ),

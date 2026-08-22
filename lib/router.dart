@@ -19,7 +19,8 @@ import 'package:techniche26/view/core/onboarding_screen.dart';
 import 'package:techniche26/view/core/profile_screen.dart';
 import 'package:techniche26/view/core/schedule_screen.dart';
 import 'package:techniche26/view/core/splash_screen.dart';
-import 'package:techniche26/view/core/utilities_screen.dart';
+import 'package:techniche26/view/team/app_dev_team_screen.dart';
+import 'package:techniche26/view/team/heads_team_screen.dart';
 
 // Events
 import 'package:techniche26/view/events/events_screen.dart';
@@ -78,16 +79,28 @@ Route<dynamic> generateRoute(RouteSettings routeSettings) {
         builder: (_) => const ProfileScreen(),
       );
 
-    case LegacyPage.routeName:
+    case LegacyScreen.routeName:
       return MaterialPageRoute(
         settings: routeSettings,
-        builder: (_) => const LegacyPage(),
+        builder: (_) => const LegacyScreen(),
       );
 
     case SchedulePage.routeName:
       return MaterialPageRoute(
         settings: routeSettings,
         builder: (_) => const SchedulePage(),
+      );
+
+    case AppDevTeamScreen.routeName:
+      return MaterialPageRoute(
+        settings: routeSettings,
+        builder: (_) => const AppDevTeamScreen(),
+      );
+
+    case HeadsTeamScreen.routeName:
+      return MaterialPageRoute(
+        settings: routeSettings,
+        builder: (_) => const HeadsTeamScreen(),
       );
 
     case MapScreen.routeName:
@@ -103,13 +116,6 @@ Route<dynamic> generateRoute(RouteSettings routeSettings) {
         builder: (_) => MapScreen(initialVenue: initialVenue),
       );
 
-    case UtilitiesScreen.routeName:
-    case '/utilities':
-      return MaterialPageRoute(
-        settings: routeSettings,
-        builder: (_) => const UtilitiesScreen(),
-      );
-
     case MerchScreen.routeName:
       return MaterialPageRoute(
         settings: routeSettings,
@@ -117,7 +123,6 @@ Route<dynamic> generateRoute(RouteSettings routeSettings) {
       );
 
     case HelpCenterScreen.routeName:
-    case '/help-center':
       return MaterialPageRoute(
         settings: routeSettings,
         builder: (_) => const HelpCenterScreen(),
@@ -128,7 +133,6 @@ Route<dynamic> generateRoute(RouteSettings routeSettings) {
       return _fadeRoute(const LoginScreen(), routeSettings);
 
     case CaAuthScreen.routeName:
-    case '/auth-screen':
       return _fadeRoute(const CaAuthScreen(), routeSettings);
 
     case CaRegisterScreen.routeName:
@@ -136,11 +140,9 @@ Route<dynamic> generateRoute(RouteSettings routeSettings) {
 
     // CA Dashboard & Home
     case CaBottomNavBar.routeName:
-    case '/ca-dashboard':
       return _fadeRoute(const CaBottomNavBar(), routeSettings);
 
     case Homescreen.routeName:
-    case '/ca-home':
       return MaterialPageRoute(
         settings: routeSettings,
         builder: (_) => const Homescreen(),
@@ -148,7 +150,6 @@ Route<dynamic> generateRoute(RouteSettings routeSettings) {
 
     // Events & Workshops Routes
     case EventsScreen.routeName:
-    case '/events':
       return MaterialPageRoute(
         settings: routeSettings,
         builder: (_) => const EventsScreen(),
@@ -159,7 +160,6 @@ Route<dynamic> generateRoute(RouteSettings routeSettings) {
         settings: routeSettings,
         builder: (_) => const WorkshopsScreen(),
       );
-
 
     case SubCategoryScreen.routeName:
       final args = routeSettings.arguments as Map<String, dynamic>?;
@@ -256,44 +256,37 @@ Route<dynamic> generateRoute(RouteSettings routeSettings) {
       );
 
     default:
-      return _errorRoute(routeSettings);
+      return MaterialPageRoute(
+        settings: routeSettings,
+        builder: (_) => const Scaffold(
+          body: Center(
+            child: Text('Route Not Found'),
+          ),
+        ),
+      );
   }
 }
 
-Route _errorRoute(RouteSettings settings) {
+PageRouteBuilder _fadeRoute(Widget page, RouteSettings settings) {
+  return PageRouteBuilder(
+    settings: settings,
+    pageBuilder: (context, animation, secondaryAnimation) => page,
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      return FadeTransition(
+        opacity: animation,
+        child: child,
+      );
+    },
+  );
+}
+
+MaterialPageRoute _errorRoute(RouteSettings settings) {
   return MaterialPageRoute(
     settings: settings,
     builder: (_) => const Scaffold(
       body: Center(
-        child: Text('This page does not exist'),
+        child: Text('Screen not found or Invalid parameters'),
       ),
     ),
-  );
-}
-
-Route _fadeRoute(Widget child, RouteSettings settings) {
-  return PageRouteBuilder(
-    settings: settings,
-    pageBuilder: (context, animation, secondaryAnimation) => child,
-    transitionsBuilder: (context, animation, secondaryAnimation, child) {
-      const curve = Curves.easeOutCubic;
-
-      var fadeAnimation = animation.drive(
-        Tween<double>(begin: 0.0, end: 1.0).chain(CurveTween(curve: curve)),
-      );
-
-      var scaleAnimation = animation.drive(
-        Tween<double>(begin: 0.95, end: 1.0).chain(CurveTween(curve: curve)),
-      );
-
-      return FadeTransition(
-        opacity: fadeAnimation,
-        child: ScaleTransition(
-          scale: scaleAnimation,
-          child: child,
-        ),
-      );
-    },
-    transitionDuration: const Duration(milliseconds: 400),
   );
 }
