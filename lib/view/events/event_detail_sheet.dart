@@ -270,17 +270,19 @@ class _RedirectSheet extends StatelessWidget {
                           onPressed: () => _launchUrl(context, event.redirectUrl!),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
-                            children: const [
+                            children: [
                               Text(
-                                'REGISTER ON UNSTOP',
-                                style: TextStyle(
+                                event.redirectUrl!.contains('unstop.com')
+                                    ? 'REGISTER ON UNSTOP'
+                                    : 'REGISTER NOW',
+                                style: const TextStyle(
                                     fontSize: 14,
                                     fontWeight: FontWeight.w700,
                                     fontFamily: AppTheme.fontGeneralSans,
                                     letterSpacing: 0.5),
                               ),
-                              SizedBox(width: 12),
-                              Icon(Icons.launch_rounded, size: 20),
+                              const SizedBox(width: 12),
+                              const Icon(Icons.launch_rounded, size: 20),
                             ],
                           ),
                         ),

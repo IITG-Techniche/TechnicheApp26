@@ -209,9 +209,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
                       ),
                     ],
 
-                    if (_event.prizeCategories.isNotEmpty ||
-                        (_event.prizePool != null &&
-                            _event.prizePool!.isNotEmpty)) ...[
+                    if (_event.prizeCategories.isNotEmpty) ...[
                       const SizedBox(height: 28),
                       _buildPrizesSection(
                         isDark: isDark,
@@ -798,57 +796,10 @@ class _EventDetailPageState extends State<EventDetailPage> {
           const SizedBox(height: 16),
         ],
 
-        if (hasImage) ...[
-          Container(
-            height: 145,
-            width: double.infinity,
-            decoration: BoxDecoration(
-              color: dummyImageBg,
-              borderRadius: BorderRadius.circular(18),
-            ),
-            clipBehavior: Clip.antiAlias,
-            child: Image.asset(
-              _event.imageAsset!,
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) => Center(
-                child: Icon(
-                  Icons.image_outlined,
-                  color: textSecondary.withOpacity(0.5),
-                  size: 36,
-                ),
-              ),
-            ),
-          ),
-        ],
       ],
     );
   }
 
-  Widget _buildGalleryThumb({
-    required String imageAsset,
-    required Color bgColor,
-    required Color textSecondary,
-  }) {
-    return Container(
-      height: 85,
-      decoration: BoxDecoration(
-        color: bgColor,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: Image.asset(
-        imageAsset,
-        fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) => Center(
-          child: Icon(
-            Icons.image_outlined,
-            color: textSecondary.withOpacity(0.4),
-            size: 24,
-          ),
-        ),
-      ),
-    );
-  }
 
   // ─────────────────────────────────────────────────────────────
   // 4. WHO ALL CAN PARTICIPATE ?
@@ -1230,7 +1181,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
     required Color textSecondary,
     required Color iconContainerBg,
   }) {
-    if (_event.prizeCategories.isEmpty && (_event.prizePool == null || _event.prizePool!.isEmpty)) {
+    if (_event.prizeCategories.isEmpty) {
       return const SizedBox.shrink();
     }
     final categories = _event.prizeCategories;

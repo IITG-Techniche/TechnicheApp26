@@ -1,9 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../constant/appTheme.dart';
-import '../../providers/theme_provider.dart';
 
 class WorkshopsScreen extends StatefulWidget {
   static const String routeName = '/workshops';
@@ -17,28 +15,114 @@ class WorkshopsScreen extends StatefulWidget {
 class _WorkshopsScreenState extends State<WorkshopsScreen> {
   final List<Map<String, String>> _workshops = [
     {
-      'title': 'Full Stack Web Development',
-      'img': 'assets/webdev.jpg',
-      'url':
-          'https://unstop.com/workshops-webinars/full-stack-web-development-bootcamp-iit-guwahati-1541887',
+      'title': "Bioinformatics & Cancer Research Workshop",
+      'img': 'assets/workshops/world-technocon-bioinformatics-cancer-research.webp',
+      'url': "https://technocon.org/events/iit-guwahati-august-2026/bioinformatics-and-cancer-research-workshop-at-iit-guwahati-august-2026",
     },
     {
-      'title': 'Arduino Project Development',
-      'img': 'assets/arduino.jpg',
-      'url':
-          'https://unstop.com/workshops-webinars/arduino-project-development-workshop-iit-guwahati-1541858',
+      'title': "CRISPR in Computational Genomics Workshop",
+      'img': 'assets/workshops/world-technocon-crispr-in-computational-genomics.webp',
+      'url': "https://technocon.org/events/iit-guwahati-august-2026/quantum-computing-basics-workshop-at-iit-guwahati-august-2026",
     },
     {
-      'title': 'Generative AI',
-      'img': 'assets/genai.jpg',
-      'url':
-          'https://unstop.com/workshops-webinars/generative-ai-agentic-ai-workshop-iit-guwahati-1541805',
+      'title': "Human Resource Mastery Workshop",
+      'img': 'assets/workshops/world-technocon-human-resource-mastery-from-fundamentals.webp',
+      'url': "https://technocon.org/events/iit-guwahati-august-2026/human-resource-mastery-workshop-at-iit-guwahati-august-2026",
     },
     {
-      'title': 'Cybersecurity',
-      'img': 'assets/cybersec.jpg',
-      'url':
-          'https://unstop.com/workshops-webinars/cybersecurity-and-ethical-hacking-workshop-iit-guwahati-1541776',
+      'title': "Generative AI Masterclass (17+ AI Tools)",
+      'img': 'assets/workshops/world-technocon-generative-ai-masterclass-master-17.webp',
+      'url': "https://technocon.org/events/iit-guwahati-august-2026/generative-ai-masterclass-workshop-at-iit-guwahati-august-2026",
+    },
+    {
+      'title': "Data Science Mastery",
+      'img': 'assets/workshops/world-technocon-data-science-mastery-3.webp',
+      'url': "https://technocon.org/events/iit-guwahati-august-2026/data-science-mastery-workshop-at-iit-guwahati-august-2026",
+    },
+    {
+      'title': "AI in Film and Reels Making Workshop",
+      'img': 'assets/workshops/world-technocon-ai-in-film-and-reels-making-copy-mrx4ey73.webp',
+      'url': "https://technocon.org/events/iit-guwahati-august-2026/ai-in-film-and-reels-making-workshop-at-iit-guwahati-august-2026",
+    },
+    {
+      'title': "Diabetology & Metabolic Disorders",
+      'img': 'assets/workshops/world-technocon-generative-ai-chatgpt-mastery-2.webp',
+      'url': "https://technocon.org/events/iit-guwahati-august-2026/diabetology-and-metabolic-disorders-workshop-at-iit-guwahati-august-2026",
+    },
+    {
+      'title': "Claude For Non-Technical Professionals",
+      'img': 'assets/workshops/world-technocon-claude-for-non-technical-professionals.webp',
+      'url': "https://technocon.org/events/iit-guwahati-august-2026/claude-for-non-technical-professionals-workshop-at-visvesvaraya-national-institute-of-technology",
+    },
+    {
+      'title': "Agentic AI Masterclass",
+      'img': 'assets/workshops/world-technocon-agentic-ai-masterclass-3-copy-mrx4eu55.webp',
+      'url': "https://technocon.org/events/iit-guwahati-august-2026/agentic-ai-masterclass-workshop-at-iit-guwahati-august-2026",
+    },
+    {
+      'title': "Innovation & Startup Ideas",
+      'img': 'assets/workshops/world-technocon-innovation-startup-ideas-2.webp',
+      'url': "https://technocon.org/events/iit-guwahati-august-2026/innovation-startup-ideas-workshop-at-iit-guwahati-august-2026",
+    },
+    {
+      'title': "Digital Marketing with Instagram Meta Ads",
+      'img': 'assets/workshops/world-technocon-digital-marketing-with-google-ads-and-seo.webp',
+      'url': "https://technocon.org/events/iit-guwahati-august-2026/digital-marketing-google-ads-seo-workshop-at-iit-guwahati-august-2026",
+    },
+    {
+      'title': "AI in Drug Discovery Workshop",
+      'img': 'assets/workshops/world-technocon-ai-in-drug-discovery.webp',
+      'url': "https://technocon.org/events/iit-guwahati-august-2026/ai-for-healthcare-workshop-at-iit-guwahati-august-2026",
+    },
+    {
+      'title': "Digital Marketing With Google Ads & SEO",
+      'img': 'assets/workshops/world-technocon-google-ads-seo-mastery-2.webp',
+      'url': "https://technocon.org/events/iit-guwahati-august-2026/digital-marketing-mastery-workshop-at-iit-guwahati-august-2026",
+    },
+    {
+      'title': "UX Design with AI",
+      'img': 'assets/workshops/world-technocon-ux-design-with-ai-3.webp',
+      'url': "https://technocon.org/events/iit-guwahati-august-2026/ux-design-with-ai-workshop-at-iit-guwahati-august-2026",
+    },
+    {
+      'title': "Entrepreneurship Essentials",
+      'img': 'assets/workshops/world-technocon-innovation-startup-ideas-2.webp',
+      'url': "https://technocon.org/events/iit-guwahati-august-2026/entrepreneurship-essentials-workshop-at-iit-guwahati-august-2026",
+    },
+    {
+      'title': "Ethical Hacking & Cyber Security Workshop",
+      'img': 'assets/workshops/world-technocon-agentic-ai-masterclass-3-copy-mrx4eu55.webp',
+      'url': "https://technocon.org/events/iit-guwahati-august-2026/ethical-hacking-cyber-security-workshop-at-iit-guwahati-august-2026",
+    },
+    {
+      'title': "Fashion Design & Entrepreneurship",
+      'img': 'assets/workshops/world-technocon-ux-design-with-ai-3.webp',
+      'url': "https://technocon.org/events/iit-guwahati-august-2026/fashion-design-entrepreneurship-workshop-at-iit-guwahati-august-2026",
+    },
+    {
+      'title': "AI & ML Fundamentals Workshop",
+      'img': 'assets/workshops/world-technocon-data-science-mastery-3.webp',
+      'url': "https://technocon.org/events/iit-guwahati-august-2026/aiml-fundamentals-workshop-at-iit-guwahati-august-2026",
+    },
+    {
+      'title': "Interior Design Basics & Entrepreneurship",
+      'img': 'assets/workshops/world-technocon-generative-ai-masterclass-master-17.webp',
+      'url': "https://technocon.org/events/iit-guwahati-august-2026/interior-design-entrepreneurship-workshop-at-iit-guwahati-august-2026",
+    },
+    {
+      'title': "Drone Building Workshop",
+      'img': 'assets/workshops/world-technocon-bioinformatics-cancer-research.webp',
+      'url': "https://technocon.org/events/iit-guwahati-august-2026/drone-building-workshop-at-iit-guwahati-august-2026",
+    },
+    {
+      'title': "No-Code App Development using AI / Vibe Coding",
+      'img': 'assets/workshops/world-technocon-generative-ai-chatgpt-mastery-2.webp',
+      'url': "https://technocon.org/events/iit-guwahati-august-2026/no-code-app-development-ai-workshop-at-iit-guwahati-august-2026",
+    },
+    {
+      'title': "AI for Healthcare Professionals Workshop",
+      'img': 'assets/workshops/world-technocon-ai-in-drug-discovery.webp',
+      'url': "https://technocon.org/events/iit-guwahati-august-2026/ai-for-hr-professionals-workshop-at-iit-guwahati-august-2026",
     },
   ];
 
