@@ -88,8 +88,8 @@ const List<TeamMember> kDevTeamMembers = [
     name: 'Hasini',
     role: 'Junior Developer',
     teamName: 'JUNIOR DEVELOPER',
-    imageUrl: '',
-    linkedinUrl: '',
+    imageUrl: 'assets/hero/meetheads/hasini.jpeg',
+    linkedinUrl: 'https://www.linkedin.com/in/hasini-r-161954376?utm_source=share_via&utm_content=profile&utm_medium=member_ios',
   ),
   TeamMember(
     name: 'Vitika',
