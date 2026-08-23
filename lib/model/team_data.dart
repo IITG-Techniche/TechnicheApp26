@@ -155,7 +155,7 @@ const List<HeadMember> kFestHeads = [
     name: 'Savi Kanse',
     designation: 'Media & Branding Head',
     teamName: 'MEDIA TEAM',
-    imageUrl: 'assets/aileen-app.png',
+    imageUrl: 'assets/hero/meetheads/savi.jpeg',
     linkedinUrl: 'https://www.linkedin.com/in/savi-kanse-7a2114300',
   ),
   HeadMember(
