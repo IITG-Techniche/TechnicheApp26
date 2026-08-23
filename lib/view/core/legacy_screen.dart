@@ -101,6 +101,7 @@ class LegacyScreen extends StatelessWidget {
                     // 1. MEET THE TEAM FOLDER CARD (mainhead.svg for both modes)
                     Center(
                       child: GestureDetector(
+                        behavior: HitTestBehavior.opaque,
                         onTap: () {
                           Navigator.push(
                             context,
@@ -144,6 +145,7 @@ class LegacyScreen extends StatelessWidget {
                     // 2. LEGACY FOLDER CARD (legacy.svg for both modes)
                     Center(
                       child: GestureDetector(
+                        behavior: HitTestBehavior.opaque,
                         onTap: () {
                           Navigator.push(
                             context,
