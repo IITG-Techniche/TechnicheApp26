@@ -59,7 +59,9 @@ class AppTheme {
       appBarTheme: const AppBarTheme(
         backgroundColor: lightCardsBg,
         elevation: 0,
-        centerTitle: true,
+        centerTitle: false,
+        titleSpacing: 16.0,
+        actionsPadding: EdgeInsets.only(right: 8.0),
         iconTheme: IconThemeData(color: lightTextPrimary),
         titleTextStyle: TextStyle(
           fontFamily: fontUnivers,
@@ -134,7 +136,9 @@ class AppTheme {
       appBarTheme: const AppBarTheme(
         backgroundColor: darkCardsBg,
         elevation: 0,
-        centerTitle: true,
+        centerTitle: false,
+        titleSpacing: 16.0,
+        actionsPadding: EdgeInsets.only(right: 8.0),
         iconTheme: IconThemeData(color: darkTextPrimary),
         titleTextStyle: TextStyle(
           fontFamily: fontUnivers,

@@ -49,7 +49,7 @@ class _SubCategoryScreenState extends State<SubCategoryScreen> {
 
   Widget _buildHeader(BuildContext context, {required Color textPrimary}) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+      padding: const EdgeInsets.fromLTRB(20.0, 16.0, 20.0, 12.0),
       child: Row(
         children: [
           GestureDetector(
@@ -60,43 +60,20 @@ class _SubCategoryScreenState extends State<SubCategoryScreen> {
               size: 28,
             ),
           ),
-          const SizedBox(width: 4),
+          const SizedBox(width: 6),
           Expanded(
             child: Text(
               widget.categoryTitle,
               style: TextStyle(
                 color: textPrimary,
-                fontSize: 22,
-                fontWeight: FontWeight.w700,
+                fontSize: 24,
+                fontWeight: FontWeight.w800,
                 fontFamily: AppTheme.fontUnivers,
+                letterSpacing: 0.5,
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
-          ),
-          const SizedBox(width: 8),
-          Consumer(
-            builder: (context, ref, _) {
-              final themeMode = ref.watch(themeModeProvider);
-              final isDark = themeMode == ThemeMode.dark;
-              return Container(
-                decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF1C1E38) : const Color(0xFFE2E8F0),
-                  shape: BoxShape.circle,
-                ),
-                child: IconButton(
-                  tooltip: isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode',
-                  icon: Icon(
-                    isDark ? Icons.wb_sunny_rounded : Icons.nightlight_round,
-                    color: isDark ? Colors.amber : const Color(0xFF30499E),
-                    size: 20,
-                  ),
-                  onPressed: () {
-                    ref.read(themeModeProvider.notifier).toggleTheme();
-                  },
-                ),
-              );
-            },
           ),
         ],
       ),

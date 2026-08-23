@@ -12,100 +12,175 @@
             "subtitle": "The Ultimate Combat Robotics Arena",
             "category": "Robotics",
             "imageAsset": "assets/robo.png",
-            "prizePool": "₹ 1,50,000",
+            "prizePool": "₹ 2,00,000",
             "teamSize": "2 - 6 Members",
-            "date": "Sep 4 - Sep 6, 2026",
-            "time": "10:00 AM - 6:00 PM",
-            "venue": "L1 - Lecture Hall, Near Academic Block",
-            "mapLocationUrl": "https://maps.google.com/?q=IIT+Guwahati+Lecture+Hall",
-            "whatsappUrl": "https://chat.whatsapp.com/invite/techniche2026",
-            "redirectUrl": "https://unstop.com/techniche-2026",
-            "description": "Robowars, a major event at Techniche, showcases top talents in robotics through intense competition. Participants design and develop wireless, manually controlled robots to engage in dual combat within a secure enclosed arena with destructive weapons, spinners, lifters, and battle mechanics.",
+            "date": "28th August 2026",
+            "time": "Main Combat Arena",
+            "venue": "IIT Guwahati Campus",
+            "mapLocationUrl": "https://maps.google.com/?q=IIT+Guwahati",
+            "redirectUrl": "https://unstop.com/p/robowars-iit-guwahati-1698835",
+            "rulebookUrl": "https://forms.gle/3u7UQLV4v4szEH3WA",
+            "description": "Robowars, a major event at Techniche, showcases top talents in robotics through intense competition. Participants design and develop wireless, manually controlled robots to engage in dual combat within a specified arena. The event highlights innovative strategies, mechanical strength, and strategic maneuvering, creating a thrilling spectacle.",
             "rounds": [
               {
-                "title": "Round 1: Online test (Unstop)",
-                "date": "25th Aug, 2026",
-                "time": "12:00",
-                "description": "Screening round testing mechanical aptitude, circuit design, and safety guidelines."
-              },
-              {
-                "title": "Round 2: Strategy Ideation & Flowchart",
-                "date": "27th Aug, 2026",
-                "time": "12:00",
-                "description": "Submission and jury review of CAD models, weapon specs, and fail-safe mechanisms."
-              },
-              {
-                "title": "Round 3: Main Arena Combat Showdown",
-                "date": "4th Sep, 2026",
-                "time": "10:00",
-                "description": "Live bot vs bot duals in the high-voltage arena at IIT Guwahati."
+                "title": "Registration & Verification",
+                "date": "28th Aug, 2026",
+                "time": "IIT Guwahati",
+                "description": "After completing registration through Unstop, create an account on Techniche website and register via dashboard."
               }
             ],
-            "whoCanParticipate": [
-              "Any student with a valid college ID.",
-              "Teams may have up to 3 members.",
-              "Members can be from different institutes."
-            ],
             "rules": [
-              "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-              "sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-              "Ut enim ad minim veniam, quis nostrud exercitation ullamco.",
-              "laboris nisi ut aliquip ex ea commodo consequat."
+              "Wireless, manually controlled combat robots.",
+              "Robots compete in specified 30kg and 15kg weight categories.",
+              "Strategic maneuvering and destructive battle mechanics permitted within arena bounds."
             ],
-            "faqs": [
+            "prizeCategories": [
               {
-                "question": "Accordion row collapsed default",
-                "answer": "Detailed response with competition specifications, submission deadlines, and arena guidelines."
+                "categoryName": "Category: 30kg",
+                "prizes": {
+                  "1st Place": "Rs 50,000",
+                  "2nd Place": "Rs 35,000",
+                  "3rd Place": "Rs 25,000"
+                }
               },
               {
-                "question": "Accordion row collapsed default",
-                "answer": "Standard safety gear, batteries, and remote controller frequencies approved for use."
+                "categoryName": "Category: 15kg",
+                "prizes": {
+                  "1st Place": "Rs 40,000",
+                  "2nd Place": "Rs 30,000",
+                  "3rd Place": "Rs 20,000"
+                }
               }
             ],
             "coordinators": [
               {
-                "name": "Alex Mercer",
-                "role": "Head Coordinator",
-                "phone": "+91 98765 43210",
-                "email": "robowars@techniche.org.in"
+                "name": "Vomeshwar",
+                "role": "Coordinator",
+                "phone": "+91 9303900573"
+              }
+            ]
+          },
+          {
+            "id": "aquawars",
+            "title": "Aquawars",
+            "subtitle": "Naval Robotics & Aquatic Combat",
+            "category": "Robotics",
+            "imageAsset": "assets/robotics.jpeg",
+            "prizePool": "₹ 5,00,000",
+            "teamSize": "Team Event",
+            "date": "29th - 30th August 2026",
+            "time": "Offline Arena",
+            "venue": "Water Arena, IIT Guwahati",
+            "redirectUrl": "https://unstop.com/o/0Dn74Co?lb=VYBEMRf&utm_medium=Share&utm_source=WhatsApp",
+            "rulebookUrl": "https://forms.gle/3u7UQLV4v4szEH3WA",
+            "description": "Dive into the action-packed world of Aqua Wars, an electrifying game that combines the thrill of robotics with the challenge of aquatic battles. In this multiplayer competitive game, players take control of powerful robotic machines and engage in intense combat within dynamic water arenas. The aim of the competition is to provide a conceptual design of a water surface robot with good speed, manoeuvring capabilities, stability against high velocity and turbulence in the water, can fight with another robot, and has the power to damage it.",
+            "rounds": [
+              {
+                "title": "Stage 1 (Online): Report Submission",
+                "date": "Online",
+                "time": "Report",
+                "description": "Registered teams must submit an SRE (System Review Evaluation) report following guidelines."
+              },
+              {
+                "title": "Stage 2 (Offline): Finals",
+                "date": "29th - 30th Aug, 2026",
+                "time": "IIT Guwahati",
+                "description": "Offline finals conducted on campus at IIT Guwahati during Techniche 26."
+              }
+            ],
+            "prizeBreakdown": {
+              "Winner": "Rs. 2,00,000",
+              "1st Runner Up": "Rs. 1,50,000",
+              "2nd Runner Up": "Rs. 1,00,000",
+              "Most Unique Design": "Rs. 25,000",
+              "Exceptional Bot": "Rs. 25,000"
+            },
+            "coordinators": [
+              {
+                "name": "Vomeshwar",
+                "role": "Coordinator",
+                "phone": "+91 9303900573"
               }
             ]
           },
           {
             "id": "escalade",
             "title": "Escalade",
-            "subtitle": "All-Terrain Robot Climbing Challenge",
+            "subtitle": "Escalade 15.0 - Flagship National Robotics Competition",
             "category": "Robotics",
             "imageAsset": "assets/escalade.png",
-            "prizePool": "₹ 80,000",
-            "teamSize": "2 - 4 Members",
-            "date": "Sep 4 - Sep 5, 2026",
-            "time": "11:00 AM - 4:00 PM",
-            "venue": "Academic Complex Court, IIT Guwahati",
-            "mapLocationUrl": "https://maps.google.com/?q=IIT+Guwahati+Academic+Complex",
-            "description": "Participants build autonomous/semi-autonomous robots capable of navigating vertical obstacles, steep inclines, and rough terrains.",
-            "rounds": [
+            "prizePool": "₹ 1,40,000",
+            "teamSize": "Team Event",
+            "date": "Prelims: 14th June 2026 | Mains: 28-29th Aug 2026",
+            "time": "9 Zonal Prelims & IIT Guwahati Mains",
+            "venue": "IIT Guwahati Campus",
+            "redirectUrl": "https://unstop.com/competitions/escalade-150-escalade-150-iit-guwahati-1667939",
+            "rulebookUrl": "https://forms.gle/3u7UQLV4v4szEH3WA",
+            "description": "Escalade, the flagship National Robotics Competition organized by the Robotics module of Techniche, is the largest and fastest-growing robotics event in the northeast. In Escalade 15.0, autonomous or remote-controlled robots must climb a vertical pole and accurately launch balls at designated targets.",
+            "prizeBreakdown": {
+              "Winner": "Rs. 70,000",
+              "1st Runner Up": "Rs. 40,000",
+              "2nd Runner Up": "Rs. 30,000"
+            },
+            "coordinators": [
               {
-                "title": "Round 1: Obstacle Qualifier",
-                "date": "4th Sep, 2026",
-                "time": "11:00",
-                "description": "Speed run on inclined surface with obstacle avoidance."
-              },
-              {
-                "title": "Round 2: Vertical Wall Ascent",
-                "date": "5th Sep, 2026",
-                "time": "14:00",
-                "description": "Timed climbing competition on specialized friction walls."
+                "name": "Harsha",
+                "role": "Coordinator",
+                "phone": "+91 8822350266"
               }
-            ],
-            "rules": [
-              "Max bot weight: 5 kg.",
-              "Bot dimensions must fit within 40x40x40 cm cube."
-            ],
-            "faqs": [
+            ]
+          },
+          {
+            "id": "track_titans",
+            "title": "Track Titans",
+            "subtitle": "High-Performance RC Car Racing & Endurance",
+            "category": "Robotics",
+            "imageAsset": "assets/robotics.jpeg",
+            "prizePool": "₹ 90,000",
+            "teamSize": "Team Event",
+            "date": "Abstract: 15th Aug 2026 | Finale: 29th Aug 2026",
+            "time": "Online & On-Campus",
+            "venue": "IIT Guwahati Campus",
+            "redirectUrl": "https://unstop.com/p/track-titans-iit-guwahati-1699196",
+            "rulebookUrl": "https://forms.gle/3u7UQLV4v4szEH3WA",
+            "description": "Track Titans challenges participants to design and build remote-controlled cars with exceptional speed, agility, and endurance while adhering to technical specifications. The primary objective is to achieve the fastest lap times and outmanoeuvring competitors on a challenging race track.",
+            "prizeBreakdown": {
+              "1st Place": "Rs. 40,000",
+              "2nd Place": "Rs. 30,000",
+              "3rd Place": "Rs. 20,000"
+            },
+            "coordinators": [
               {
-                "question": "Can wireless controllers be used?",
-                "answer": "Yes, 2.4 GHz RF and Bluetooth wireless controllers are permitted."
+                "name": "Sonam",
+                "role": "Coordinator",
+                "phone": "+91 8955264342"
+              }
+            ]
+          },
+          {
+            "id": "linequest",
+            "title": "LineQuest",
+            "subtitle": "Autonomous Line Maze Navigation Challenge",
+            "category": "Robotics",
+            "imageAsset": "assets/micro.png",
+            "prizePool": "₹ 70,000",
+            "teamSize": "Team Event",
+            "date": "Abstract: 15th Aug 2026 | Finale: 29th Aug 2026",
+            "time": "On-Campus Arena",
+            "venue": "IIT Guwahati Campus",
+            "redirectUrl": "https://forms.gle/3u7UQLV4v4szEH3WA",
+            "rulebookUrl": "https://forms.gle/3u7UQLV4v4szEH3WA",
+            "description": "Line Quest is Techniche IIT Guwahati's flagship autonomous line-following challenge where innovation meets speed, precision, and intelligent decision-making. Design and build an autonomous robot capable of navigating a complex line maze during Dry Run and Actual Run following the shortest path in minimum possible time.",
+            "prizeBreakdown": {
+              "Winner": "Rs. 35,000",
+              "1st Runner Up": "Rs. 20,000",
+              "2nd Runner Up": "Rs. 15,000"
+            },
+            "coordinators": [
+              {
+                "name": "Sonam",
+                "role": "Coordinator",
+                "phone": "+91 8955264342"
               }
             ]
           }

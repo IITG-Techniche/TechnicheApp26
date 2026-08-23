@@ -25,6 +25,7 @@ import 'package:techniche26/widgets/home/home_upcoming_events_section.dart';
 import 'package:techniche26/widgets/home/home_campus_ambassador_section.dart';
 import 'package:techniche26/widgets/home/home_merchandise_section.dart';
 import 'package:techniche26/widgets/home/home_featured_events_section.dart';
+import 'package:techniche26/widgets/home/home_comedy_night_section.dart';
 import 'package:techniche26/features/event_reminders/presentation/reminder_picker_sheet.dart';
 
 class LandingScreen extends ConsumerStatefulWidget {
@@ -134,24 +135,6 @@ class ScanlinePainter extends CustomPainter {
 class _LandingScreenState extends ConsumerState<LandingScreen>
     with TickerProviderStateMixin {
   static final DateTime _festStartDate = DateTime(2026, 8, 28);
-
-  static const List<Map<String, dynamic>> _fallbackFeaturedEvents = [
-    {
-      'title': 'Robowars',
-      'desc': 'Witness the ultimate clash of steel and circuits! Sparks will fly!',
-      'category': 'Robotics',
-    },
-    {
-      'title': 'Aquawars',
-      'desc': 'Autonomous aquatic robots navigating a series of complex underwater obstacles.',
-      'category': 'Robotics',
-    },
-    {
-      'title': 'Escalade',
-      'desc': 'A premier startup pitch competition showing groundbreaking business ideas.',
-      'category': 'Robotics',
-    },
-  ];
 
   bool _isFeaturedScheduleLive = false;
   List<Map<String, dynamic>> _featuredEvents = [];
@@ -393,18 +376,24 @@ class _LandingScreenState extends ConsumerState<LandingScreen>
             onSetReminder: (title) => _setEventReminder(context, title),
           ),
 
-          // 3. Campus Ambassador Section
-          HomeCampusAmbassadorSection(
-            isDark: isDark,
-            onJoinTap: () => _handleAuthNavigation(context),
-          ),
+           // 3. Comedy Night Section
+          HomeComedyNightSection(isDark: isDark),
           const SizedBox(height: 25),
 
           // 4. Merchandise Section
           HomeMerchandiseSection(isDark: isDark),
           const SizedBox(height: 25),
 
-          // 5. Featured Events Section
+          // 5. Campus Ambassador Section
+          HomeCampusAmbassadorSection(
+            isDark: isDark,
+            onJoinTap: () => _handleAuthNavigation(context),
+          ),
+          const SizedBox(height: 25),
+
+         
+
+          // 6. Featured Events Section
           HomeFeaturedEventsSection(
             isDark: isDark,
             featuredEvents: _featuredDisplayEvents(),
@@ -436,7 +425,17 @@ class _LandingScreenState extends ConsumerState<LandingScreen>
 
   List<Map<String, dynamic>> _featuredDisplayEvents() {
     if (!_isFeaturedScheduleLive || _featuredEvents.isEmpty) {
-      return _fallbackFeaturedEvents;
+      final List<EventDetail> allEvents = eventData
+          .expand((cat) => cat.subCategories)
+          .expand((sub) => sub.events)
+          .toList();
+      return allEvents.take(4).map((e) => {
+        'title': e.title,
+        'desc': e.description ?? e.subtitle ?? '',
+        'category': (e.category != null && e.category!.isNotEmpty)
+            ? e.category!
+            : 'Robotics',
+      }).toList();
     }
     return _featuredEvents;
   }

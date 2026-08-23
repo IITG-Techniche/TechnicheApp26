@@ -8,6 +8,8 @@ import 'package:techniche26/view/events/events_screen.dart';
 import 'package:techniche26/model/events_data.dart';
 import 'package:techniche26/view/events/sub_category_screen.dart';
 
+import 'package:techniche26/view/home/comedy_night_screen.dart';
+
 class AppDrawer extends ConsumerWidget {
   const AppDrawer({super.key});
 
@@ -73,6 +75,14 @@ class AppDrawer extends ConsumerWidget {
                       ),
                     );
                   },
+                ),
+                _buildDrawerItem(
+                  context: context,
+                  icon: Icons.theater_comedy_rounded,
+                  title: 'Comedy Night',
+                  routeName: ComedyNightScreen.routeName,
+                  textMain: textMain,
+                  isDark: isDark,
                 ),
 
                 Padding(
@@ -282,40 +292,44 @@ class AppDrawer extends ConsumerWidget {
   }
 
   Widget _buildFooter(bool isDark) {
-    return Container(
-      padding: const EdgeInsets.all(24.0),
-      width: double.infinity,
-      decoration: BoxDecoration(
-        border: Border(
-          top: BorderSide(
-            color: isDark ? const Color(0xFF1E293B) : const Color(0xFFE8E8E8),
+    return SafeArea(
+      top: false,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+        width: double.infinity,
+        decoration: BoxDecoration(
+          border: Border(
+            top: BorderSide(
+              color: isDark ? const Color(0xFF1E293B) : const Color(0xFFE8E8E8),
+            ),
           ),
         ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'IIT Guwahati',
-            style: TextStyle(
-              color: isDark ? Colors.white70 : Colors.black.withOpacity(0.6),
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
-              fontFamily: 'Univers',
-              height: 1.2,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'IIT Guwahati',
+              style: TextStyle(
+                color: isDark ? Colors.white70 : Colors.black.withOpacity(0.6),
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                fontFamily: 'Univers',
+                height: 1.2,
+              ),
             ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            '© Techniche 2026',
-            style: TextStyle(
-              color: isDark ? const Color(0xFF94A3B8) : Colors.black.withOpacity(0.4),
-              fontSize: 12,
-              fontFamily: 'General Sans',
-              height: 1.2,
+            const SizedBox(height: 4),
+            Text(
+              '© Techniche 2026',
+              style: TextStyle(
+                color: isDark ? const Color(0xFF94A3B8) : Colors.black.withOpacity(0.4),
+                fontSize: 12,
+                fontFamily: 'General Sans',
+                height: 1.2,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

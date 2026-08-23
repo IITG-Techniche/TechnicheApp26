@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -22,6 +23,42 @@ class NotificationService {
   Future<void> initializeAndHandleNotifications() async {
     await _initializeLocalNotifications();
     FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+
+    // Enable foreground notification presentation options
+    await _fcm.setForegroundNotificationPresentationOptions(
+      alert: true,
+      badge: true,
+      sound: true,
+    );
+
+    // Listen for incoming messages while app is in foreground
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      print("🔔 Received FCM message in foreground: ${message.notification?.title}");
+      RemoteNotification? notification = message.notification;
+
+      if (notification != null) {
+        _localNotifications.show(
+          notification.hashCode,
+          notification.title,
+          notification.body,
+          const NotificationDetails(
+            android: AndroidNotificationDetails(
+              'high_importance_channel',
+              'High Importance Notifications',
+              channelDescription: 'This channel is used for important notifications.',
+              importance: Importance.max,
+              priority: Priority.high,
+              icon: '@mipmap/ic_launcher',
+            ),
+            iOS: DarwinNotificationDetails(
+              presentAlert: true,
+              presentBadge: true,
+              presentSound: true,
+            ),
+          ),
+        );
+      }
+    });
 
     try {
       NotificationSettings settings = await _fcm.requestPermission(
@@ -77,6 +114,14 @@ class NotificationService {
 
   Future<void> _getTokenAndSubscribe() async {
     try {
+      if (defaultTargetPlatform == TargetPlatform.iOS) {
+        String? apnsToken = await _fcm.getAPNSToken();
+        print("🍏 APNs TOKEN: $apnsToken");
+        if (apnsToken == null) {
+          print("⚠️ APNs token is null. On iOS physical devices, ensure Push Notifications capability and Firebase APNs key/certificate are configured.");
+        }
+      }
+
       final String? token = await _fcm.getToken();
       if (token != null) {
         print("\n✅ FCM TOKEN: $token\n");

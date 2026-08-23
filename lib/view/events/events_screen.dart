@@ -45,7 +45,7 @@ class _EventsScreenState extends State<EventsScreen> {
   Widget _buildHeader(BuildContext context, {required Color textPrimary}) {
     final canPop = !widget.isTab && Navigator.canPop(context);
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+      padding: const EdgeInsets.fromLTRB(44.0, 16.0, 24.0, 8.0),
       child: Row(
         children: [
           if (canPop) ...[
@@ -64,9 +64,10 @@ class _EventsScreenState extends State<EventsScreen> {
               'Events',
               style: TextStyle(
                 color: textPrimary,
-                fontSize: 22,
-                fontWeight: FontWeight.w700,
+                fontSize: 26,
+                fontWeight: FontWeight.w800,
                 fontFamily: AppTheme.fontUnivers,
+                letterSpacing: 0.5,
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,

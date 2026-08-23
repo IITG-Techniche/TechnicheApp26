@@ -38,7 +38,7 @@ class LegacyScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final screenWidth = MediaQuery.of(context).size.width;
-    final cardWidth = (screenWidth * 0.90).clamp(300.0, 420.0);
+    final cardWidth = (screenWidth * 0.30).clamp(300.0, 420.0);
 
     return Scaffold(
       backgroundColor: isDark ? const Color(0xFF070B19) : const Color(0xFFF8F9FA),
@@ -49,19 +49,19 @@ class LegacyScreen extends StatelessWidget {
             // Top Bar with ABOUT US Title & Optional Back Button
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+                padding: const EdgeInsets.fromLTRB(44, 16, 24, 8),
                 child: Row(
                   children: [
                     if (Navigator.canPop(context))
                       GestureDetector(
                         onTap: () => Navigator.pop(context),
                         child: Container(
-                          width: 36,
-                          height: 36,
+                          width: 38,
+                          height: 38,
                           margin: const EdgeInsets.only(right: 12),
                           decoration: BoxDecoration(
                             color: isDark
-                                ? Colors.white.withOpacity(0.1)
+                                ? Colors.white.withOpacity(0.12)
                                 : Colors.black.withOpacity(0.06),
                             shape: BoxShape.circle,
                           ),
@@ -82,8 +82,8 @@ class LegacyScreen extends StatelessWidget {
                       style: TextStyle(
                         fontFamily: AppTheme.fontUnivers,
                         fontSize: 22,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: 1.2,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.5,
                         color: isDark ? Colors.white : const Color(0xFF0F172A),
                       ),
                     ),

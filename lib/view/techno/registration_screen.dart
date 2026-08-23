@@ -763,8 +763,9 @@ class _TechnoRegistrationScreenState extends State<TechnoRegistrationScreen> {
           fit: BoxFit.cover,
         ),
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 25),
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
       child: SafeArea(
+        bottom: false,
         child: Column(
           children: [
             Container(

@@ -238,18 +238,38 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
     final backgroundColor =
         isDark ? const Color(0xFF070B19) : const Color(0xFFF8F9FA);
+    final textPrimary = isDark ? Colors.white : AppTheme.textMain;
 
     return Scaffold(
       backgroundColor: backgroundColor,
       extendBodyBehindAppBar: false,
       appBar: AppBar(
-        title: const Text('MY PROFILE'),
+        centerTitle: false,
+        titleSpacing: 0,
+        title: Text(
+          'MY PROFILE',
+          style: TextStyle(
+            color: textPrimary,
+            fontSize: 22,
+            fontWeight: FontWeight.w800,
+            fontFamily: AppTheme.fontUnivers,
+            letterSpacing: 0.5,
+          ),
+        ),
         elevation: 0,
         backgroundColor: backgroundColor,
         surfaceTintColor: Colors.transparent,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
-          onPressed: () => Navigator.pop(context),
+        leadingWidth: 56,
+        leading: Padding(
+          padding: const EdgeInsets.only(left: 12.0),
+          child: IconButton(
+            icon: Icon(
+              Icons.arrow_back_ios_new_rounded,
+              size: 20,
+              color: textPrimary,
+            ),
+            onPressed: () => Navigator.pop(context),
+          ),
         ),
       ),
       body: SafeArea(

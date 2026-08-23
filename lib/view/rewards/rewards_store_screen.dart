@@ -132,6 +132,7 @@ class _RewardsStoreScreenState extends ConsumerState<RewardsStoreScreen> {
         backgroundColor: const Color(0xFF161B22),
         foregroundColor: Colors.white,
         elevation: 0,
+        actionsPadding: const EdgeInsets.only(right: 8.0),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh_rounded),

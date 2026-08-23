@@ -3,11 +3,14 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../../providers/user_provider.dart';
 import '../../providers/comedy_provider.dart';
 import '../../utils/errorHandler.dart';
 import '../../constant/appTheme.dart';
+
+import 'widgets/comedy_pre_registration_view.dart';
+import 'widgets/comedy_waitlist_ticket_view.dart';
+import 'widgets/comedy_confirmed_ticket_view.dart';
 
 class ComedyNightScreen extends ConsumerStatefulWidget {
   static const String routeName = '/comedy-night';
@@ -19,8 +22,8 @@ class ComedyNightScreen extends ConsumerStatefulWidget {
 
 class _ComedyNightScreenState extends ConsumerState<ComedyNightScreen> {
   bool _isRemoteConfigLoading = true;
-  
-  // Timer config states
+
+  // Timer & Registration Remote Config states
   bool _registrationOpen = false;
   DateTime? _registrationStartTime;
   Timer? _countdownTimer;
@@ -30,11 +33,10 @@ class _ComedyNightScreenState extends ConsumerState<ComedyNightScreen> {
   void initState() {
     super.initState();
     _fetchRemoteConfig();
-    
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final user = ref.read(userProvider);
       if (user.isAuthenticated) {
-        // Fetch fresh comedy status (it checks SharedPreferences cache internally to prevent spamming!)
         ref.read(comedyProvider.notifier).fetchRegistrationStatus();
       }
     });
@@ -46,27 +48,31 @@ class _ComedyNightScreenState extends ConsumerState<ComedyNightScreen> {
     super.dispose();
   }
 
-  /// Initialize and read remote config parameters for the timer
+  /// Read Firebase Remote Config parameters for registration window & start time
   Future<void> _fetchRemoteConfig() async {
-    if (kIsWeb) {
-      setState(() {
-        _registrationOpen = true; // Open by default on web for testing
-        _isRemoteConfigLoading = false;
-      });
-      return;
-    }
-
     try {
       final remoteConfig = FirebaseRemoteConfig.instance;
-      await remoteConfig.fetchAndActivate();
+      if (!kIsWeb) {
+        await remoteConfig.setConfigSettings(RemoteConfigSettings(
+          fetchTimeout: const Duration(seconds: 10),
+          minimumFetchInterval: const Duration(seconds: 5),
+        ));
+        await remoteConfig.setDefaults({
+          'comedy_registration_open': false,
+          'comedy_registration_start_time': '2026-08-29T20:00:00Z',
+        });
+        await remoteConfig.fetchAndActivate();
+      }
 
       final openVal = remoteConfig.getBool('comedy_registration_open');
       final timeStr = remoteConfig.getString('comedy_registration_start_time');
-      
+
       setState(() {
         _registrationOpen = openVal;
         if (timeStr.isNotEmpty) {
           _registrationStartTime = DateTime.tryParse(timeStr);
+        } else {
+          _registrationStartTime = null;
         }
         _isRemoteConfigLoading = false;
       });
@@ -75,17 +81,27 @@ class _ComedyNightScreenState extends ConsumerState<ComedyNightScreen> {
     } catch (e) {
       debugPrint('Error fetching Firebase Remote Config: $e');
       setState(() {
-        // Fallback default (open registration)
-        _registrationOpen = true;
+        _registrationOpen = false;
         _isRemoteConfigLoading = false;
       });
     }
   }
 
-  /// Start countdown timer if registration start time is defined
+  /// Start live countdown timer if start time is set
   void _startTimer() {
     _countdownTimer?.cancel();
     if (_registrationStartTime == null || _registrationOpen) return;
+
+    final initialDiff = _registrationStartTime!.difference(DateTime.now());
+    if (initialDiff.isNegative) {
+      // Re-verify with Remote Config before enabling registration to prevent device clock tampering
+      _fetchRemoteConfig();
+      return;
+    }
+
+    setState(() {
+      _timeLeft = initialDiff;
+    });
 
     _countdownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       final now = DateTime.now();
@@ -93,10 +109,8 @@ class _ComedyNightScreenState extends ConsumerState<ComedyNightScreen> {
 
       if (diff.isNegative) {
         timer.cancel();
-        setState(() {
-          _registrationOpen = true;
-          _timeLeft = Duration.zero;
-        });
+        // Re-verify with Remote Config server status when timer finishes
+        _fetchRemoteConfig();
       } else {
         setState(() {
           _timeLeft = diff;
@@ -105,625 +119,339 @@ class _ComedyNightScreenState extends ConsumerState<ComedyNightScreen> {
     });
   }
 
-
-
   @override
   Widget build(BuildContext context) {
     final userState = ref.watch(userProvider);
     final comedyState = ref.watch(comedyProvider);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    final bgColor = isDark ? AppTheme.darkPageBg : AppTheme.lightPageBg;
+    final textPrimary =
+        isDark ? AppTheme.darkTextPrimary : AppTheme.lightTextPrimary;
 
     return Scaffold(
-      backgroundColor: Colors.black,
-      appBar: AppBar(
-        title: const Text(
-          'COMEDY NIGHT',
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-            letterSpacing: 1.5,
-            fontFamily: 'Orbitron',
-          ),
-        ),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
-       
-      ),
-      body: Stack(
-        children: [
-          // Background elegant neon glow circles
-          Positioned(
-            top: -100,
-            right: -100,
-            child: Container(
-              width: 300,
-              height: 300,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.purple.withOpacity(0.15),
-              ),
-            ),
-          ),
-          Positioned(
-            bottom: -50,
-            left: -50,
-            child: Container(
-              width: 250,
-              height: 250,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.deepPurple.withOpacity(0.15),
-              ),
-            ),
-          ),
+      backgroundColor: bgColor,
+      body: SafeArea(
+        child: Column(
+          children: [
+            // Standard App Header
+            _buildHeader(context, textPrimary),
 
-          // Main body content wrapper
-          SafeArea(
-            child: comedyState.isLoading || _isRemoteConfigLoading
-                ? const Center(
-                    child: CircularProgressIndicator(
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.purpleAccent),
+            // Main Body Content (Switches between Pre-reg, Waitlist, Confirmed)
+            Expanded(
+              child: comedyState.isLoading || _isRemoteConfigLoading
+                  ? Center(
+                      child: CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                            AppTheme.primaryBlue),
+                      ),
+                    )
+                  : Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 12),
+                      child: _buildBodyContent(
+                          context, isDark, userState, comedyState),
                     ),
-                  )
-                : _buildBody(userState, comedyState),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  // APP HEADER
+  // ─────────────────────────────────────────────────────────────
+  Widget _buildHeader(BuildContext context, Color textPrimary) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+      child: Row(
+        children: [
+          GestureDetector(
+            onTap: () => Navigator.maybePop(context),
+            child: Icon(
+              Icons.chevron_left_rounded,
+              color: textPrimary,
+              size: 28,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              'Comedy Night',
+              style: TextStyle(
+                color: textPrimary,
+                fontSize: 24,
+                fontWeight: FontWeight.w700,
+                fontFamily: AppTheme.fontUnivers,
+                letterSpacing: 0.5,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            decoration: BoxDecoration(
+              color: AppTheme.primaryBlue.withOpacity(0.12),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(
+                color: AppTheme.primaryBlue.withOpacity(0.3),
+              ),
+            ),
+            child: Row(
+              children: [
+
+                Text(
+                  'TECHNICHE 26',
+                  style: TextStyle(
+                    color: AppTheme.primaryBlue,
+                    fontSize: 10.5,
+                    fontWeight: FontWeight.w700,
+                    fontFamily: AppTheme.fontUnivers,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildBody(UserState userState, ComedyState comedyState) {
+  // ─────────────────────────────────────────────────────────────
+  // BODY CONTENT SWITCHER
+  // ─────────────────────────────────────────────────────────────
+  Widget _buildBodyContent(
+    BuildContext context,
+    bool isDark,
+    UserState userState,
+    ComedyState comedyState,
+  ) {
+    // 1. Auth Gate: User not logged in
     if (!userState.isAuthenticated) {
-      return _buildLoginRequiredView();
+      return _buildLoginRequiredView(context, isDark);
     }
 
+    // 2. Auth Gate: User profile incomplete
     if (!userState.profileCompleted) {
-      return _buildProfileRequiredView();
+      return _buildProfileRequiredView(context, isDark);
     }
 
-    return _buildEventRegistration(userState, comedyState);
-  }
+    // 3. User Registered & Pass Confirmed View
+    if (comedyState.registered && comedyState.status == 'CONFIRMED') {
+      return ComedyConfirmedTicketView(
+        isDark: isDark,
+        userState: userState,
+        comedyState: comedyState,
+        onRefreshTap: () {
+          ref
+              .read(comedyProvider.notifier)
+              .fetchRegistrationStatus(force: true);
+          showMessage(context, 'Pass status refreshed.');
+        },
+      );
+    }
 
-  Widget _buildLoginRequiredView() {
-    return Padding(
-      padding: const EdgeInsets.all(28.0),
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.purple.withOpacity(0.1),
-                border: Border.all(color: Colors.purpleAccent.withOpacity(0.2), width: 2),
-              ),
-              child: const Icon(
-                Icons.lock_outline,
-                size: 80,
-                color: Colors.purpleAccent,
-              ),
-            ),
-            const SizedBox(height: 32),
-            Text(
-              'Sign In Required',
-              style: TextStyle(
-                fontFamily: AppTheme.fontUnivers,
-                fontSize: 26,
-                fontWeight: FontWeight.w700,
-                color: Colors.white,
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'To register for the Comedy Night, you must sign in first. You can log in securely via Google inside the Profile section.',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontFamily: AppTheme.fontGeneralSans,
-                fontSize: 15,
-                color: Colors.white70,
-                height: 1.4,
-              ),
-            ),
-            const SizedBox(height: 40),
-            SizedBox(
-              width: double.infinity,
-              height: 52,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.purpleAccent,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                onPressed: () {
-                  Navigator.pushNamed(context, '/profile');
-                },
-                child: const Text(
-                  'Go to Profile / Login',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildProfileRequiredView() {
-    return Padding(
-      padding: const EdgeInsets.all(28.0),
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.purple.withOpacity(0.1),
-                border: Border.all(color: Colors.purpleAccent.withOpacity(0.2), width: 2),
-              ),
-              child: const Icon(
-                Icons.assignment_ind_outlined,
-                size: 80,
-                color: Colors.purpleAccent,
-              ),
-            ),
-            const SizedBox(height: 32),
-            Text(
-              'Complete Your Profile',
-              style: TextStyle(
-                fontFamily: AppTheme.fontUnivers,
-                fontSize: 26,
-                fontWeight: FontWeight.w700,
-                color: Colors.white,
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'A completed IITG student profile is required to register for comedy night privileges. Please fill in your Roll Number, Branch, and College Email in your profile screen.',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontFamily: AppTheme.fontGeneralSans,
-                fontSize: 15,
-                color: Colors.white70,
-                height: 1.4,
-              ),
-            ),
-            const SizedBox(height: 40),
-            SizedBox(
-              width: double.infinity,
-              height: 52,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.purpleAccent,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                onPressed: () {
-                  Navigator.pushNamed(context, '/profile');
-                },
-                child: const Text(
-                  'Complete Profile Now',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // ──── 3. REGISTRATION / TICKET DISPLAY VIEW ────
-  Widget _buildEventRegistration(UserState userState, ComedyState comedyState) {
+    // 4. User Registered & Waitlist / Pass Review View
     if (comedyState.registered) {
-      return _buildRegisteredTicket(userState, comedyState);
+      return ComedyWaitlistTicketView(
+        isDark: isDark,
+        userState: userState,
+        comedyState: comedyState,
+        onRefreshTap: () {
+          ref
+              .read(comedyProvider.notifier)
+              .fetchRegistrationStatus(force: true);
+          showMessage(context, 'Pass status refreshed.');
+        },
+      );
     }
 
-    return Padding(
-      padding: const EdgeInsets.all(24.0),
-      child: Center(
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              // Banner Poster Mock
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(20),
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF2C003E), Color(0xFF510A32)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.purple.withOpacity(0.3),
-                      blurRadius: 15,
-                      spreadRadius: 2,
-                    )
-                  ],
-                ),
-                child: Column(
-                  children: [
-                    const Icon(Icons.theater_comedy, size: 70, color: Colors.purpleAccent),
-                    const SizedBox(height: 16),
-                    const Text(
-                      "TECHNICHE COMEDY NIGHT",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        fontFamily: 'Orbitron',
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    const Text(
-                      "An unforgettable night of laughter and fun featuring India's top standup comedians.",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.white70, fontSize: 13, height: 1.4),
-                    ),
-                    const SizedBox(height: 16),
-                    Divider(color: Colors.white.withOpacity(0.2)),
-                    const SizedBox(height: 8),
-                    const Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        Row(
-                          children: [
-                            Icon(Icons.calendar_today, size: 16, color: Colors.purpleAccent),
-                            SizedBox(width: 6),
-                            Text("Sept 5, 2026", style: TextStyle(color: Colors.white, fontSize: 12)),
-                          ],
-                        ),
-                        Row(
-                          children: [
-                            Icon(Icons.location_on, size: 16, color: Colors.purpleAccent),
-                            SizedBox(width: 6),
-                            Text("Dr. Bhupen Hazarika Auditorium", style: TextStyle(color: Colors.white, fontSize: 12)),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 48),
-
-              // Conditional Display: Timer countdown vs "Register Now" button
-              if (!_registrationOpen && _registrationStartTime != null) ...[
-                const Text(
-                  "REGISTRATION OPENS IN",
-                  style: TextStyle(color: Colors.white60, fontSize: 14, fontWeight: FontWeight.bold, letterSpacing: 2),
-                ),
-                const SizedBox(height: 16),
-                _buildCountdownTimerWidget(),
-                const SizedBox(height: 24),
-                // Toggle Button for debug
-                TextButton(
-                  onPressed: () {
-                    setState(() {
-                      _registrationOpen = true;
-                    });
-                  },
-                  child: const Text("Bypass Timer (For Testing)", style: TextStyle(color: Colors.purpleAccent, fontSize: 12)),
-                ),
-              ] else ...[
-                const Text(
-                  "REGISTRATIONS ARE OPEN!",
-                  style: TextStyle(color: Colors.greenAccent, fontSize: 14, fontWeight: FontWeight.bold, letterSpacing: 2),
-                ),
-                const SizedBox(height: 20),
-                SizedBox(
-                  width: double.infinity,
-                  height: 54,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.purpleAccent,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      elevation: comedyState.isLoading ? 0 : 8,
-                      shadowColor: Colors.purpleAccent.withOpacity(0.5),
-                    ),
-                    onPressed: comedyState.isLoading
-                        ? null
-                        : () async {
-                            await ref.read(comedyProvider.notifier).registerForComedy(context);
-                          },
-                    child: comedyState.isLoading
-                        ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                            ),
-                          )
-                        : const Text(
-                            'REGISTER NOW',
-                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, letterSpacing: 1.2),
-                          ),
-                  ),
-                ),
-              ],
-            ],
-          ),
-        ),
+    // 5. Pre-Registration View (Timer / Opening Soon / Register Now)
+    return SingleChildScrollView(
+      physics: const BouncingScrollPhysics(),
+      child: ComedyPreRegistrationView(
+        isDark: isDark,
+        registrationOpen: _registrationOpen,
+        registrationStartTime: _registrationStartTime,
+        timeLeft: _timeLeft,
+        comedyState: comedyState,
+        onRegisterTap: () async {
+          // Verify with Firebase Remote Config to prevent device clock tampering attacks
+          if (!kIsWeb) {
+            try {
+              final remoteConfig = FirebaseRemoteConfig.instance;
+              await remoteConfig.fetchAndActivate();
+              final isReallyOpen =
+                  remoteConfig.getBool('comedy_registration_open');
+              if (!isReallyOpen) {
+                if (mounted) {
+                  setState(() {
+                    _registrationOpen = false;
+                  });
+                  showMessage(
+                      context, "Registration has not opened yet on the server.",
+                      isError: true);
+                }
+                return;
+              }
+            } catch (e) {
+              debugPrint(
+                  'Error verifying Remote Config on registration tap: $e');
+            }
+          }
+          await ref.read(comedyProvider.notifier).registerForComedy(context);
+        },
       ),
     );
   }
 
-  /// Visual representations of the countdown widget
-  Widget _buildCountdownTimerWidget() {
-    String twoDigits(int n) => n.toString().padLeft(2, '0');
-    final days = twoDigits(_timeLeft.inDays);
-    final hours = twoDigits(_timeLeft.inHours.remainder(24));
-    final minutes = twoDigits(_timeLeft.inMinutes.remainder(60));
-    final seconds = twoDigits(_timeLeft.inSeconds.remainder(60));
+  // ─────────────────────────────────────────────────────────────
+  // AUTH GATE VIEWS (LOGIN & PROFILE REQUIRED)
+  // ─────────────────────────────────────────────────────────────
+  Widget _buildLoginRequiredView(BuildContext context, bool isDark) {
+    final textPrimary =
+        isDark ? AppTheme.darkTextPrimary : AppTheme.lightTextPrimary;
+    final textSecondary =
+        isDark ? AppTheme.darkTextSecondary : AppTheme.lightTextSecondary;
 
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        _buildTimerBlock(days, 'Days'),
-        _buildTimerDivider(),
-        _buildTimerBlock(hours, 'Hours'),
-        _buildTimerDivider(),
-        _buildTimerBlock(minutes, 'Mins'),
-        _buildTimerDivider(),
-        _buildTimerBlock(seconds, 'Secs'),
-      ],
-    );
-  }
-
-  Widget _buildTimerBlock(String value, String label) {
-    return Column(
-      children: [
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-          decoration: BoxDecoration(
-            color: Colors.grey[900],
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: Colors.purple.withOpacity(0.5)),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.purple.withOpacity(0.2),
-                blurRadius: 8,
-              )
-            ],
-          ),
-          child: Text(
-            value,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              fontFamily: 'Orbitron',
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: AppTheme.primaryBlue.withOpacity(0.12),
+            ),
+            child: const Icon(
+              Icons.lock_outline_rounded,
+              size: 64,
+              color: AppTheme.primaryBlue,
             ),
           ),
-        ),
-        const SizedBox(height: 6),
-        Text(label, style: const TextStyle(color: Colors.white54, fontSize: 10)),
-      ],
-    );
-  }
-
-  Widget _buildTimerDivider() {
-    return const Padding(
-      padding: EdgeInsets.only(left: 6.0, right: 6.0, bottom: 20.0),
-      child: Text(
-        ':',
-        style: TextStyle(color: Colors.purpleAccent, fontSize: 24, fontWeight: FontWeight.bold),
-      ),
-    );
-  }
-
-  // ──── 4. VIRTUAL TICKET PANEL VIEW ────
-  Widget _buildRegisteredTicket(UserState userState, ComedyState comedyState) {
-    final bool isConfirmed = comedyState.status == 'CONFIRMED';
-
-    return Padding(
-      padding: const EdgeInsets.all(24.0),
-      child: Center(
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // Ticket container
-              Container(
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: isConfirmed ? Colors.greenAccent : Colors.amberAccent,
-                    width: 2.0,
-                  ),
-                  color: const Color(0xFF140727),
-                  boxShadow: [
-                    BoxShadow(
-                      color: (isConfirmed ? Colors.greenAccent : Colors.amberAccent).withOpacity(0.2),
-                      blurRadius: 20,
-                      spreadRadius: 1,
-                    )
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    // Top header
-                    Container(
-                      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.05),
-                        borderRadius: const BorderRadius.vertical(top: Radius.circular(18)),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const Text(
-                            "ENTRY TICKET",
-                            style: TextStyle(color: Colors.white60, fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1),
-                          ),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: isConfirmed ? Colors.green.withOpacity(0.2) : Colors.amber.withOpacity(0.2),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Text(
-                              comedyState.status,
-                              style: TextStyle(
-                                color: isConfirmed ? Colors.greenAccent : Colors.amberAccent,
-                                fontSize: 11,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(height: 18),
-
-                    // Event Information
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            "TECHNICHE COMEDY NIGHT",
-                            style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold, fontFamily: 'Orbitron'),
-                          ),
-                          const SizedBox(height: 6),
-                          const Text("Sept 5, 2026 • 7:00 PM onwards", style: TextStyle(color: Colors.white60, fontSize: 13)),
-                          const SizedBox(height: 4),
-                          const Text("Dr. Bhupen Hazarika Auditorium", style: TextStyle(color: Colors.purpleAccent, fontSize: 13)),
-                          
-                          const SizedBox(height: 20),
-                          Divider(color: Colors.white.withOpacity(0.1)),
-                          const SizedBox(height: 12),
-
-                          // Attendee details
-                          _buildTicketInfoRow("ATTENDEE", userState.name),
-                          _buildTicketInfoRow("ROLL NUMBER", userState.rollNumber),
-                          _buildTicketInfoRow("EMAIL", userState.collegeEmail),
-                        ],
-                      ),
-                    ),
-
-                    // Ticket dotted divider line
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 24.0),
-                      child: Row(
-                        children: List.generate(
-                          30,
-                          (index) => Expanded(
-                            child: Container(
-                              color: index % 2 == 0 ? Colors.transparent : Colors.white.withOpacity(0.2),
-                              height: 1,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    // Code / Barcode section
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 24.0, left: 20, right: 20),
-                      child: Column(
-                        children: [
-                          if (isConfirmed && comedyState.ticketCode != null) ...[
-                            // Pseudo barcode representation
-                            Container(
-                              height: 60,
-                              width: double.infinity,
-                              color: Colors.white,
-                              padding: const EdgeInsets.all(8),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                                children: List.generate(
-                                  35,
-                                  (index) => Container(
-                                    width: (index % 3 == 0) ? 3 : (index % 5 == 0 ? 1 : 2),
-                                    color: Colors.black,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                            Text(
-                              comedyState.ticketCode!,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: 4,
-                                fontFamily: 'Orbitron',
-                              ),
-                            ),
-                          ] else ...[
-                            const Icon(Icons.hourglass_empty, color: Colors.amberAccent, size: 40),
-                            const SizedBox(height: 10),
-                            const Text(
-                              "WAITING FOR CONFIRMATION",
-                              textAlign: TextAlign.center,
-                              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
-                            ),
-                            const SizedBox(height: 6),
-                            const Text(
-                              "Registrations are waitlisted by default. Once confirmed by the organizers, your unique entry barcode will appear here.",
-                              textAlign: TextAlign.center,
-                              style: TextStyle(color: Colors.white60, fontSize: 11),
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 32),
-              // Refresh status button
-              TextButton.icon(
-                icon: const Icon(Icons.refresh, color: Colors.purpleAccent),
-                label: const Text("Refresh Ticket Status", style: TextStyle(color: Colors.purpleAccent)),
-                onPressed: () {
-                  ref.read(comedyProvider.notifier).fetchRegistrationStatus(force: true);
-                  showMessage(context, "Status updated.");
-                },
-              ),
-            ],
+          const SizedBox(height: 24),
+          Text(
+            'SIGN IN REQUIRED',
+            style: TextStyle(
+              fontFamily: AppTheme.fontUnivers,
+              fontSize: 22,
+              fontWeight: FontWeight.w700,
+              color: textPrimary,
+            ),
           ),
-        ),
+          const SizedBox(height: 12),
+          Text(
+            'Sign in to your Techniche account to view and claim exclusive Comedy Night passes.',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontFamily: AppTheme.fontGeneralSans,
+              fontSize: 14,
+              color: textSecondary,
+              height: 1.4,
+            ),
+          ),
+          const SizedBox(height: 32),
+          SizedBox(
+            width: double.infinity,
+            height: 50,
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.primaryBlue,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              onPressed: () {
+                Navigator.pushNamed(context, '/profile');
+              },
+              child: const Text(
+                'Go to Profile / Sign In',
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                  fontFamily: AppTheme.fontUnivers,
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildTicketInfoRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  Widget _buildProfileRequiredView(BuildContext context, bool isDark) {
+    final textPrimary =
+        isDark ? AppTheme.darkTextPrimary : AppTheme.lightTextPrimary;
+    final textSecondary =
+        isDark ? AppTheme.darkTextSecondary : AppTheme.lightTextSecondary;
+
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(label, style: const TextStyle(color: Colors.white38, fontSize: 11, fontWeight: FontWeight.bold)),
-          Text(value, style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w500)),
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: AppTheme.primaryBlue.withOpacity(0.12),
+            ),
+            child: const Icon(
+              Icons.assignment_ind_outlined,
+              size: 64,
+              color: AppTheme.primaryBlue,
+            ),
+          ),
+          const SizedBox(height: 24),
+          Text(
+            'COMPLETE YOUR PROFILE',
+            style: TextStyle(
+              fontFamily: AppTheme.fontUnivers,
+              fontSize: 22,
+              fontWeight: FontWeight.w700,
+              color: textPrimary,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'Please complete your student profile details (Roll Number, Branch, College Email) to claim your Comedy Night pass.',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontFamily: AppTheme.fontGeneralSans,
+              fontSize: 14,
+              color: textSecondary,
+              height: 1.4,
+            ),
+          ),
+          const SizedBox(height: 32),
+          SizedBox(
+            width: double.infinity,
+            height: 50,
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.primaryBlue,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              onPressed: () {
+                Navigator.pushNamed(context, '/profile');
+              },
+              child: const Text(
+                'Complete Profile Now',
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                  fontFamily: AppTheme.fontUnivers,
+                ),
+              ),
+            ),
+          ),
         ],
       ),
     );

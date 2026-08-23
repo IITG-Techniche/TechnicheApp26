@@ -127,9 +127,11 @@ class HomeHeroSection extends ConsumerWidget {
           SafeArea(
             bottom: false,
             child: Padding(
-              padding: EdgeInsets.symmetric(
-                horizontal: 16.0 * widthRatio,
-                vertical: 8.0 * widthRatio,
+              padding: EdgeInsets.fromLTRB(
+                30.0 * widthRatio,
+                20.0 * widthRatio,
+                30.0 * widthRatio,
+                8.0 * widthRatio,
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -138,7 +140,7 @@ class HomeHeroSection extends ConsumerWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      // Profile Button: (36 x 36 ratio)
+                      // Profile Button: (38 x 38 ratio)
                       Builder(builder: (context) {
                         return GestureDetector(
                           onTap: () {
@@ -178,16 +180,16 @@ class HomeHeroSection extends ConsumerWidget {
                         );
                       }),
 
-                      // Right Action Buttons: Shop (48x48) & Help (48x48) - (Notification Removed)
+                      // Right Action Buttons: Shop (44x44) & Help (44x44)
                       Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          // Shop Button (48 x 48 ratio)
+                          // Shop Button
                           SizedBox(
                             width: actionButtonSize,
                             height: actionButtonSize,
                             child: IconButton(
-                              padding: EdgeInsets.zero,
+                              padding: const EdgeInsets.all(4.0),
                               icon: Icon(
                                 Icons.shopping_bag_outlined,
                                 color: isDark
@@ -199,12 +201,13 @@ class HomeHeroSection extends ConsumerWidget {
                                   Navigator.pushNamed(context, '/merch'),
                             ),
                           ),
-                          // Help Button (48 x 48 ratio)
+                          SizedBox(width: 4.0 * widthRatio),
+                          // Help Button
                           SizedBox(
                             width: actionButtonSize,
                             height: actionButtonSize,
                             child: IconButton(
-                              padding: EdgeInsets.zero,
+                              padding: const EdgeInsets.all(4.0),
                               icon: Icon(
                                 Icons.help_outline_rounded,
                                 color: isDark

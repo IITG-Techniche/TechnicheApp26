@@ -209,7 +209,9 @@ class _EventDetailPageState extends State<EventDetailPage> {
                       ),
                     ],
 
-                    if (_event.prizeCategories.isNotEmpty) ...[
+                    if (_event.prizeCategories.isNotEmpty ||
+                        (_event.prizeBreakdown != null &&
+                            _event.prizeBreakdown!.isNotEmpty)) ...[
                       const SizedBox(height: 28),
                       _buildPrizesSection(
                         isDark: isDark,
@@ -1181,10 +1183,15 @@ class _EventDetailPageState extends State<EventDetailPage> {
     required Color textSecondary,
     required Color iconContainerBg,
   }) {
-    if (_event.prizeCategories.isEmpty) {
+    final hasCategories = _event.prizeCategories.isNotEmpty;
+    final hasBreakdown =
+        _event.prizeBreakdown != null && _event.prizeBreakdown!.isNotEmpty;
+
+    if (!hasCategories && !hasBreakdown) {
       return const SizedBox.shrink();
     }
     final categories = _event.prizeCategories;
+    final breakdown = _event.prizeBreakdown ?? {};
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1238,46 +1245,92 @@ class _EventDetailPageState extends State<EventDetailPage> {
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: categories.asMap().entries.map((entry) {
-              final idx = entry.key;
-              final cat = entry.value;
-              final isLast = idx == categories.length - 1;
+            children: [
+              if (hasCategories)
+                ...categories.asMap().entries.map((entry) {
+                  final idx = entry.key;
+                  final cat = entry.value;
+                  final isLast = idx == categories.length - 1 && !hasBreakdown;
 
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    cat.categoryName,
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w700,
-                      fontFamily: AppTheme.fontUnivers,
-                      color: textPrimary,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  ...cat.prizes.entries.map((prizeEntry) {
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 6),
-                      child: Text(
-                        '${prizeEntry.key} – ${prizeEntry.value}',
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        cat.categoryName,
                         style: TextStyle(
-                          fontSize: 13.5,
-                          fontWeight: FontWeight.w500,
-                          fontFamily: AppTheme.fontGeneralSans,
-                          color: textSecondary,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                          fontFamily: AppTheme.fontUnivers,
+                          color: textPrimary,
                         ),
                       ),
-                    );
-                  }),
-                  if (!isLast) ...[
-                    const SizedBox(height: 14),
-                    _buildDashedLine(isDark: isDark),
-                    const SizedBox(height: 16),
-                  ],
-                ],
-              );
-            }).toList(),
+                      const SizedBox(height: 10),
+                      ...cat.prizes.entries.map((prizeEntry) {
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 6),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                prizeEntry.key,
+                                style: TextStyle(
+                                  fontSize: 13.5,
+                                  fontWeight: FontWeight.w500,
+                                  fontFamily: AppTheme.fontGeneralSans,
+                                  color: textSecondary,
+                                ),
+                              ),
+                              Text(
+                                prizeEntry.value,
+                                style: TextStyle(
+                                  fontSize: 13.5,
+                                  fontWeight: FontWeight.w700,
+                                  fontFamily: AppTheme.fontUnivers,
+                                  color: AppTheme.primaryBlue,
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }),
+                      if (!isLast) ...[
+                        const SizedBox(height: 14),
+                        _buildDashedLine(isDark: isDark),
+                        const SizedBox(height: 16),
+                      ],
+                    ],
+                  );
+                }),
+              if (hasBreakdown)
+                ...breakdown.entries.map((prizeEntry) {
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          prizeEntry.key,
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            fontFamily: AppTheme.fontGeneralSans,
+                            color: textPrimary,
+                          ),
+                        ),
+                        Text(
+                          prizeEntry.value,
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            fontFamily: AppTheme.fontUnivers,
+                            color: AppTheme.primaryBlue,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }),
+            ],
           ),
         ),
       ],
