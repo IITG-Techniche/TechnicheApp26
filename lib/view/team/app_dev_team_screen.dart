@@ -156,31 +156,61 @@ class AppDevTeamScreen extends StatelessWidget {
                                         ),
                                       ),
                                       child: ClipOval(
-                                        child: member.imageUrl.startsWith('http')
-                                            ? Image.network(
-                                                member.imageUrl,
-                                                fit: BoxFit.cover,
-                                                errorBuilder: (_, __, ___) => Container(
-                                                  color: isDark ? const Color(0xFF1E293B) : Colors.grey.shade200,
-                                                  child: Icon(
-                                                    Icons.person,
-                                                    size: 60,
-                                                    color: isDark ? const Color(0xFF6D7985) : Colors.grey.shade600,
+                                        child: member.imageUrl.isEmpty
+                                            ? Center(
+                                                child: Text(
+                                                  member.name.isNotEmpty
+                                                      ? member.name[0].toUpperCase()
+                                                      : 'D',
+                                                  style: TextStyle(
+                                                    fontFamily: AppTheme.fontUnivers,
+                                                    fontSize: 48,
+                                                    fontWeight: FontWeight.w900,
+                                                    color: isDark
+                                                        ? const Color(0xFF60A5FA)
+                                                        : const Color(0xFF1D4ED8),
                                                   ),
                                                 ),
                                               )
-                                            : Image.asset(
-                                                member.imageUrl,
-                                                fit: BoxFit.cover,
-                                                errorBuilder: (_, __, ___) => Container(
-                                                  color: isDark ? const Color(0xFF1E293B) : Colors.grey.shade200,
-                                                  child: Icon(
-                                                    Icons.person,
-                                                    size: 60,
-                                                    color: isDark ? const Color(0xFF6D7985) : Colors.grey.shade600,
-                                                  ),
-                                                ),
-                                              ),
+                                            : (member.imageUrl.startsWith('http')
+                                                ? Image.network(
+                                                    member.imageUrl,
+                                                    fit: BoxFit.cover,
+                                                    errorBuilder: (_, __, ___) => Center(
+                                                      child: Text(
+                                                        member.name.isNotEmpty
+                                                            ? member.name[0].toUpperCase()
+                                                            : 'D',
+                                                        style: TextStyle(
+                                                          fontFamily: AppTheme.fontUnivers,
+                                                          fontSize: 48,
+                                                          fontWeight: FontWeight.w900,
+                                                          color: isDark
+                                                              ? const Color(0xFF60A5FA)
+                                                              : const Color(0xFF1D4ED8),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  )
+                                                : Image.asset(
+                                                    member.imageUrl,
+                                                    fit: BoxFit.cover,
+                                                    errorBuilder: (_, __, ___) => Center(
+                                                      child: Text(
+                                                        member.name.isNotEmpty
+                                                            ? member.name[0].toUpperCase()
+                                                            : 'D',
+                                                        style: TextStyle(
+                                                          fontFamily: AppTheme.fontUnivers,
+                                                          fontSize: 48,
+                                                          fontWeight: FontWeight.w900,
+                                                          color: isDark
+                                                              ? const Color(0xFF60A5FA)
+                                                              : const Color(0xFF1D4ED8),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  )),
                                       ),
                                     ),
                                   ),

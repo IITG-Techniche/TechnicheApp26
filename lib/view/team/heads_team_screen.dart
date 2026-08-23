@@ -269,7 +269,7 @@ class _HeadsTeamScreenState extends State<HeadsTeamScreen> {
                   const SizedBox(height: 18),
 
                   // Avatar with Glow Aura
-                  _buildAvatar(head.imageUrl, isDark),
+                  _buildAvatar(head.imageUrl, head.name, isDark),
 
                   const SizedBox(height: 18),
 
@@ -364,7 +364,7 @@ class _HeadsTeamScreenState extends State<HeadsTeamScreen> {
                   const SizedBox(height: 18),
 
                   // Avatar with Glow Aura
-                  _buildAvatar(member.imageUrl, isDark),
+                  _buildAvatar(member.imageUrl, member.name, isDark),
 
                   const SizedBox(height: 18),
 
@@ -409,7 +409,7 @@ class _HeadsTeamScreenState extends State<HeadsTeamScreen> {
     );
   }
 
-  Widget _buildAvatar(String imageUrl, bool isDark) {
+  Widget _buildAvatar(String imageUrl, String name, bool isDark) {
     return Container(
       width: 140,
       height: 140,
@@ -430,38 +430,53 @@ class _HeadsTeamScreenState extends State<HeadsTeamScreen> {
           height: 120,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
+            color: isDark ? const Color(0xFF1E293B) : const Color(0xFFDBEAFE),
             border: Border.all(
               color: const Color(0xFF60A5FA).withOpacity(0.5),
               width: 2,
             ),
           ),
           child: ClipOval(
-            child: imageUrl.startsWith('http')
-                ? Image.network(
-                    imageUrl,
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => Container(
-                      color: isDark ? const Color(0xFF1E293B) : Colors.grey.shade200,
-                      child: Icon(
-                        Icons.person,
-                        size: 60,
-                        color: isDark ? const Color(0xFF6D7985) : Colors.grey.shade600,
+            child: imageUrl.isEmpty
+                ? Center(
+                    child: Text(
+                      name.isNotEmpty ? name[0].toUpperCase() : 'D',
+                      style: TextStyle(
+                        fontFamily: AppTheme.fontUnivers,
+                        fontSize: 48,
+                        fontWeight: FontWeight.w900,
+                        color: isDark
+                            ? const Color(0xFF60A5FA)
+                            : const Color(0xFF1D4ED8),
                       ),
                     ),
                   )
-                : Image.asset(
-                    imageUrl,
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => Container(
-                      color: isDark ? const Color(0xFF1E293B) : Colors.grey.shade200,
-                      child: Icon(
-                        Icons.person,
-                        size: 60,
-                        color: isDark ? const Color(0xFF6D7985) : Colors.grey.shade600,
-                      ),
-                    ),
-                  ),
+                : (imageUrl.startsWith('http')
+                    ? Image.network(
+                        imageUrl,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => _buildFallbackInitial(name, isDark),
+                      )
+                    : Image.asset(
+                        imageUrl,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => _buildFallbackInitial(name, isDark),
+                      )),
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFallbackInitial(String name, bool isDark) {
+    return Center(
+      child: Text(
+        name.isNotEmpty ? name[0].toUpperCase() : 'D',
+        style: TextStyle(
+          fontFamily: AppTheme.fontUnivers,
+          fontSize: 48,
+          fontWeight: FontWeight.w900,
+          color: isDark ? const Color(0xFF60A5FA) : const Color(0xFF1D4ED8),
         ),
       ),
     );

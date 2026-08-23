@@ -64,31 +64,45 @@ class HeadMember {
 
 const List<TeamMember> kDevTeamMembers = [
   TeamMember(
-    name: 'Dhruv Gupta',
-    role: 'DevOps Head',
-    teamName: 'DEVOPS TEAM',
-    imageUrl: 'assets/dhruv-app.jpg',
-    linkedinUrl: 'https://www.linkedin.com/in/dhruvgupta21iitg/',
-  ),
-  TeamMember(
-    name: 'Arya Pandey',
-    role: 'DevOps Head',
-    teamName: 'DEVOPS TEAM',
-    imageUrl: 'assets/arya-app.jpg',
-    linkedinUrl: 'https://www.linkedin.com/in/arya-pandey-265204257/',
-  ),
-  TeamMember(
     name: 'Ayush',
-    role: 'Core Developer',
-    teamName: 'APP DEV TEAM',
+    role: 'DevOps Head',
+    teamName: 'DEVOPS HEAD',
     imageUrl: 'assets/ayush-app.jpg',
     linkedinUrl: '',
   ),
   TeamMember(
     name: 'Divyansh',
-    role: 'Developer (Organizer)',
-    teamName: 'APP DEV TEAM',
+    role: 'Senior Developer',
+    teamName: 'SENIOR DEVELOPER',
     imageUrl: 'assets/divyansh-app.jpg',
+    linkedinUrl: '',
+  ),
+  TeamMember(
+    name: 'Sanjay',
+    role: 'Senior Developer',
+    teamName: 'SENIOR DEVELOPER',
+    imageUrl: 'assets/hero/meetheads/sanjay.jpeg',
+    linkedinUrl: '',
+  ),
+  TeamMember(
+    name: 'Hasini',
+    role: 'Junior Developer',
+    teamName: 'JUNIOR DEVELOPER',
+    imageUrl: '',
+    linkedinUrl: '',
+  ),
+  TeamMember(
+    name: 'Vitika',
+    role: 'Junior Developer',
+    teamName: 'JUNIOR DEVELOPER',
+    imageUrl: '',
+    linkedinUrl: '',
+  ),
+  TeamMember(
+    name: 'Sahaj',
+    role: 'Junior Developer',
+    teamName: 'JUNIOR DEVELOPER',
+    imageUrl: '',
     linkedinUrl: '',
   ),
 ];
