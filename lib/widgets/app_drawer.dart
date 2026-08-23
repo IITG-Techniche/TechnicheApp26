@@ -4,7 +4,6 @@ import 'package:techniche26/providers/navigation_provider.dart';
 import 'package:techniche26/providers/theme_provider.dart';
 import 'package:techniche26/view/auth/ca_auth_screen.dart';
 import 'package:techniche26/view/events/events_screen.dart';
-import 'package:techniche26/view/events/workshops_screen.dart';
 
 class AppDrawer extends ConsumerWidget {
   const AppDrawer({super.key});
@@ -52,7 +51,10 @@ class AppDrawer extends ConsumerWidget {
                   context: context,
                   icon: Icons.build_circle_rounded,
                   title: 'Workshops',
-                  routeName: WorkshopsScreen.routeName,
+                  routeName: EventsScreen.routeName,
+                  isTab: true,
+                  tabIndex: 0,
+                  ref: ref,
                   textMain: textMain,
                   isDark: isDark,
                 ),
