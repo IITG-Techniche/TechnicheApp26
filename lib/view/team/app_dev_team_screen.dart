@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../constant/appTheme.dart';
 import '../../model/team_data.dart';
@@ -53,26 +54,23 @@ class AppDevTeamScreen extends StatelessWidget {
                         child: Center(
                           child: SizedBox(
                             width: (screenWidth * 0.76).clamp(240.0, 320.0),
-                            child: Image.asset(
-                              isDark
-                                  ? 'assets/hero/meetheads/mainheadsdark.png'
-                                  : 'assets/hero/meetheads/meettheteaminbright.png',
-                              fit: BoxFit.contain,
-                              errorBuilder: (_, __, ___) => Padding(
-                                padding: const EdgeInsets.all(16.0),
-                                child: Text(
-                                  'MEET THE DEVELOPERS',
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    fontFamily: AppTheme.fontUnivers,
-                                    fontSize: 32,
-                                    fontWeight: FontWeight.w900,
-                                    color: isDark ? Colors.white : const Color(0xFF1E3A8A),
-                                    letterSpacing: 2.0,
+                            child: isDark
+                                ? SvgPicture.asset(
+                                    'assets/hero/meetheads/mainhead.svg',
+                                    fit: BoxFit.contain,
+                                    placeholderBuilder: (_) => Image.asset(
+                                      'assets/hero/meetheads/meettheteaminbright.png',
+                                      fit: BoxFit.contain,
+                                    ),
+                                  )
+                                : Image.asset(
+                                    'assets/hero/meetheads/meettheteaminbright.png',
+                                    fit: BoxFit.contain,
+                                    errorBuilder: (_, __, ___) => SvgPicture.asset(
+                                      'assets/hero/meetheads/mainhead.svg',
+                                      fit: BoxFit.contain,
+                                    ),
                                   ),
-                                ),
-                              ),
-                            ),
                           ),
                         ),
                       ),

@@ -98,7 +98,7 @@ class LegacyScreen extends StatelessWidget {
               sliver: SliverList(
                 delegate: SliverChildListDelegate(
                   [
-                    // 1. MEET THE TEAM FOLDER CARD
+                    // 1. MEET THE TEAM FOLDER CARD (mainhead.svg / meettheteam.png)
                     Center(
                       child: GestureDetector(
                         onTap: () {
@@ -112,23 +112,29 @@ class LegacyScreen extends StatelessWidget {
                         child: Container(
                           width: cardWidth,
                           margin: const EdgeInsets.symmetric(vertical: 8.0),
-                          child: Image.asset(
-                            'assets/hero/meetheads/meettheteam.png',
+                          child: SvgPicture.asset(
+                            'assets/hero/meetheads/mainhead.svg',
+                            width: cardWidth,
                             fit: BoxFit.contain,
-                            errorBuilder: (_, __, ___) => Container(
-                              height: 180,
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF1E3A8A),
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: const Center(
-                                child: Text(
-                                  'MEET THE TEAM',
-                                  style: TextStyle(
-                                    fontFamily: AppTheme.fontUnivers,
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
+                            placeholderBuilder: (_) => Image.asset(
+                              'assets/hero/meetheads/meettheteam.png',
+                              width: cardWidth,
+                              fit: BoxFit.contain,
+                              errorBuilder: (_, __, ___) => Container(
+                                height: 180,
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF1E3A8A),
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: const Center(
+                                  child: Text(
+                                    'MEET THE TEAM',
+                                    style: TextStyle(
+                                      fontFamily: AppTheme.fontUnivers,
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
                                   ),
                                 ),
                               ),
@@ -140,7 +146,7 @@ class LegacyScreen extends StatelessWidget {
 
                     const SizedBox(height: 12),
 
-                    // 2. LEGACY FOLDER CARD
+                    // 2. LEGACY FOLDER CARD (legacy.svg)
                     Center(
                       child: GestureDetector(
                         onTap: () {
@@ -154,23 +160,29 @@ class LegacyScreen extends StatelessWidget {
                         child: Container(
                           width: cardWidth,
                           margin: const EdgeInsets.symmetric(vertical: 8.0),
-                          child: Image.asset(
-                            'assets/hero/meetheads/legacyindark.png',
+                          child: SvgPicture.asset(
+                            'assets/hero/meetheads/legacy.svg',
+                            width: cardWidth,
                             fit: BoxFit.contain,
-                            errorBuilder: (_, __, ___) => Container(
-                              height: 180,
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF1E3A8A),
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: const Center(
-                                child: Text(
-                                  'LEGACY',
-                                  style: TextStyle(
-                                    fontFamily: AppTheme.fontUnivers,
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
+                            placeholderBuilder: (_) => Image.asset(
+                              'assets/hero/meetheads/meettheteam.png',
+                              width: cardWidth,
+                              fit: BoxFit.contain,
+                              errorBuilder: (_, __, ___) => Container(
+                                height: 180,
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF1E3A8A),
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: const Center(
+                                  child: Text(
+                                    'LEGACY',
+                                    style: TextStyle(
+                                      fontFamily: AppTheme.fontUnivers,
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
                                   ),
                                 ),
                               ),
