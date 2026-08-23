@@ -23,11 +23,19 @@ class HeadsTeamScreen extends StatefulWidget {
 
 class _HeadsTeamScreenState extends State<HeadsTeamScreen> {
   late int _selectedTab; // 0 = Heads, 1 = Developers
+  late PageController _pageController;
 
   @override
   void initState() {
     super.initState();
     _selectedTab = widget.initialTabIndex;
+    _pageController = PageController(viewportFraction: 0.82);
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
   }
 
   Future<void> _launchUrl(BuildContext context, String urlString) async {
@@ -44,7 +52,6 @@ class _HeadsTeamScreenState extends State<HeadsTeamScreen> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final screenWidth = MediaQuery.of(context).size.width;
-    final cardWidth = (screenWidth * 0.86).clamp(280.0, 360.0);
 
     final backgroundColor = isDark ? const Color(0xFF070B19) : const Color(0xFFF8F9FA);
     final cardBgColor = isDark ? const Color(0xFF0A0F24) : Colors.white;
@@ -55,121 +62,127 @@ class _HeadsTeamScreenState extends State<HeadsTeamScreen> {
     return Scaffold(
       backgroundColor: backgroundColor,
       body: SafeArea(
-        child: Stack(
+        child: Column(
           children: [
-            // Scrollable Content (Header Graphic + Toggle + Cards)
-            CustomScrollView(
-              physics: const BouncingScrollPhysics(),
-              slivers: [
-                // Top Header Artwork: mainheadsdark.png
-                SliverToBoxAdapter(
-                  child: Column(
-                    children: [
-                      const SizedBox(height: 12),
-                      GestureDetector(
-                        onTap: () {
-                          // Tapping the main artwork alternates between Heads and Developers
-                          setState(() {
-                            _selectedTab = _selectedTab == 0 ? 1 : 0;
-                          });
-                        },
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 6.0),
-                          child: Center(
-                            child: SizedBox(
-                              width: (screenWidth * 0.76).clamp(240.0, 320.0),
-                              child: isDark
-                                  ? Image.asset(
-                                      'assets/hero/meetheads/meettheteamindark.png',
-                                      fit: BoxFit.contain,
-                                      errorBuilder: (_, __, ___) => SvgPicture.asset(
-                                        'assets/hero/meetheads/mainhead.svg',
-                                        fit: BoxFit.contain,
-                                      ),
-                                    )
-                                  : Image.asset(
-                                      'assets/hero/meetheads/meettheteaminbright.png',
-                                      fit: BoxFit.contain,
-                                      errorBuilder: (_, __, ___) => SvgPicture.asset(
-                                        'assets/hero/meetheads/mainhead.svg',
-                                        fit: BoxFit.contain,
-                                      ),
-                                    ),
-                            ),
-                          ),
-                        ),
-                      ),
+            // Top Bar with clean back button and header graphic
+            _buildHeaderSection(context, isDark, screenWidth),
 
-                      const SizedBox(height: 8),
+            const SizedBox(height: 12),
 
-                      // Category Selector Pills: [Heads | App Developers]
-                      Center(
-                        child: Container(
-                          padding: const EdgeInsets.all(4),
-                          decoration: BoxDecoration(
-                            color: isDark ? const Color(0xFF0F172A) : Colors.grey.shade200,
-                            borderRadius: BorderRadius.circular(24),
-                            border: Border.all(
-                              color: isDark ? const Color(0xFF1E293B) : Colors.grey.shade300,
-                            ),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              _buildCategoryTab('Heads', 0, isDark),
-                              _buildCategoryTab('App Developers', 1, isDark),
-                            ],
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(height: 12),
-                    ],
+            // Category Selector Pills: [Heads | App Developers]
+            Center(
+              child: Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(0xFF0F172A) : Colors.grey.shade200,
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(
+                    color: isDark ? const Color(0xFF1E293B) : Colors.grey.shade300,
                   ),
                 ),
-
-                // Vertical List of Cards (Heads or Developers)
-                SliverPadding(
-                  padding: const EdgeInsets.only(bottom: 40.0, top: 4.0),
-                  sliver: _selectedTab == 0
-                      ? _buildHeadsList(cardWidth, cardBgColor, borderColor, teamTitleColor, nameColor, isDark)
-                      : _buildDevelopersList(cardWidth, cardBgColor, borderColor, teamTitleColor, nameColor, isDark),
-                ),
-              ],
-            ),
-
-            // Top-Left Elevated Corner Back Button
-            Positioned(
-              top: 8,
-              left: 12,
-              child: GestureDetector(
-                onTap: () => Navigator.pop(context),
-                child: Container(
-                  width: 38,
-                  height: 38,
-                  decoration: BoxDecoration(
-                    color: isDark ? Colors.white.withOpacity(0.12) : Colors.black.withOpacity(0.06),
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: isDark ? Colors.white.withOpacity(0.18) : Colors.black.withOpacity(0.1),
-                      width: 1,
-                    ),
-                  ),
-                  child: Center(
-                    child: Padding(
-                      padding: const EdgeInsets.only(left: 5.0),
-                      child: Icon(
-                        Icons.arrow_back_ios,
-                        color: isDark ? Colors.white : Colors.black87,
-                        size: 17,
-                      ),
-                    ),
-                  ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _buildCategoryTab('Heads', 0, isDark),
+                    _buildCategoryTab('App Developers', 1, isDark),
+                  ],
                 ),
               ),
             ),
+
+            const SizedBox(height: 20),
+
+            // Horizontal scroll PageView of Cards
+            Expanded(
+              child: PageView.builder(
+                controller: _pageController,
+                itemCount: _selectedTab == 0 ? widget.heads.length : widget.developers.length,
+                physics: const BouncingScrollPhysics(),
+                itemBuilder: (context, index) {
+                  if (_selectedTab == 0) {
+                    final head = widget.heads[index];
+                    return _buildTeamCard(
+                      teamName: head.teamName,
+                      name: head.name,
+                      imageUrl: head.imageUrl,
+                      role: head.designation,
+                      linkedinUrl: head.linkedinUrl,
+                      cardBgColor: cardBgColor,
+                      borderColor: borderColor,
+                      teamTitleColor: teamTitleColor,
+                      nameColor: nameColor,
+                      isDark: isDark,
+                    );
+                  } else {
+                    final dev = widget.developers[index];
+                    return _buildTeamCard(
+                      teamName: dev.teamName,
+                      name: dev.name,
+                      imageUrl: dev.imageUrl,
+                      role: dev.role,
+                      linkedinUrl: dev.linkedinUrl,
+                      cardBgColor: cardBgColor,
+                      borderColor: borderColor,
+                      teamTitleColor: teamTitleColor,
+                      nameColor: nameColor,
+                      isDark: isDark,
+                    );
+                  }
+                },
+              ),
+            ),
+
+            const SizedBox(height: 32),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildHeaderSection(BuildContext context, bool isDark, double screenWidth) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          // Back Button
+          Positioned(
+            left: 0,
+            child: GestureDetector(
+              onTap: () => Navigator.pop(context),
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Icon(
+                  Icons.arrow_back_ios_new_rounded,
+                  size: 20,
+                  color: isDark ? Colors.white : Colors.black87,
+                ),
+              ),
+            ),
+          ),
+
+          // MEET THE TEAM Artwork
+          SizedBox(
+            width: (screenWidth * 0.65).clamp(200.0, 260.0),
+            child: isDark
+                ? Image.asset(
+                    'assets/hero/meetheads/meettheteamindark.png',
+                    fit: BoxFit.contain,
+                    errorBuilder: (_, __, ___) => SvgPicture.asset(
+                      'assets/hero/meetheads/mainhead.svg',
+                      fit: BoxFit.contain,
+                    ),
+                  )
+                : Image.asset(
+                    'assets/hero/meetheads/meettheteaminbright.png',
+                    fit: BoxFit.contain,
+                    errorBuilder: (_, __, ___) => SvgPicture.asset(
+                      'assets/hero/meetheads/mainhead.svg',
+                      fit: BoxFit.contain,
+                    ),
+                  ),
+          ),
+        ],
       ),
     );
   }
@@ -178,7 +191,12 @@ class _HeadsTeamScreenState extends State<HeadsTeamScreen> {
     final isSelected = _selectedTab == index;
     return GestureDetector(
       onTap: () {
-        setState(() => _selectedTab = index);
+        setState(() {
+          _selectedTab = index;
+          if (_pageController.hasClients) {
+            _pageController.jumpToPage(0);
+          }
+        });
       },
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
@@ -213,204 +231,105 @@ class _HeadsTeamScreenState extends State<HeadsTeamScreen> {
     );
   }
 
-  Widget _buildHeadsList(
-    double cardWidth,
-    Color cardBgColor,
-    Color borderColor,
-    Color teamTitleColor,
-    Color nameColor,
-    bool isDark,
-  ) {
-    return SliverList(
-      delegate: SliverChildBuilderDelegate(
-        (context, index) {
-          final head = widget.heads[index];
-          return Center(
-            child: Container(
-              width: cardWidth,
-              margin: const EdgeInsets.symmetric(vertical: 16.0),
-              padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 26.0),
-              decoration: BoxDecoration(
-                color: cardBgColor,
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: borderColor,
-                  width: 1.5,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: isDark
-                        ? const Color(0xFF3B82F6).withOpacity(0.16)
-                        : const Color(0xFF3B82F6).withOpacity(0.08),
-                    blurRadius: 24,
-                    spreadRadius: 1,
-                    offset: const Offset(0, 8),
-                  ),
-                ],
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Team Title
-                  Text(
-                    head.teamName.toUpperCase(),
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontFamily: AppTheme.fontUnivers,
-                      fontSize: 26,
-                      fontWeight: FontWeight.w900,
-                      color: teamTitleColor,
-                      letterSpacing: 1.2,
-                    ),
-                  ),
-
-                  const SizedBox(height: 18),
-
-                  // Avatar with Glow Aura
-                  _buildAvatar(head.imageUrl, head.name, isDark),
-
-                  const SizedBox(height: 18),
-
-                  // Name
-                  Text(
-                    head.name.toUpperCase(),
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontFamily: AppTheme.fontUnivers,
-                      fontSize: 24,
-                      fontWeight: FontWeight.w900,
-                      color: nameColor,
-                      letterSpacing: 1.5,
-                    ),
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  // Pill 1: Designation
-                  _buildRolePill(head.designation.toUpperCase(), isDark),
-
-                  const SizedBox(height: 10),
-
-                  // Pill 2: Explore / LinkedIn
-                  _buildExplorePill(
-                    label: 'EXPLORE',
-                    icon: Icons.link_rounded,
-                    isDark: isDark,
-                    onTap: () => _launchUrl(context, head.linkedinUrl),
-                  ),
-                ],
-              ),
+  Widget _buildTeamCard({
+    required String teamName,
+    required String name,
+    required String imageUrl,
+    required String role,
+    required String linkedinUrl,
+    required Color cardBgColor,
+    required Color borderColor,
+    required Color teamTitleColor,
+    required Color nameColor,
+    required bool isDark,
+  }) {
+    return Center(
+      child: Container(
+        width: double.infinity,
+        margin: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0),
+        padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 20.0),
+        decoration: BoxDecoration(
+          color: cardBgColor,
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(
+            color: borderColor.withOpacity(0.8),
+            width: 1.5,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: isDark
+                  ? const Color(0xFF3B82F6).withOpacity(0.12)
+                  : const Color(0xFF3B82F6).withOpacity(0.06),
+              blurRadius: 20,
+              spreadRadius: 1,
+              offset: const Offset(0, 8),
             ),
-          );
-        },
-        childCount: widget.heads.length,
-      ),
-    );
-  }
-
-  Widget _buildDevelopersList(
-    double cardWidth,
-    Color cardBgColor,
-    Color borderColor,
-    Color teamTitleColor,
-    Color nameColor,
-    bool isDark,
-  ) {
-    return SliverList(
-      delegate: SliverChildBuilderDelegate(
-        (context, index) {
-          final member = widget.developers[index];
-          return Center(
-            child: Container(
-              width: cardWidth,
-              margin: const EdgeInsets.symmetric(vertical: 16.0),
-              padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 26.0),
-              decoration: BoxDecoration(
-                color: cardBgColor,
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: borderColor,
-                  width: 1.5,
+          ],
+        ),
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // Team Title
+              Text(
+                teamName.toUpperCase(),
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontFamily: AppTheme.fontUnivers,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w800,
+                  color: teamTitleColor,
+                  letterSpacing: 1.5,
                 ),
-                boxShadow: [
-                  BoxShadow(
-                    color: isDark
-                        ? const Color(0xFF3B82F6).withOpacity(0.16)
-                        : const Color(0xFF3B82F6).withOpacity(0.08),
-                    blurRadius: 24,
-                    spreadRadius: 1,
-                    offset: const Offset(0, 8),
-                  ),
-                ],
               ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Team Title
-                  Text(
-                    member.teamName.toUpperCase(),
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontFamily: AppTheme.fontUnivers,
-                      fontSize: 26,
-                      fontWeight: FontWeight.w900,
-                      color: teamTitleColor,
-                      letterSpacing: 1.2,
-                    ),
-                  ),
 
-                  const SizedBox(height: 18),
+              const SizedBox(height: 12),
 
-                  // Avatar with Glow Aura
-                  _buildAvatar(member.imageUrl, member.name, isDark),
+              // Avatar with Glow Aura
+              _buildAvatar(imageUrl, name, isDark),
 
-                  const SizedBox(height: 18),
+              const SizedBox(height: 12),
 
-                  // Name
-                  Text(
-                    member.name.toUpperCase(),
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontFamily: AppTheme.fontUnivers,
-                      fontSize: 24,
-                      fontWeight: FontWeight.w900,
-                      color: nameColor,
-                      letterSpacing: 1.5,
-                    ),
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  // Pill 1: Role
-                  _buildRolePill(member.role.toUpperCase(), isDark),
-
-                  const SizedBox(height: 10),
-
-                  // Pill 2: Explore
-                  _buildExplorePill(
-                    label: 'EXPLORE',
-                    icon: Icons.code_rounded,
-                    isDark: isDark,
-                    onTap: () {
-                      if (member.linkedinUrl.isNotEmpty) {
-                        _launchUrl(context, member.linkedinUrl);
-                      }
-                    },
-                  ),
-                ],
+              // Name
+              Text(
+                name.toUpperCase(),
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontFamily: AppTheme.fontUnivers,
+                  fontSize: 24,
+                  fontWeight: FontWeight.w900,
+                  color: nameColor,
+                  letterSpacing: 1.5,
+                ),
               ),
-            ),
-          );
-        },
-        childCount: widget.developers.length,
+
+              const SizedBox(height: 16),
+
+              // Pill 1: Designation/Role
+              _buildRolePill(role.toUpperCase(), isDark),
+
+              const SizedBox(height: 10),
+
+              // Pill 2: Explore / LinkedIn
+              _buildExplorePill(
+                label: 'EXPLORE',
+                icon: Icons.link_rounded,
+                isDark: isDark,
+                onTap: () => _launchUrl(context, linkedinUrl),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
 
   Widget _buildAvatar(String imageUrl, String name, bool isDark) {
     return Container(
-      width: 140,
-      height: 140,
+      width: 120,
+      height: 120,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         gradient: RadialGradient(
@@ -424,8 +343,8 @@ class _HeadsTeamScreenState extends State<HeadsTeamScreen> {
       ),
       child: Center(
         child: Container(
-          width: 120,
-          height: 120,
+          width: 100,
+          height: 100,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: isDark ? const Color(0xFF1E293B) : const Color(0xFFDBEAFE),
@@ -441,7 +360,7 @@ class _HeadsTeamScreenState extends State<HeadsTeamScreen> {
                       name.isNotEmpty ? name[0].toUpperCase() : 'D',
                       style: TextStyle(
                         fontFamily: AppTheme.fontUnivers,
-                        fontSize: 48,
+                        fontSize: 38,
                         fontWeight: FontWeight.w900,
                         color: isDark
                             ? const Color(0xFF60A5FA)
@@ -472,7 +391,7 @@ class _HeadsTeamScreenState extends State<HeadsTeamScreen> {
         name.isNotEmpty ? name[0].toUpperCase() : 'D',
         style: TextStyle(
           fontFamily: AppTheme.fontUnivers,
-          fontSize: 48,
+          fontSize: 38,
           fontWeight: FontWeight.w900,
           color: isDark ? const Color(0xFF60A5FA) : const Color(0xFF1D4ED8),
         ),
@@ -483,7 +402,7 @@ class _HeadsTeamScreenState extends State<HeadsTeamScreen> {
   Widget _buildRolePill(String roleText, bool isDark) {
     return Container(
       width: double.infinity,
-      height: 38,
+      height: 32,
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: isDark
@@ -512,8 +431,8 @@ class _HeadsTeamScreenState extends State<HeadsTeamScreen> {
           textAlign: TextAlign.center,
           style: TextStyle(
             fontFamily: AppTheme.fontGeneralSans,
-            fontSize: 12,
-            fontWeight: FontWeight.w700,
+            fontSize: 11,
+            fontWeight: FontWeight.w600,
             color: isDark ? const Color(0xFF93C5FD) : const Color(0xFF1D4ED8),
             letterSpacing: 1.2,
           ),
@@ -532,7 +451,7 @@ class _HeadsTeamScreenState extends State<HeadsTeamScreen> {
       onTap: onTap,
       child: Container(
         width: double.infinity,
-        height: 38,
+        height: 32,
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: isDark
@@ -564,10 +483,11 @@ class _HeadsTeamScreenState extends State<HeadsTeamScreen> {
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Icon(
               icon,
-              size: 16,
+              size: 14,
               color: isDark ? Colors.white : const Color(0xFF1D4ED8),
             ),
             const SizedBox(width: 6),
@@ -575,8 +495,8 @@ class _HeadsTeamScreenState extends State<HeadsTeamScreen> {
               label,
               style: TextStyle(
                 fontFamily: AppTheme.fontGeneralSans,
-                fontSize: 12,
-                fontWeight: FontWeight.w700,
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
                 color: isDark ? Colors.white : const Color(0xFF1D4ED8),
                 letterSpacing: 1.5,
               ),
