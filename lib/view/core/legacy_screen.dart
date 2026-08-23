@@ -161,11 +161,11 @@ class LegacyScreen extends StatelessWidget {
                             'assets/hero/meetheads/legacy.svg',
                             width: cardWidth,
                             fit: BoxFit.contain,
-                            placeholderBuilder: (_) => Image.asset(
-                              'assets/hero/meetheads/meettheteam.png',
+                            placeholderBuilder: (_) => SvgPicture.asset(
+                              'assets/hero/meetheads/mainhead.svg',
                               width: cardWidth,
                               fit: BoxFit.contain,
-                              errorBuilder: (_, __, ___) => Container(
+                              placeholderBuilder: (_) => Container(
                                 height: 180,
                                 decoration: BoxDecoration(
                                   color: const Color(0xFF1E3A8A),
