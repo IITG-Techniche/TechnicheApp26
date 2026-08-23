@@ -368,7 +368,7 @@ class _LandingScreenState extends ConsumerState<LandingScreen>
               GlowingBottomNavBarItem(
                   icon: Icons.map_rounded, label: 'Map'),
               GlowingBottomNavBarItem(
-                  icon: Icons.auto_awesome_rounded, label: 'Legacy'),
+                  icon: Icons.info_outline_rounded, label: 'About Us'),
             ],
           ),
         ),
