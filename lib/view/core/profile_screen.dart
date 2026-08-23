@@ -9,8 +9,6 @@ import 'package:techniche26/providers/theme_provider.dart';
 import 'package:techniche26/constant/appTheme.dart';
 import 'package:techniche26/utils/errorHandler.dart';
 import 'package:techniche26/view/auth/login_screen.dart';
-import 'package:techniche26/view/team/app_dev_team_screen.dart';
-import 'package:techniche26/view/team/heads_team_screen.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   static const String routeName = '/profile';
@@ -287,20 +285,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           // 2. Academic / Personal Details (Only if Authenticated & Complete)
           if (user.isAuthenticated && user.profileCompleted) ...[
             _buildAcademicDetailsCard(user, cardColor, borderColor, textPrimary, textSecondary),
-            const SizedBox(height: 20),
+            const SizedBox(height: 24),
           ],
 
-          // 3. App Settings (Theme Mode Toggle)
-          _buildSettingsSection(cardColor, borderColor, textPrimary, textSecondary, isDark),
-
-          const SizedBox(height: 20),
-
-          // 4. Team & Developers Section
-          _buildTeamSection(cardColor, borderColor, textPrimary, textSecondary, isDark),
-
-          const SizedBox(height: 24),
-
-          // 5. Account & Auth Actions
+          // 3. Account & Auth Actions
           if (user.isAuthenticated) ...[
             Row(
               children: [
@@ -377,7 +365,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             ),
           ],
 
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
 
           // Privacy Policy Link
           Center(
@@ -655,267 +643,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           ),
         ],
       ),
-    );
-  }
-
-  // ──── SETTINGS SECTION (DARK/LIGHT MODE SWITCH) ────
-  Widget _buildSettingsSection(
-    Color cardColor,
-    Color borderColor,
-    Color textPrimary,
-    Color textSecondary,
-    bool isDark,
-  ) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.only(left: 4.0, bottom: 8.0),
-          child: Text(
-            'PREFERENCES',
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w700,
-              fontFamily: AppTheme.fontGeneralSans,
-              letterSpacing: 1.0,
-              color: textSecondary,
-            ),
-          ),
-        ),
-        Container(
-          decoration: BoxDecoration(
-            color: cardColor,
-            borderRadius: BorderRadius.circular(18),
-            border: Border.all(color: borderColor, width: 1),
-          ),
-          child: ListTile(
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-            leading: Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: isDark
-                    ? const Color(0xFF38BDF8).withOpacity(0.15)
-                    : const Color(0xFFF59E0B).withOpacity(0.15),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                isDark ? Icons.dark_mode_rounded : Icons.light_mode_rounded,
-                color: isDark ? const Color(0xFF38BDF8) : const Color(0xFFF59E0B),
-                size: 22,
-              ),
-            ),
-            title: Text(
-              isDark ? 'Dark Mode' : 'Bright Mode',
-              style: TextStyle(
-                fontFamily: AppTheme.fontUnivers,
-                fontWeight: FontWeight.bold,
-                fontSize: 15,
-                color: textPrimary,
-              ),
-            ),
-            subtitle: Text(
-              isDark ? 'Dark theme active' : 'Light theme active',
-              style: TextStyle(
-                fontFamily: AppTheme.fontGeneralSans,
-                fontSize: 12,
-                color: textSecondary,
-              ),
-            ),
-            trailing: Switch.adaptive(
-              value: isDark,
-              activeColor: const Color(0xFF38BDF8),
-              onChanged: (val) {
-                ref.read(themeModeProvider.notifier).setThemeMode(
-                      val ? ThemeMode.dark : ThemeMode.light,
-                    );
-              },
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  // ──── MEET THE TEAM & APP DEVELOPER SECTION ────
-  Widget _buildTeamSection(
-    Color cardColor,
-    Color borderColor,
-    Color textPrimary,
-    Color textSecondary,
-    bool isDark,
-  ) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.only(left: 4.0, bottom: 8.0),
-          child: Text(
-            'MEET THE TEAM',
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w700,
-              fontFamily: AppTheme.fontGeneralSans,
-              letterSpacing: 1.0,
-              color: textSecondary,
-            ),
-          ),
-        ),
-        Container(
-          decoration: BoxDecoration(
-            color: cardColor,
-            borderRadius: BorderRadius.circular(18),
-            border: Border.all(color: borderColor, width: 1),
-          ),
-          child: Column(
-            children: [
-              // 1. AppDev Team
-              ListTile(
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
-                leading: Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF3B82F6).withOpacity(0.12),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.terminal_rounded,
-                    color: Color(0xFF3B82F6),
-                    size: 22,
-                  ),
-                ),
-                title: Text(
-                  'AppDev Team',
-                  style: TextStyle(
-                    fontFamily: AppTheme.fontUnivers,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 15,
-                    color: textPrimary,
-                  ),
-                ),
-                subtitle: Text(
-                  'Core developers behind the app',
-                  style: TextStyle(
-                    fontFamily: AppTheme.fontGeneralSans,
-                    fontSize: 12,
-                    color: textSecondary,
-                  ),
-                ),
-                trailing: Icon(
-                  Icons.arrow_forward_ios_rounded,
-                  size: 16,
-                  color: textSecondary,
-                ),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const AppDevTeamScreen(),
-                    ),
-                  );
-                },
-              ),
-
-              Divider(height: 1, indent: 64, color: borderColor),
-
-              // 2. Heads
-              ListTile(
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
-                leading: Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF8B5CF6).withOpacity(0.12),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.groups_rounded,
-                    color: Color(0xFF8B5CF6),
-                    size: 22,
-                  ),
-                ),
-                title: Text(
-                  'Heads',
-                  style: TextStyle(
-                    fontFamily: AppTheme.fontUnivers,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 15,
-                    color: textPrimary,
-                  ),
-                ),
-                subtitle: Text(
-                  'Techniche convenors and module heads',
-                  style: TextStyle(
-                    fontFamily: AppTheme.fontGeneralSans,
-                    fontSize: 12,
-                    color: textSecondary,
-                  ),
-                ),
-                trailing: Icon(
-                  Icons.arrow_forward_ios_rounded,
-                  size: 16,
-                  color: textSecondary,
-                ),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const HeadsTeamScreen(),
-                    ),
-                  );
-                },
-              ),
-
-              Divider(height: 1, indent: 64, color: borderColor),
-
-              // 3. App Developer (Direct entry)
-              ListTile(
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
-                leading: Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF10B981).withOpacity(0.12),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.code_rounded,
-                    color: Color(0xFF10B981),
-                    size: 22,
-                  ),
-                ),
-                title: Text(
-                  'App Developer',
-                  style: TextStyle(
-                    fontFamily: AppTheme.fontUnivers,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 15,
-                    color: textPrimary,
-                  ),
-                ),
-                subtitle: Text(
-                  'Explore developer credits & profiles',
-                  style: TextStyle(
-                    fontFamily: AppTheme.fontGeneralSans,
-                    fontSize: 12,
-                    color: textSecondary,
-                  ),
-                ),
-                trailing: Icon(
-                  Icons.arrow_forward_ios_rounded,
-                  size: 16,
-                  color: textSecondary,
-                ),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const AppDevTeamScreen(),
-                    ),
-                  );
-                },
-              ),
-            ],
-          ),
-        ),
-      ],
     );
   }
 
