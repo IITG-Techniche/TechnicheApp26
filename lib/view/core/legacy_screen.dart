@@ -98,7 +98,7 @@ class LegacyScreen extends StatelessWidget {
               sliver: SliverList(
                 delegate: SliverChildListDelegate(
                   [
-                    // 1. MEET THE TEAM FOLDER CARD (mainhead.svg / meettheteam.png)
+                    // 1. MEET THE TEAM FOLDER CARD (dark: meettheteamindark.png / bright: meettheteaminbright.png)
                     Center(
                       child: GestureDetector(
                         onTap: () {
@@ -112,29 +112,26 @@ class LegacyScreen extends StatelessWidget {
                         child: Container(
                           width: cardWidth,
                           margin: const EdgeInsets.symmetric(vertical: 8.0),
-                          child: SvgPicture.asset(
-                            'assets/hero/meetheads/mainhead.svg',
+                          child: Image.asset(
+                            isDark
+                                ? 'assets/hero/meetheads/meettheteamindark.png'
+                                : 'assets/hero/meetheads/meettheteaminbright.png',
                             width: cardWidth,
                             fit: BoxFit.contain,
-                            placeholderBuilder: (_) => Image.asset(
-                              'assets/hero/meetheads/meettheteam.png',
-                              width: cardWidth,
-                              fit: BoxFit.contain,
-                              errorBuilder: (_, __, ___) => Container(
-                                height: 180,
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFF1E3A8A),
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                child: const Center(
-                                  child: Text(
-                                    'MEET THE TEAM',
-                                    style: TextStyle(
-                                      fontFamily: AppTheme.fontUnivers,
-                                      fontSize: 24,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white,
-                                    ),
+                            errorBuilder: (_, __, ___) => Container(
+                              height: 180,
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF1E3A8A),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: const Center(
+                                child: Text(
+                                  'MEET THE TEAM',
+                                  style: TextStyle(
+                                    fontFamily: AppTheme.fontUnivers,
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
                                   ),
                                 ),
                               ),
