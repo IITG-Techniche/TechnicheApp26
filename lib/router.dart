@@ -13,6 +13,7 @@ import 'package:techniche26/widgets/ca_bottom_nav_bar.dart';
 import 'package:techniche26/view/core/help_center_screen.dart';
 import 'package:techniche26/view/core/landing_screen.dart';
 import 'package:techniche26/view/core/legacy_screen.dart';
+import 'package:techniche26/view/core/legacy_detail_screen.dart';
 import 'package:techniche26/view/core/map_screen.dart';
 import 'package:techniche26/view/core/merch_screen.dart';
 import 'package:techniche26/view/core/onboarding_screen.dart';
@@ -83,6 +84,12 @@ Route<dynamic> generateRoute(RouteSettings routeSettings) {
       return MaterialPageRoute(
         settings: routeSettings,
         builder: (_) => const LegacyScreen(),
+      );
+
+    case LegacyDetailScreen.routeName:
+      return MaterialPageRoute(
+        settings: routeSettings,
+        builder: (_) => const LegacyDetailScreen(),
       );
 
     case SchedulePage.routeName:

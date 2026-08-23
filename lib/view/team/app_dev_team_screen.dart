@@ -24,11 +24,18 @@ class AppDevTeamScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final screenWidth = MediaQuery.of(context).size.width;
     final cardWidth = (screenWidth * 0.86).clamp(280.0, 360.0);
 
+    final backgroundColor = isDark ? const Color(0xFF070B19) : const Color(0xFFF8F9FA);
+    final cardBgColor = isDark ? const Color(0xFF0A0F24) : Colors.white;
+    final borderColor = isDark ? const Color(0xFF3B82F6).withOpacity(0.55) : const Color(0xFF3B82F6);
+    final teamTitleColor = isDark ? Colors.white : const Color(0xFF1D4ED8);
+    final nameColor = isDark ? Colors.white : const Color(0xFF1E3A8A);
+
     return Scaffold(
-      backgroundColor: const Color(0xFF070B19),
+      backgroundColor: backgroundColor,
       body: SafeArea(
         child: Stack(
           children: [
@@ -41,17 +48,16 @@ class AppDevTeamScreen extends StatelessWidget {
                   child: Column(
                     children: [
                       const SizedBox(height: 12),
-                      // Header Artwork: mainheads.png
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
                         child: Center(
                           child: SizedBox(
                             width: (screenWidth * 0.76).clamp(240.0, 320.0),
                             child: Image.asset(
-                              'assets/hero/meetheads/mainheads.png',
+                              'assets/hero/meetheads/mainheadsdark.png',
                               fit: BoxFit.contain,
-                              errorBuilder: (_, __, ___) => const Padding(
-                                padding: EdgeInsets.all(16.0),
+                              errorBuilder: (_, __, ___) => Padding(
+                                padding: const EdgeInsets.all(16.0),
                                 child: Text(
                                   'MEET THE DEVELOPERS',
                                   textAlign: TextAlign.center,
@@ -59,7 +65,7 @@ class AppDevTeamScreen extends StatelessWidget {
                                     fontFamily: AppTheme.fontUnivers,
                                     fontSize: 32,
                                     fontWeight: FontWeight.w900,
-                                    color: Colors.white,
+                                    color: isDark ? Colors.white : const Color(0xFF1E3A8A),
                                     letterSpacing: 2.0,
                                   ),
                                 ),
@@ -86,15 +92,17 @@ class AppDevTeamScreen extends StatelessWidget {
                             margin: const EdgeInsets.symmetric(vertical: 16.0),
                             padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 26.0),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF0A0F24),
+                              color: cardBgColor,
                               borderRadius: BorderRadius.circular(20),
                               border: Border.all(
-                                color: const Color(0xFF3B82F6).withOpacity(0.55),
+                                color: borderColor,
                                 width: 1.5,
                               ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: const Color(0xFF3B82F6).withOpacity(0.16),
+                                  color: isDark
+                                      ? const Color(0xFF3B82F6).withOpacity(0.16)
+                                      : const Color(0xFF3B82F6).withOpacity(0.08),
                                   blurRadius: 24,
                                   spreadRadius: 1,
                                   offset: const Offset(0, 8),
@@ -108,11 +116,11 @@ class AppDevTeamScreen extends StatelessWidget {
                                 Text(
                                   member.teamName.toUpperCase(),
                                   textAlign: TextAlign.center,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontFamily: AppTheme.fontUnivers,
                                     fontSize: 26,
                                     fontWeight: FontWeight.w900,
-                                    color: Colors.white,
+                                    color: teamTitleColor,
                                     letterSpacing: 1.2,
                                   ),
                                 ),
@@ -127,7 +135,9 @@ class AppDevTeamScreen extends StatelessWidget {
                                     shape: BoxShape.circle,
                                     gradient: RadialGradient(
                                       colors: [
-                                        const Color(0xFF6366F1).withOpacity(0.4),
+                                        isDark
+                                            ? const Color(0xFF6366F1).withOpacity(0.4)
+                                            : const Color(0xFF93C5FD).withOpacity(0.35),
                                         Colors.transparent,
                                       ],
                                     ),
@@ -139,7 +149,7 @@ class AppDevTeamScreen extends StatelessWidget {
                                       decoration: BoxDecoration(
                                         shape: BoxShape.circle,
                                         border: Border.all(
-                                          color: const Color(0xFF60A5FA).withOpacity(0.4),
+                                          color: const Color(0xFF60A5FA).withOpacity(0.5),
                                           width: 2,
                                         ),
                                       ),
@@ -149,11 +159,11 @@ class AppDevTeamScreen extends StatelessWidget {
                                                 member.imageUrl,
                                                 fit: BoxFit.cover,
                                                 errorBuilder: (_, __, ___) => Container(
-                                                  color: const Color(0xFF1E293B),
-                                                  child: const Icon(
+                                                  color: isDark ? const Color(0xFF1E293B) : Colors.grey.shade200,
+                                                  child: Icon(
                                                     Icons.person,
                                                     size: 60,
-                                                    color: Color(0xFF6D7985),
+                                                    color: isDark ? const Color(0xFF6D7985) : Colors.grey.shade600,
                                                   ),
                                                 ),
                                               )
@@ -161,11 +171,11 @@ class AppDevTeamScreen extends StatelessWidget {
                                                 member.imageUrl,
                                                 fit: BoxFit.cover,
                                                 errorBuilder: (_, __, ___) => Container(
-                                                  color: const Color(0xFF1E293B),
-                                                  child: const Icon(
+                                                  color: isDark ? const Color(0xFF1E293B) : Colors.grey.shade200,
+                                                  child: Icon(
                                                     Icons.person,
                                                     size: 60,
-                                                    color: Color(0xFF6D7985),
+                                                    color: isDark ? const Color(0xFF6D7985) : Colors.grey.shade600,
                                                   ),
                                                 ),
                                               ),
@@ -180,11 +190,11 @@ class AppDevTeamScreen extends StatelessWidget {
                                 Text(
                                   member.name.toUpperCase(),
                                   textAlign: TextAlign.center,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontFamily: AppTheme.fontUnivers,
                                     fontSize: 24,
                                     fontWeight: FontWeight.w900,
-                                    color: Colors.white,
+                                    color: nameColor,
                                     letterSpacing: 1.5,
                                   ),
                                 ),
@@ -197,16 +207,23 @@ class AppDevTeamScreen extends StatelessWidget {
                                   height: 38,
                                   decoration: BoxDecoration(
                                     gradient: LinearGradient(
-                                      colors: [
-                                        const Color(0xFF2563EB).withOpacity(0.35),
-                                        const Color(0xFF1E3A8A).withOpacity(0.55),
-                                      ],
+                                      colors: isDark
+                                          ? [
+                                              const Color(0xFF2563EB).withOpacity(0.35),
+                                              const Color(0xFF1E3A8A).withOpacity(0.55),
+                                            ]
+                                          : [
+                                              const Color(0xFFDBEAFE),
+                                              const Color(0xFFEFF6FF),
+                                            ],
                                       begin: Alignment.centerLeft,
                                       end: Alignment.centerRight,
                                     ),
                                     borderRadius: BorderRadius.circular(20),
                                     border: Border.all(
-                                      color: const Color(0xFF3B82F6).withOpacity(0.55),
+                                      color: isDark
+                                          ? const Color(0xFF3B82F6).withOpacity(0.55)
+                                          : const Color(0xFF93C5FD),
                                       width: 1,
                                     ),
                                   ),
@@ -214,11 +231,11 @@ class AppDevTeamScreen extends StatelessWidget {
                                     child: Text(
                                       member.role.toUpperCase(),
                                       textAlign: TextAlign.center,
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                         fontFamily: AppTheme.fontGeneralSans,
                                         fontSize: 12,
                                         fontWeight: FontWeight.w700,
-                                        color: Color(0xFF93C5FD),
+                                        color: isDark ? const Color(0xFF93C5FD) : const Color(0xFF1D4ED8),
                                         letterSpacing: 1.2,
                                       ),
                                     ),
@@ -239,42 +256,49 @@ class AppDevTeamScreen extends StatelessWidget {
                                     height: 38,
                                     decoration: BoxDecoration(
                                       gradient: LinearGradient(
-                                        colors: [
-                                          const Color(0xFF3B82F6).withOpacity(0.5),
-                                          const Color(0xFF1D4ED8).withOpacity(0.7),
-                                        ],
+                                        colors: isDark
+                                            ? [
+                                                const Color(0xFF3B82F6).withOpacity(0.5),
+                                                const Color(0xFF1D4ED8).withOpacity(0.7),
+                                              ]
+                                            : [
+                                                const Color(0xFFDBEAFE),
+                                                const Color(0xFFEFF6FF),
+                                              ],
                                         begin: Alignment.centerLeft,
                                         end: Alignment.centerRight,
                                       ),
                                       borderRadius: BorderRadius.circular(20),
                                       border: Border.all(
-                                        color: const Color(0xFF60A5FA).withOpacity(0.6),
+                                        color: isDark
+                                            ? const Color(0xFF60A5FA).withOpacity(0.6)
+                                            : const Color(0xFF93C5FD),
                                         width: 1,
                                       ),
                                       boxShadow: [
                                         BoxShadow(
-                                          color: const Color(0xFF3B82F6).withOpacity(0.2),
+                                          color: const Color(0xFF3B82F6).withOpacity(0.15),
                                           blurRadius: 8,
                                           offset: const Offset(0, 2),
                                         ),
                                       ],
                                     ),
-                                    child: const Row(
+                                    child: Row(
                                       mainAxisAlignment: MainAxisAlignment.center,
                                       children: [
                                         Icon(
                                           Icons.code_rounded,
                                           size: 16,
-                                          color: Colors.white,
+                                          color: isDark ? Colors.white : const Color(0xFF1D4ED8),
                                         ),
-                                        SizedBox(width: 6),
+                                        const SizedBox(width: 6),
                                         Text(
                                           'EXPLORE',
                                           style: TextStyle(
                                             fontFamily: AppTheme.fontGeneralSans,
                                             fontSize: 12,
                                             fontWeight: FontWeight.w700,
-                                            color: Colors.white,
+                                            color: isDark ? Colors.white : const Color(0xFF1D4ED8),
                                             letterSpacing: 1.5,
                                           ),
                                         ),
@@ -304,19 +328,19 @@ class AppDevTeamScreen extends StatelessWidget {
                   width: 38,
                   height: 38,
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.12),
+                    color: isDark ? Colors.white.withOpacity(0.12) : Colors.black.withOpacity(0.06),
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: Colors.white.withOpacity(0.18),
+                      color: isDark ? Colors.white.withOpacity(0.18) : Colors.black.withOpacity(0.1),
                       width: 1,
                     ),
                   ),
-                  child: const Center(
+                  child: Center(
                     child: Padding(
-                      padding: EdgeInsets.only(left: 5.0),
+                      padding: const EdgeInsets.only(left: 5.0),
                       child: Icon(
                         Icons.arrow_back_ios,
-                        color: Colors.white,
+                        color: isDark ? Colors.white : Colors.black87,
                         size: 17,
                       ),
                     ),
