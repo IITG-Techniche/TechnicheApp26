@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../constant/appTheme.dart';
-import '../team/app_dev_team_screen.dart';
 import '../team/heads_team_screen.dart';
 import 'legacy_detail_screen.dart';
 
@@ -17,160 +16,6 @@ class LegacyScreen extends StatelessWidget {
         await launchUrl(uri, mode: LaunchMode.externalApplication);
       }
     } catch (_) {}
-  }
-
-  void _showMeetTheTeamChooser(BuildContext context, bool isDark) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: isDark ? const Color(0xFF0F172A) : Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (ctx) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Center(
-                child: Container(
-                  width: 40,
-                  height: 4,
-                  margin: const EdgeInsets.only(bottom: 18),
-                  decoration: BoxDecoration(
-                    color: isDark ? const Color(0xFF334155) : Colors.grey[300],
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-              ),
-              Text(
-                'Meet the Team',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  fontFamily: AppTheme.fontUnivers,
-                  color: isDark ? Colors.white : const Color(0XFF232930),
-                ),
-              ),
-              const SizedBox(height: 6),
-              Text(
-                'Select a team category to view profiles',
-                style: TextStyle(
-                  fontSize: 13,
-                  fontFamily: AppTheme.fontGeneralSans,
-                  color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF6D7985),
-                ),
-              ),
-              const SizedBox(height: 18),
-
-              // 1. Heads
-              Container(
-                decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF8F9FA),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
-                  ),
-                ),
-                child: ListTile(
-                  leading: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF8B5CF6).withOpacity(0.15),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.groups_rounded,
-                      color: Color(0xFF8B5CF6),
-                      size: 22,
-                    ),
-                  ),
-                  title: Text(
-                    'Heads',
-                    style: TextStyle(
-                      fontFamily: AppTheme.fontUnivers,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                      color: isDark ? Colors.white : const Color(0XFF232930),
-                    ),
-                  ),
-                  subtitle: Text(
-                    'Convenor & Module Heads of Techniche',
-                    style: TextStyle(
-                      fontFamily: AppTheme.fontGeneralSans,
-                      fontSize: 12,
-                      color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF6D7985),
-                    ),
-                  ),
-                  trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 16),
-                  onTap: () {
-                    Navigator.pop(ctx);
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const HeadsTeamScreen()),
-                    );
-                  },
-                ),
-              ),
-
-              const SizedBox(height: 12),
-
-              // 2. App Developer
-              Container(
-                decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF8F9FA),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
-                  ),
-                ),
-                child: ListTile(
-                  leading: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF3B82F6).withOpacity(0.15),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.code_rounded,
-                      color: Color(0xFF3B82F6),
-                      size: 22,
-                    ),
-                  ),
-                  title: Text(
-                    'App Developer',
-                    style: TextStyle(
-                      fontFamily: AppTheme.fontUnivers,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                      color: isDark ? Colors.white : const Color(0XFF232930),
-                    ),
-                  ),
-                  subtitle: Text(
-                    'Core App Developers & DevOps team',
-                    style: TextStyle(
-                      fontFamily: AppTheme.fontGeneralSans,
-                      fontSize: 12,
-                      color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF6D7985),
-                    ),
-                  ),
-                  trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 16),
-                  onTap: () {
-                    Navigator.pop(ctx);
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const AppDevTeamScreen()),
-                    );
-                  },
-                ),
-              ),
-              const SizedBox(height: 12),
-            ],
-          ),
-        ),
-      ),
-    );
   }
 
   @override
@@ -237,10 +82,17 @@ class LegacyScreen extends StatelessWidget {
               sliver: SliverList(
                 delegate: SliverChildListDelegate(
                   [
-                    // 1. MEET THE TEAM FOLDER CARD
+                    // 1. MEET THE TEAM FOLDER CARD -> Opens Meet the Team (mainheadsdark screen)
                     Center(
                       child: GestureDetector(
-                        onTap: () => _showMeetTheTeamChooser(context, isDark),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const HeadsTeamScreen(),
+                            ),
+                          );
+                        },
                         child: Container(
                           width: cardWidth,
                           margin: const EdgeInsets.symmetric(vertical: 8.0),
@@ -260,7 +112,7 @@ class LegacyScreen extends StatelessWidget {
 
                     const SizedBox(height: 12),
 
-                    // 2. LEGACY FOLDER CARD
+                    // 2. LEGACY FOLDER CARD -> Opens Legacy Details
                     Center(
                       child: GestureDetector(
                         onTap: () {
