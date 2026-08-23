@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'dart:convert';
 import 'package:intl/intl.dart';
 import 'package:techniche26/view/core/landing_screen.dart';
-import 'package:techniche26/widgets/app_drawer.dart';
 
 const Map<String, Map<String, dynamic>> categoryStyles = {
   'Robotics': {'icon': Icons.smart_toy_outlined, 'color': Color(0xFF7C3EC3)},
@@ -110,7 +108,6 @@ class _SchedulePageState extends State<SchedulePage>
     if (!_isScheduleLive) {
       return Scaffold(
         backgroundColor: const Color(0xFFF5F5F5),
-        drawer: const AppDrawer(),
         body: SingleChildScrollView(
           child: Column(
             children: [
@@ -151,7 +148,6 @@ class _SchedulePageState extends State<SchedulePage>
       length: days.length,
       child: Scaffold(
         backgroundColor: const Color(0xFFF5F5F5),
-        drawer: const AppDrawer(),
         body: NestedScrollView(
           headerSliverBuilder: (context, innerBoxIsScrolled) {
             return [
@@ -285,35 +281,14 @@ class _SchedulePageState extends State<SchedulePage>
                   ),
                 ],
               ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Builder(
-                    builder: (BuildContext innerContext) {
-                      return GestureDetector(
-                        onTap: () {
-                          Scaffold.of(innerContext).openDrawer();
-                        },
-                        child: SizedBox(
-                          width: 24,
-                          height: 24,
-                          child: Image.asset(
-                            'assets/ghm/menu.png',
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                      );
-                    },
+              child: Center(
+                child: SizedBox(
+                  height: 24.0,
+                  child: Image.asset(
+                    'assets/ghm/logo3.png',
+                    fit: BoxFit.contain,
                   ),
-                  SizedBox(
-                    height: 24.0,
-                    child: Image.asset(
-                      'assets/ghm/logo3.png',
-                      fit: BoxFit.contain,
-                    ),
-                  ),
-                ],
+                ),
               ),
             ),
           ],

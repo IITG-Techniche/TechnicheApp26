@@ -5,6 +5,9 @@ import 'package:techniche26/providers/theme_provider.dart';
 import 'package:techniche26/view/auth/ca_auth_screen.dart';
 import 'package:techniche26/view/events/events_screen.dart';
 
+import 'package:techniche26/model/events_data.dart';
+import 'package:techniche26/view/events/sub_category_screen.dart';
+
 class AppDrawer extends ConsumerWidget {
   const AppDrawer({super.key});
 
@@ -51,12 +54,25 @@ class AppDrawer extends ConsumerWidget {
                   context: context,
                   icon: Icons.build_circle_rounded,
                   title: 'Workshops',
-                  routeName: EventsScreen.routeName,
-                  isTab: true,
-                  tabIndex: 0,
-                  ref: ref,
+                  routeName: SubCategoryScreen.routeName,
                   textMain: textMain,
                   isDark: isDark,
+                  onTap: () {
+                    Navigator.pop(context);
+                    final workshopCategory = eventData.firstWhere(
+                      (cat) => cat.title.toLowerCase().contains('workshop'),
+                      orElse: () => eventData.first,
+                    );
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => SubCategoryScreen(
+                          categoryTitle: workshopCategory.title,
+                          subCategories: workshopCategory.subCategories,
+                        ),
+                      ),
+                    );
+                  },
                 ),
 
                 Padding(
@@ -205,6 +221,7 @@ class AppDrawer extends ConsumerWidget {
     bool isTab = false,
     int? tabIndex,
     WidgetRef? ref,
+    VoidCallback? onTap,
   }) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
@@ -228,6 +245,10 @@ class AppDrawer extends ConsumerWidget {
         dense: true,
         hoverColor: isDark ? const Color(0xFF1E293B) : const Color(0xFFF5F5F5),
         onTap: () {
+          if (onTap != null) {
+            onTap();
+            return;
+          }
           Navigator.pop(context); // Close the drawer
           if (isTab && tabIndex != null && ref != null) {
             ref.read(bottomNavSelectedIndexProvider.notifier).state = tabIndex;

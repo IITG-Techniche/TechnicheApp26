@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../model/events_data.dart';
 import '../../constant/appTheme.dart';
-import '../../providers/theme_provider.dart';
 import 'sub_category_screen.dart';
 
 class EventsScreen extends StatefulWidget {
@@ -45,25 +43,22 @@ class _EventsScreenState extends State<EventsScreen> {
   }
 
   Widget _buildHeader(BuildContext context, {required Color textPrimary}) {
+    final canPop = !widget.isTab && Navigator.canPop(context);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
       child: Row(
         children: [
-          GestureDetector(
-            onTap: () {
-              if (widget.isTab) {
-                Scaffold.of(context).openDrawer();
-              } else {
-                Navigator.maybePop(context);
-              }
-            },
-            child: Icon(
-              widget.isTab ? Icons.menu_rounded : Icons.chevron_left_rounded,
-              color: textPrimary,
-              size: 28,
+          if (canPop) ...[
+            GestureDetector(
+              onTap: () => Navigator.maybePop(context),
+              child: Icon(
+                Icons.chevron_left_rounded,
+                color: textPrimary,
+                size: 28,
+              ),
             ),
-          ),
-          const SizedBox(width: 4),
+            const SizedBox(width: 8),
+          ],
           Expanded(
             child: Text(
               'Events',
@@ -76,30 +71,6 @@ class _EventsScreenState extends State<EventsScreen> {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
-          ),
-          const SizedBox(width: 8),
-          Consumer(
-            builder: (context, ref, _) {
-              final themeMode = ref.watch(themeModeProvider);
-              final isDark = themeMode == ThemeMode.dark;
-              return Container(
-                decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF1C1E38) : const Color(0xFFE2E8F0),
-                  shape: BoxShape.circle,
-                ),
-                child: IconButton(
-                  tooltip: isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode',
-                  icon: Icon(
-                    isDark ? Icons.wb_sunny_rounded : Icons.nightlight_round,
-                    color: isDark ? Colors.amber : const Color(0xFF30499E),
-                    size: 20,
-                  ),
-                  onPressed: () {
-                    ref.read(themeModeProvider.notifier).toggleTheme();
-                  },
-                ),
-              );
-            },
           ),
         ],
       ),
