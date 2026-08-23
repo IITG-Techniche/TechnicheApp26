@@ -33,7 +33,7 @@ class AppDrawer extends ConsumerWidget {
       ),
       child: Column(
         children: [
-          _buildDrawerHeader(),
+          _buildDrawerHeader(isDark),
           Expanded(
             child: ListView(
               padding: const EdgeInsets.symmetric(vertical: 8),
@@ -157,36 +157,54 @@ class AppDrawer extends ConsumerWidget {
     );
   }
 
-  Widget _buildDrawerHeader() {
+  Widget _buildDrawerHeader(bool isDark) {
     return Container(
       width: double.infinity,
-      decoration: const BoxDecoration(
-        color: Color(0xFF002B5B),
-        image: DecorationImage(
-          image: AssetImage('assets/ghm/frame3.png'),
-          fit: BoxFit.cover,
-        ),
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF090E25) : Colors.white,
       ),
-      padding: const EdgeInsets.fromLTRB(20, 60, 20, 30),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Stack(
         children: [
-          SizedBox(
-            width: 200,
-            child: Image.asset(
-              'assets/white_logo.png',
-              fit: BoxFit.contain,
+          // Background Image positioned to push the bottom wave cutout out of bounds
+          Positioned(
+            top: -20,
+            left: 0,
+            right: 0,
+            bottom: -120,
+            child: Opacity(
+              opacity: isDark ? 0.65 : 0.40,
+              child: Image.asset(
+                isDark ? 'assets/hero/hero.png' : 'assets/hero/heroLight.png',
+                fit: BoxFit.cover,
+              ),
             ),
           ),
-          const SizedBox(height: 12),
-          Text(
-            'Enriching Minds, Inspiring Innovation',
-            style: TextStyle(
-              color: Colors.white.withOpacity(0.8),
-              fontSize: 12,
-              fontFamily: 'General Sans',
-              fontWeight: FontWeight.w400,
-              height: 1.2,
+          // Content
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 60, 20, 30),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(
+                  width: 170,
+                  child: Image.asset(
+                    isDark ? 'assets/hero/heroLogo.png' : 'assets/hero/heroLogoLight.png',
+                    fit: BoxFit.contain,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'Enriching Minds, Inspiring Innovation',
+                  style: TextStyle(
+                    color: isDark ? Colors.white.withOpacity(0.8) : const Color(0xFF10152B).withOpacity(0.8),
+                    fontSize: 12,
+                    fontFamily: 'General Sans',
+                    fontWeight: FontWeight.w500,
+                    height: 1.2,
+                  ),
+                ),
+              ],
             ),
           ),
         ],
