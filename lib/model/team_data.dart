@@ -82,7 +82,7 @@ const List<TeamMember> kDevTeamMembers = [
     role: 'Senior Developer',
     teamName: 'SENIOR DEVELOPER',
     imageUrl: 'assets/hero/meetheads/sanjay.jpeg',
-    linkedinUrl: '',
+    linkedinUrl: 'https://www.linkedin.com/in/sanjay-saini18/',
   ),
   TeamMember(
     name: 'Hasini',
