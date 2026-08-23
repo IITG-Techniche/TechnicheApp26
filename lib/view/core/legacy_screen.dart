@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../constant/appTheme.dart';
@@ -12,11 +13,25 @@ class LegacyScreen extends StatelessWidget {
   Future<void> _launchUrl(String urlString) async {
     if (urlString.isEmpty) return;
     try {
-      final uri = Uri.parse(urlString);
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
-      }
+      HapticFeedback.lightImpact();
     } catch (_) {}
+
+    final uri = Uri.parse(urlString);
+    try {
+      final launched = await launchUrl(
+        uri,
+        mode: LaunchMode.externalApplication,
+      );
+      if (!launched) {
+        await launchUrl(uri, mode: LaunchMode.platformDefault);
+      }
+    } catch (_) {
+      try {
+        await launchUrl(uri, mode: LaunchMode.platformDefault);
+      } catch (e) {
+        debugPrint('Failed to open URL $urlString: $e');
+      }
+    }
   }
 
   @override
@@ -188,7 +203,7 @@ class LegacyScreen extends StatelessWidget {
 
   Widget _buildInteractiveSocialsGraphic(BuildContext context, bool isDark, double width) {
     final height = width * (372 / 355);
-    final buttonSize = width * 0.15;
+    final buttonSize = width * 0.17; // Generous tap target
 
     return SizedBox(
       width: width,
@@ -217,80 +232,105 @@ class LegacyScreen extends StatelessWidget {
           // 2. Clickable Hotspots overlay directly placed on the 5 icons:
           // [1] Instagram (Left)
           Positioned(
-            left: width * 0.11,
-            top: height * 0.45,
+            left: width * 0.10,
+            top: height * 0.44,
             width: buttonSize,
             height: buttonSize,
-            child: Material(
-              color: Colors.transparent,
-              child: InkWell(
-                borderRadius: BorderRadius.circular(buttonSize / 2),
-                splashColor: const Color(0xFFE1306C).withOpacity(0.35),
-                onTap: () => _launchUrl('https://www.instagram.com/techniche.iitg/'),
+            child: Tooltip(
+              message: 'Instagram',
+              child: Material(
+                color: Colors.transparent,
+                shape: const CircleBorder(),
+                child: InkWell(
+                  customBorder: const CircleBorder(),
+                  splashColor: const Color(0xFFE1306C).withOpacity(0.4),
+                  highlightColor: const Color(0xFFE1306C).withOpacity(0.2),
+                  onTap: () => _launchUrl('https://www.instagram.com/techniche.iitg/'),
+                ),
               ),
             ),
           ),
 
           // [2] LinkedIn (Bottom-Left)
           Positioned(
-            left: width * 0.21,
-            top: height * 0.64,
+            left: width * 0.20,
+            top: height * 0.63,
             width: buttonSize,
             height: buttonSize,
-            child: Material(
-              color: Colors.transparent,
-              child: InkWell(
-                borderRadius: BorderRadius.circular(buttonSize / 2),
-                splashColor: const Color(0xFF0A66C2).withOpacity(0.35),
-                onTap: () => _launchUrl('https://www.linkedin.com/company/techniche-iitg/'),
+            child: Tooltip(
+              message: 'LinkedIn',
+              child: Material(
+                color: Colors.transparent,
+                shape: const CircleBorder(),
+                child: InkWell(
+                  customBorder: const CircleBorder(),
+                  splashColor: const Color(0xFF0A66C2).withOpacity(0.4),
+                  highlightColor: const Color(0xFF0A66C2).withOpacity(0.2),
+                  onTap: () => _launchUrl('https://www.linkedin.com/company/techniche-iitg/'),
+                ),
               ),
             ),
           ),
 
           // [3] X / Twitter (Bottom-Center)
           Positioned(
-            left: width * 0.425,
-            top: height * 0.70,
+            left: width * 0.415,
+            top: height * 0.69,
             width: buttonSize,
             height: buttonSize,
-            child: Material(
-              color: Colors.transparent,
-              child: InkWell(
-                borderRadius: BorderRadius.circular(buttonSize / 2),
-                splashColor: Colors.white.withOpacity(0.3),
-                onTap: () => _launchUrl('https://x.com/techniche_iitg'),
+            child: Tooltip(
+              message: 'X (Twitter)',
+              child: Material(
+                color: Colors.transparent,
+                shape: const CircleBorder(),
+                child: InkWell(
+                  customBorder: const CircleBorder(),
+                  splashColor: Colors.white.withOpacity(0.4),
+                  highlightColor: Colors.white.withOpacity(0.2),
+                  onTap: () => _launchUrl('https://x.com/techniche_iitg'),
+                ),
               ),
             ),
           ),
 
           // [4] YouTube (Bottom-Right)
           Positioned(
-            left: width * 0.64,
-            top: height * 0.64,
+            left: width * 0.63,
+            top: height * 0.63,
             width: buttonSize,
             height: buttonSize,
-            child: Material(
-              color: Colors.transparent,
-              child: InkWell(
-                borderRadius: BorderRadius.circular(buttonSize / 2),
-                splashColor: const Color(0xFFFF0000).withOpacity(0.35),
-                onTap: () => _launchUrl('https://www.youtube.com/@technicheiitg'),
+            child: Tooltip(
+              message: 'YouTube',
+              child: Material(
+                color: Colors.transparent,
+                shape: const CircleBorder(),
+                child: InkWell(
+                  customBorder: const CircleBorder(),
+                  splashColor: const Color(0xFFFF0000).withOpacity(0.4),
+                  highlightColor: const Color(0xFFFF0000).withOpacity(0.2),
+                  onTap: () => _launchUrl('https://www.youtube.com/@technicheiitg'),
+                ),
               ),
             ),
           ),
 
           // [5] Facebook (Right)
           Positioned(
-            left: width * 0.74,
-            top: height * 0.45,
+            left: width * 0.73,
+            top: height * 0.44,
             width: buttonSize,
             height: buttonSize,
-            child: Material(
-              color: Colors.transparent,
-              child: InkWell(
-                borderRadius: BorderRadius.circular(buttonSize / 2),
-                splashColor: const Color(0xFF1877F2).withOpacity(0.35),
-                onTap: () => _launchUrl('https://www.facebook.com/techniche.iitg/'),
+            child: Tooltip(
+              message: 'Facebook',
+              child: Material(
+                color: Colors.transparent,
+                shape: const CircleBorder(),
+                child: InkWell(
+                  customBorder: const CircleBorder(),
+                  splashColor: const Color(0xFF1877F2).withOpacity(0.4),
+                  highlightColor: const Color(0xFF1877F2).withOpacity(0.2),
+                  onTap: () => _launchUrl('https://www.facebook.com/techniche.iitg/'),
+                ),
               ),
             ),
           ),
