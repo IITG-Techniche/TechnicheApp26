@@ -79,11 +79,11 @@ class _HeadsTeamScreenState extends State<HeadsTeamScreen> {
                             child: SizedBox(
                               width: (screenWidth * 0.76).clamp(240.0, 320.0),
                               child: isDark
-                                  ? SvgPicture.asset(
-                                      'assets/hero/meetheads/mainhead.svg',
+                                  ? Image.asset(
+                                      'assets/hero/meetheads/meettheteamindark.png',
                                       fit: BoxFit.contain,
-                                      placeholderBuilder: (_) => Image.asset(
-                                        'assets/hero/meetheads/meettheteaminbright.png',
+                                      errorBuilder: (_, __, ___) => SvgPicture.asset(
+                                        'assets/hero/meetheads/mainhead.svg',
                                         fit: BoxFit.contain,
                                       ),
                                     )
