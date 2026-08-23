@@ -68,7 +68,7 @@ const List<TeamMember> kDevTeamMembers = [
     role: 'DevOps Head',
     teamName: 'DEVOPS HEAD',
     imageUrl: 'assets/ayush-app.jpg',
-    linkedinUrl: '',
+    linkedinUrl: 'https://www.linkedin.com/in/ayush-ranjan469?utm_source=share_via&utm_content=profile&utm_medium=member_android',
   ),
   TeamMember(
     name: 'Sanjay Saini',
