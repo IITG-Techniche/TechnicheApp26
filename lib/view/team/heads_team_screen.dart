@@ -164,15 +164,23 @@ class _HeadsTeamScreenState extends State<HeadsTeamScreen> {
           // MEET THE TEAM Artwork
           SizedBox(
             width: (screenWidth * 0.65).clamp(200.0, 260.0),
-            child: SvgPicture.asset(
-              'assets/hero/meetheads/mainhead.svg',
-              fit: BoxFit.contain,
-              colorFilter: ColorFilter.mode(
-                isDark ? Colors.white : const Color(0xFF070B19),
-                BlendMode.srcIn,
-              ),
-              placeholderBuilder: (_) => const SizedBox(height: 50),
-            ),
+            child: isDark
+                ? Image.asset(
+                    'assets/hero/meetheads/meettheteamindark.png',
+                    fit: BoxFit.contain,
+                    errorBuilder: (_, __, ___) => SvgPicture.asset(
+                      'assets/hero/meetheads/mainhead.svg',
+                      fit: BoxFit.contain,
+                    ),
+                  )
+                : Image.asset(
+                    'assets/hero/meetheads/meettheteaminbright.png',
+                    fit: BoxFit.contain,
+                    errorBuilder: (_, __, ___) => SvgPicture.asset(
+                      'assets/hero/meetheads/mainhead.svg',
+                      fit: BoxFit.contain,
+                    ),
+                  ),
           ),
         ],
       ),
