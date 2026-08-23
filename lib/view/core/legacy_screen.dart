@@ -82,7 +82,7 @@ class LegacyScreen extends StatelessWidget {
               sliver: SliverList(
                 delegate: SliverChildListDelegate(
                   [
-                    // 1. MEET THE TEAM FOLDER CARD -> Opens Meet the Team (mainheadsdark screen)
+                    // 1. MEET THE TEAM FOLDER CARD (meettheteamdark.png for both Dark & Bright)
                     Center(
                       child: GestureDetector(
                         onTap: () {
@@ -97,12 +97,10 @@ class LegacyScreen extends StatelessWidget {
                           width: cardWidth,
                           margin: const EdgeInsets.symmetric(vertical: 8.0),
                           child: Image.asset(
-                            isDark
-                                ? 'assets/hero/meetheads/meettheteamdark.png'
-                                : 'assets/hero/meetheads/meettheteaminbright.png',
+                            'assets/hero/meetheads/meettheteam.png',
                             fit: BoxFit.contain,
                             errorBuilder: (_, __, ___) => Image.asset(
-                              'assets/hero/meetheads/meettheteamdark.png',
+                              'assets/hero/meetheads/meettheteam.png',
                               fit: BoxFit.contain,
                             ),
                           ),
@@ -112,7 +110,7 @@ class LegacyScreen extends StatelessWidget {
 
                     const SizedBox(height: 12),
 
-                    // 2. LEGACY FOLDER CARD -> Opens Legacy Details
+                    // 2. LEGACY FOLDER CARD (legacyindark.png for both Dark & Bright)
                     Center(
                       child: GestureDetector(
                         onTap: () {
@@ -154,7 +152,7 @@ class LegacyScreen extends StatelessWidget {
 
                     const SizedBox(height: 20),
 
-                    // 3. OUR SOCIALS GRAPHIC & INTERACTIVE BUTTONS
+                    // 3. OUR SOCIALS GRAPHIC (Dark & Bright aware) & INTERACTIVE BUTTONS
                     Center(
                       child: SizedBox(
                         width: cardWidth,

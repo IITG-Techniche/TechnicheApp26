@@ -54,7 +54,9 @@ class AppDevTeamScreen extends StatelessWidget {
                           child: SizedBox(
                             width: (screenWidth * 0.76).clamp(240.0, 320.0),
                             child: Image.asset(
-                              'assets/hero/meetheads/mainheadsdark.png',
+                              isDark
+                                  ? 'assets/hero/meetheads/mainheadsdark.png'
+                                  : 'assets/hero/meetheads/meettheteaminbright.png',
                               fit: BoxFit.contain,
                               errorBuilder: (_, __, ___) => Padding(
                                 padding: const EdgeInsets.all(16.0),
