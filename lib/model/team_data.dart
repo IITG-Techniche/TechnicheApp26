@@ -1,24 +1,32 @@
 class TeamMember {
   final String name;
   final String role;
+  final String teamName;
   final String imageUrl;
+  final String linkedinUrl;
 
   const TeamMember({
     required this.name,
     required this.role,
+    this.teamName = 'APP DEV TEAM',
     required this.imageUrl,
+    this.linkedinUrl = '',
   });
 
   factory TeamMember.fromJson(Map<String, dynamic> json) => TeamMember(
         name: json['name'] ?? '',
         role: json['role'] ?? '',
+        teamName: json['teamName'] ?? 'APP DEV TEAM',
         imageUrl: json['imageUrl'] ?? '',
+        linkedinUrl: json['linkedinUrl'] ?? '',
       );
 
   Map<String, dynamic> toJson() => {
         'name': name,
         'role': role,
+        'teamName': teamName,
         'imageUrl': imageUrl,
+        'linkedinUrl': linkedinUrl,
       };
 }
 
@@ -56,24 +64,32 @@ class HeadMember {
 
 const List<TeamMember> kDevTeamMembers = [
   TeamMember(
-    name: 'Dhruv',
+    name: 'Dhruv Gupta',
     role: 'DevOps Head',
+    teamName: 'DEVOPS TEAM',
     imageUrl: 'assets/dhruv-app.jpg',
+    linkedinUrl: 'https://www.linkedin.com/in/dhruvgupta21iitg/',
   ),
   TeamMember(
-    name: 'Arya',
+    name: 'Arya Pandey',
     role: 'DevOps Head',
+    teamName: 'DEVOPS TEAM',
     imageUrl: 'assets/arya-app.jpg',
+    linkedinUrl: 'https://www.linkedin.com/in/arya-pandey-265204257/',
   ),
   TeamMember(
     name: 'Ayush',
     role: 'Core Developer',
+    teamName: 'APP DEV TEAM',
     imageUrl: 'assets/ayush-app.jpg',
+    linkedinUrl: '',
   ),
   TeamMember(
     name: 'Divyansh',
     role: 'Developer (Organizer)',
+    teamName: 'APP DEV TEAM',
     imageUrl: 'assets/divyansh-app.jpg',
+    linkedinUrl: '',
   ),
 ];
 
@@ -160,7 +176,8 @@ const List<HeadMember> kFestHeads = [
     designation: 'Development Operations Head',
     teamName: 'DEVOPS TEAM',
     imageUrl: 'assets/dhruv-app.jpg',
-    linkedinUrl: 'https://www.linkedin.com/in/dhruvgupta21iitg/'),
+    linkedinUrl: 'https://www.linkedin.com/in/dhruvgupta21iitg/',
+  ),
   HeadMember(
     name: 'Amol Satheesh',
     designation: 'Creatives Head',
