@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:model_viewer_plus/model_viewer_plus.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:techniche26/constant/appTheme.dart';
 
 class HomeMerchandiseSection extends StatefulWidget {
@@ -17,18 +17,58 @@ class HomeMerchandiseSection extends StatefulWidget {
 class _HomeMerchandiseSectionState extends State<HomeMerchandiseSection> {
   int _selectedMerchIndex = 0;
 
+  // Static merch list — firestoreId maps to merch_items/{id} for the image
   final List<Map<String, String>> _merchList = const [
     {
-      "name": "Glitched GameBoy",
-      "model": "assets/MerchBlack.glb",
-      "alt": "Black Merch 3D Model",
+      'firestoreId': 'glitched_gameboy',
+      'name': 'Glitched GameBoy',
+      'fallback': 'assets/glitched.png',
     },
     {
-      "name": "Glorified GoodBoy",
-      "model": "assets/merchself.glb",
-      "alt": "White Merch 3D Model",
+      'firestoreId': 'glorified_goodboy',
+      'name': 'Glorified GoodBoy',
+      'fallback': 'assets/goodboy.png',
     },
   ];
+
+  // Firestore-fetched network image URLs, keyed by firestoreId
+  final Map<String, String> _networkImages = {};
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchMerchImages();
+  }
+
+  Future<void> _fetchMerchImages() async {
+    try {
+      for (final item in _merchList) {
+        final id = item['firestoreId']!;
+        final doc = await FirebaseFirestore.instance
+            .collection('merch_items')
+            .doc(id)
+            .get();
+        if (doc.exists && mounted) {
+          final url = (doc.data()?['imageUrl'] as String?) ?? '';
+          if (url.isNotEmpty) {
+            setState(() => _networkImages[id] = _convertDriveUrl(url));
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint('⚠️ HomeMerchandiseSection image fetch failed: $e');
+    }
+  }
+
+  /// Converts a Google Drive sharing URL to a direct image URL via the thumbnail endpoint.
+  String _convertDriveUrl(String url) {
+    final regex = RegExp(r'drive\.google\.com/file/d/([^/?]+)');
+    final match = regex.firstMatch(url);
+    if (match != null) {
+      return 'https://drive.google.com/thumbnail?id=${match.group(1)}&sz=w1000';
+    }
+    return url;
+  }
 
   void _toggleMerch() {
     setState(() {
@@ -39,6 +79,8 @@ class _HomeMerchandiseSectionState extends State<HomeMerchandiseSection> {
   @override
   Widget build(BuildContext context) {
     final currentMerch = _merchList[_selectedMerchIndex];
+    final networkUrl = _networkImages[currentMerch['firestoreId']];
+    final fallbackAsset = currentMerch['fallback']!;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20.0),
@@ -56,7 +98,7 @@ class _HomeMerchandiseSectionState extends State<HomeMerchandiseSection> {
           ),
         ),
         child: Stack(
-          clipBehavior: Clip.none,
+          clipBehavior: Clip.hardEdge,
           children: [
             // Techniche Merchandise Title Text (Top Left)
             Positioned(
@@ -98,8 +140,7 @@ class _HomeMerchandiseSectionState extends State<HomeMerchandiseSection> {
               child: GestureDetector(
                 onTap: () => Navigator.pushNamed(context, '/merch'),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 20, vertical: 11),
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 11),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(24),
                     gradient: AppTheme.primaryGradient,
@@ -124,20 +165,20 @@ class _HomeMerchandiseSectionState extends State<HomeMerchandiseSection> {
               ),
             ),
 
-            // Enlarged 3D Merch Shirt GLB Model with Switcher
+            // Merch Image — Firestore network URL with local asset fallback
             Positioned(
-              right: 2,
-              top: -32,
-              bottom: -10,
+              right: 0,
+              top: 0,
+              bottom: 0,
               width: 210,
               child: Stack(
                 alignment: Alignment.center,
                 clipBehavior: Clip.none,
                 children: [
-                  // Cyan/Blue Glowing Backdrop Aura
+                  // Glow backdrop
                   Container(
-                    width: 140,
-                    height: 150,
+                    width: 100,
+                    height: 100,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       boxShadow: [
@@ -149,30 +190,43 @@ class _HomeMerchandiseSectionState extends State<HomeMerchandiseSection> {
                       ],
                     ),
                   ),
-                  // ModelViewer 3D GLB Model (Large size: 200x240)
+
+                  // Tappable merch image
                   GestureDetector(
                     onTap: _toggleMerch,
                     child: SizedBox(
-                      width: 200,
-                      height: 240,
-                      child: ModelViewer(
-                        key: ValueKey(currentMerch["model"]),
-                        src: currentMerch["model"]!,
-                        alt: currentMerch["alt"]!,
-                        autoRotate: true,
-                        rotationPerSecond: "28deg",
-                        autoRotateDelay: 0,
-                        cameraControls: true,
-                        disableZoom: true,
-                        cameraOrbit: "0deg 75deg 105%",
-                        minCameraOrbit: "-Infinity 75deg auto",
-                        maxCameraOrbit: "Infinity 75deg auto",
-                        backgroundColor: Colors.transparent,
-                        loading: Loading.eager,
-                      ),
+                      width: 160,
+                      height: 180,
+                      child: networkUrl != null && networkUrl.isNotEmpty
+                          ? Image.network(
+                              networkUrl,
+                              fit: BoxFit.contain,
+                              loadingBuilder: (context, child, progress) {
+                                if (progress == null) return child;
+                                return Center(
+                                  child: CircularProgressIndicator(
+                                    value: progress.expectedTotalBytes != null
+                                        ? progress.cumulativeBytesLoaded /
+                                            progress.expectedTotalBytes!
+                                        : null,
+                                    color: AppTheme.primaryBlue,
+                                    strokeWidth: 2,
+                                  ),
+                                );
+                              },
+                              errorBuilder: (_, __, ___) => Image.asset(
+                                fallbackAsset,
+                                fit: BoxFit.contain,
+                              ),
+                            )
+                          : Image.asset(
+                              fallbackAsset,
+                              fit: BoxFit.contain,
+                            ),
                     ),
                   ),
-                  // Toggle Merch Arrow Button overlay
+
+                  // Toggle button
                   Positioned(
                     right: 4,
                     bottom: 24,

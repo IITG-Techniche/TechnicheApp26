@@ -2,9 +2,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../constant/appTheme.dart';
-import 'package:animated_glitch/animated_glitch.dart';
-import 'package:model_viewer_plus/model_viewer_plus.dart';
 
 class MerchScreen extends StatefulWidget {
   static const String routeName = '/merch';
@@ -18,29 +17,30 @@ class _MerchScreenState extends State<MerchScreen> {
   late final PageController _pageController;
   int _activePageIndex = 0;
 
-  final AnimatedGlitchController _glitchController = AnimatedGlitchController(
-    frequency: const Duration(milliseconds: 160),
-    level: 1.8,
-    distortionShift: const DistortionShift(count: 4),
-  );
-
   Timer? _autoScrollTimer;
-  bool _glitchActive = false;
 
+  // Firestore-driven values (from app_config/merch)
+  bool _isSoldOut = false;
+  String _orderFormUrl = 'https://forms.gle/87Zf6bjNXU8hwwAdA';
+
+  // Firestore-driven network image URLs, keyed by firestoreId
+  final Map<String, String> _networkImages = {};
+
+  // firestoreId maps to a document in the `merch_items` Firestore collection
   final List<Map<String, String>> merchItems = [
     {
+      "firestoreId": "glitched_gameboy",
       "title": "Glitched GameBoy",
-      "image": "assets/glitched.png",
-      "model": "assets/MerchBlack.glb",
+      "fallbackImage": "assets/glitched.png",
       "price": "₹449",
       "badge": "Limited Edition",
       "description":
           "When circuits fry but style survives. It's rebellious, loud, and built for those who'd rather crash the system than play by its rules.",
     },
     {
+      "firestoreId": "glorified_goodboy",
       "title": "Glorified GoodBoy",
-      "image": "assets/goodboy.png",
-      "model": "assets/merchself.glb",
+      "fallbackImage": "assets/goodboy.png",
       "price": "₹399",
       "badge": "Official Drop",
       "description":
@@ -48,7 +48,7 @@ class _MerchScreenState extends State<MerchScreen> {
     },
   ];
 
-  final String orderFormUrl = "https://forms.gle/87Zf6bjNXU8hwwAdA";
+
 
   @override
   void initState() {
@@ -60,17 +60,67 @@ class _MerchScreenState extends State<MerchScreen> {
     );
     _activePageIndex = initialPage % merchItems.length;
 
+    _fetchMerchConfig();
+    _fetchMerchImages();
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      for (var item in merchItems) {
-        if (item['image'] != null) {
-          precacheImage(AssetImage(item['image']!), context);
+      if (mounted) _startAutoScroll();
+    });
+  }
+
+  /// Fetches imageUrl for each merch item from `merch_items` Firestore collection.
+  Future<void> _fetchMerchImages() async {
+    try {
+      for (final item in merchItems) {
+        final id = item['firestoreId']!;
+        final doc = await FirebaseFirestore.instance
+            .collection('merch_items')
+            .doc(id)
+            .get();
+        if (doc.exists && mounted) {
+          final url = (doc.data()?['imageUrl'] as String?) ?? '';
+          if (url.isNotEmpty) {
+            setState(() => _networkImages[id] = _convertDriveUrl(url));
+          }
         }
       }
-      if (mounted) {
-        _startAutoScroll();
+    } catch (e) {
+      debugPrint('⚠️ Merch image fetch failed: $e');
+    }
+  }
+
+  /// Converts a Google Drive sharing URL to a direct image URL via the thumbnail endpoint.
+  /// https://drive.google.com/file/d/FILE_ID/view → https://drive.google.com/thumbnail?id=FILE_ID&sz=w1000
+  String _convertDriveUrl(String url) {
+    final regex = RegExp(r'drive\.google\.com/file/d/([^/?]+)');
+    final match = regex.firstMatch(url);
+    if (match != null) {
+      final fileId = match.group(1)!;
+      debugPrint('🖼️ Drive URL converted: id=$fileId');
+      return 'https://drive.google.com/thumbnail?id=$fileId&sz=w1000';
+    }
+    return url;
+  }
+
+  /// Fetches isSoldOut and orderFormUrl from Firestore `app_config/merch`.
+  Future<void> _fetchMerchConfig() async {
+    try {
+      final doc = await FirebaseFirestore.instance
+          .collection('app_config')
+          .doc('merch')
+          .get();
+      if (doc.exists && mounted) {
+        final data = doc.data()!;
+        setState(() {
+          _isSoldOut = (data['isSoldOut'] as bool?) ?? false;
+          _orderFormUrl = (data['orderFormUrl'] as String?)
+              ?? 'https://forms.gle/87Zf6bjNXU8hwwAdA';
+        });
+        debugPrint('🛒 Merch config: isSoldOut=$_isSoldOut, url=$_orderFormUrl');
       }
-    });
+    } catch (e) {
+      debugPrint('⚠️ Merch config fetch failed, using defaults: $e');
+    }
   }
 
   void _startAutoScroll() {
@@ -84,31 +134,18 @@ class _MerchScreenState extends State<MerchScreen> {
     });
   }
 
-  void _startGlitchIfNeeded() {
-    if (!_glitchActive) {
-      _glitchActive = true;
-      _glitchController.start();
-    }
-  }
 
-  void _stopGlitchIfNeeded() {
-    if (_glitchActive) {
-      _glitchActive = false;
-      _glitchController.stop();
-    }
-  }
 
   Future<void> _launchURL() async {
-    final Uri url = Uri.parse(orderFormUrl);
+    final Uri url = Uri.parse(_orderFormUrl);
     if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
-      throw Exception("Could not launch $url");
+      throw Exception('Could not launch $url');
     }
   }
 
   @override
   void dispose() {
     _autoScrollTimer?.cancel();
-    _glitchController.dispose();
     _pageController.dispose();
     super.dispose();
   }
@@ -150,13 +187,6 @@ class _MerchScreenState extends State<MerchScreen> {
             Expanded(
               child: NotificationListener<ScrollNotification>(
                 onNotification: (notification) {
-                  if (notification is ScrollStartNotification) {
-                    _startGlitchIfNeeded();
-                  } else if (notification is ScrollEndNotification) {
-                    Future.delayed(const Duration(milliseconds: 100), () {
-                      _stopGlitchIfNeeded();
-                    });
-                  }
                   return false;
                 },
                 child: PageView.builder(
@@ -168,18 +198,20 @@ class _MerchScreenState extends State<MerchScreen> {
                   },
                   itemBuilder: (context, index) {
                     final item = merchItems[index % merchItems.length];
+                    final networkUrl = _networkImages[item['firestoreId']];
                     return _merchCard(
                       context: context,
                       isDark: isDark,
                       cardBg: cardBg,
                       textPrimary: textPrimary,
                       textSecondary: textSecondary,
-                      title: item["title"]!,
-                      imagePath: item["image"],
-                      modelPath: item["model"],
-                      price: item["price"]!,
-                      badge: item["badge"] ?? "Official Merch",
-                      description: item["description"]!,
+                      title: item['title']!,
+                      fallbackImagePath: item['fallbackImage']!,
+                      networkImageUrl: networkUrl,
+                      price: item['price']!,
+                      badge: item['badge'] ?? 'Official Merch',
+                      description: item['description']!,
+                      isSoldOut: _isSoldOut,
                       onBuy: _launchURL,
                     );
                   },
@@ -307,11 +339,12 @@ class _MerchScreenState extends State<MerchScreen> {
     required Color textPrimary,
     required Color textSecondary,
     required String title,
-    String? imagePath,
-    String? modelPath,
+    required String fallbackImagePath,
+    String? networkImageUrl,
     required String price,
     required String badge,
     required String description,
+    required bool isSoldOut,
     required VoidCallback onBuy,
   }) {
     return Container(
@@ -392,14 +425,14 @@ class _MerchScreenState extends State<MerchScreen> {
 
               const SizedBox(height: 16),
 
-              // 3D Model / Image Container with Glow Backdrop
+              // Merch Image — network (Firestore) with local asset fallback
               SizedBox(
-                height: 320,
+                height: 300,
                 width: double.infinity,
                 child: Stack(
                   alignment: Alignment.center,
                   children: [
-                    // Glow backdrop effect
+                    // Glow backdrop
                     Container(
                       width: 220,
                       height: 220,
@@ -407,40 +440,51 @@ class _MerchScreenState extends State<MerchScreen> {
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
-                            color: AppTheme.accentBlue.withOpacity(isDark ? 0.35 : 0.20),
+                            color: AppTheme.accentBlue
+                                .withOpacity(isDark ? 0.30 : 0.15),
                             blurRadius: 60,
-                            spreadRadius: 25,
+                            spreadRadius: 20,
                           ),
                         ],
                       ),
                     ),
-
-                    // Model viewer or glitch image fallback
-                    modelPath != null
-                        ? ModelViewer(
-                            key: ValueKey(modelPath),
-                            src: modelPath,
-                            alt: title,
-                            autoRotate: true,
-                            rotationPerSecond: "22deg",
-                            autoRotateDelay: 0,
-                            cameraControls: true,
-                            disableZoom: true,
-                            cameraOrbit: "0deg 75deg 105%",
-                            minCameraOrbit: "-Infinity 75deg auto",
-                            maxCameraOrbit: "Infinity 75deg auto",
-                            backgroundColor: Colors.transparent,
-                          )
-                        : AnimatedGlitch(
-                            controller: _glitchController,
-                            showColorChannels: true,
-                            showDistortions: true,
-                            child: Image.asset(
-                              imagePath!,
+                    // Image — network if available, else local asset
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(16),
+                      child: networkImageUrl != null && networkImageUrl.isNotEmpty
+                          ? Image.network(
+                              networkImageUrl,
+                              height: 280,
+                              width: double.infinity,
                               fit: BoxFit.contain,
-                              gaplessPlayback: true,
+                              loadingBuilder: (context, child, progress) {
+                                if (progress == null) return child;
+                                return SizedBox(
+                                  height: 280,
+                                  child: Center(
+                                    child: CircularProgressIndicator(
+                                      value: progress.expectedTotalBytes != null
+                                          ? progress.cumulativeBytesLoaded /
+                                              progress.expectedTotalBytes!
+                                          : null,
+                                      color: AppTheme.primaryBlue,
+                                      strokeWidth: 2,
+                                    ),
+                                  ),
+                                );
+                              },
+                              errorBuilder: (_, __, ___) => Image.asset(
+                                fallbackImagePath,
+                                height: 280,
+                                fit: BoxFit.contain,
+                              ),
+                            )
+                          : Image.asset(
+                              fallbackImagePath,
+                              height: 280,
+                              fit: BoxFit.contain,
                             ),
-                          ),
+                    ),
                   ],
                 ),
               ),
@@ -477,44 +521,86 @@ class _MerchScreenState extends State<MerchScreen> {
 
               const SizedBox(height: 20),
 
-              // Sold Out Button / Action Button
-              Container(
-                width: double.infinity,
-                height: 50,
-                decoration: BoxDecoration(
-                  color: isDark
-                      ? Colors.white.withOpacity(0.05)
-                      : Colors.black.withOpacity(0.04),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: isDark
-                        ? Colors.white.withOpacity(0.1)
-                        : Colors.black.withOpacity(0.08),
-                    width: 1,
-                  ),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.remove_shopping_cart_rounded,
-                      color: isDark ? Colors.white38 : Colors.black38,
-                      size: 20,
-                    ),
-                    const SizedBox(width: 10),
-                    Text(
-                      "SOLD OUT",
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                        color: isDark ? Colors.redAccent.shade100.withOpacity(0.8) : Colors.red.shade700,
-                        fontFamily: AppTheme.fontGeneralSans,
-                        letterSpacing: 1.2,
+              // Order / Sold Out Button — driven by Remote Config
+              isSoldOut
+                  ? Container(
+                      width: double.infinity,
+                      height: 50,
+                      decoration: BoxDecoration(
+                        color: isDark
+                            ? Colors.white.withOpacity(0.05)
+                            : Colors.black.withOpacity(0.04),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: isDark
+                              ? Colors.white.withOpacity(0.1)
+                              : Colors.black.withOpacity(0.08),
+                          width: 1,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.remove_shopping_cart_rounded,
+                            color: isDark ? Colors.white38 : Colors.black38,
+                            size: 20,
+                          ),
+                          const SizedBox(width: 10),
+                          Text(
+                            'SOLD OUT',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                              color: isDark
+                                  ? Colors.redAccent.shade100.withOpacity(0.8)
+                                  : Colors.red.shade700,
+                              fontFamily: AppTheme.fontGeneralSans,
+                              letterSpacing: 1.2,
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  : GestureDetector(
+                      onTap: onBuy,
+                      child: Container(
+                        width: double.infinity,
+                        height: 50,
+                        decoration: BoxDecoration(
+                          gradient: AppTheme.primaryGradient,
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppTheme.primaryBlue.withOpacity(0.35),
+                              blurRadius: 12,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(
+                              Icons.shopping_bag_outlined,
+                              color: Colors.white,
+                              size: 20,
+                            ),
+                            const SizedBox(width: 10),
+                            Text(
+                              'ORDER NOW',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white,
+                                fontFamily: AppTheme.fontGeneralSans,
+                                letterSpacing: 1.2,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                  ],
-                ),
-              ),
             ],
           ),
         ),
