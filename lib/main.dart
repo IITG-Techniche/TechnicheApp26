@@ -2,7 +2,9 @@ import 'constant/appTheme.dart';
 import 'router.dart';
 import 'view/core/splash_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'firebase_options.dart';
 import 'providers/theme_provider.dart';
@@ -17,6 +19,16 @@ void main() async {
     // 1. Initialize Firebase
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
+    );
+
+    // 2. Activate App Check (Play Integrity in release, debug token in debug)
+    await FirebaseAppCheck.instance.activate(
+      androidProvider: kReleaseMode
+          ? AndroidProvider.playIntegrity
+          : AndroidProvider.debug,
+      appleProvider: kReleaseMode
+          ? AppleProvider.deviceCheck
+          : AppleProvider.debug,
     );
 
     // 2. Initialize Local Notifications & Timezones for offline reminders

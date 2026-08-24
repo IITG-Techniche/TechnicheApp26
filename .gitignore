@@ -32,6 +32,7 @@ migrate_working_dir/
 .pub/
 /build/
 
+/node_modules
 # Symbolication related
 app.*.symbols
 
@@ -48,3 +49,7 @@ app.*.map.json
 *.apk
 linux/flutter/ephemeral/
 windows/flutter/ephemeral/
+
+# Firebase Admin Service Account Keys
+*-firebase-adminsdk-*.json
+serviceAccountKey.json

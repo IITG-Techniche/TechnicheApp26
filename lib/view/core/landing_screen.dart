@@ -27,6 +27,7 @@ import 'package:techniche26/widgets/home/home_merchandise_section.dart';
 import 'package:techniche26/widgets/home/home_featured_events_section.dart';
 import 'package:techniche26/widgets/home/home_comedy_night_section.dart';
 import 'package:techniche26/features/event_reminders/presentation/reminder_picker_sheet.dart';
+import 'package:techniche26/services/home_featured_events_service.dart';
 
 class LandingScreen extends ConsumerStatefulWidget {
   static const String routeName = '/landing-screen';
