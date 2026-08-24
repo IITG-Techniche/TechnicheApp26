@@ -365,14 +365,14 @@ final List<MainCategory> eventData = [
     title: 'Competitions',
     subCategories: [
       SubCategory(
-        title: 'Robotics',
-        imageAsset: 'assets/robotics.jpeg',
+        title: 'Robowars',
+        imageAsset: 'assets/events/robo-reduced.jpg',
         events: const [
           EventDetail(
             title: 'Robowars',
             subtitle: 'The Ultimate Combat Robotics Arena',
-            category: 'Robotics',
-            imageAsset: 'assets/robo.png',
+            category: 'Competitions',
+            imageAsset: 'assets/events/robo-reduced.jpg',
             prizePool: '₹ 2,00,000',
             teamSize: '2 - 6 Members',
             date: '28th August 2026',
@@ -381,14 +381,7 @@ final List<MainCategory> eventData = [
             mapLocationUrl: 'https://maps.google.com/?q=IIT+Guwahati',
             description:
                 'Robowars, a major event at Techniche, showcases top talents in robotics through intense competition. Participants design and develop wireless, manually controlled robots to engage in dual combat within a specified arena. The event highlights innovative strategies, mechanical strength, and strategic maneuvering, creating a thrilling spectacle.',
-            rounds: [
-              EventRound(
-                title: 'Registration & Verification',
-                date: '28th Aug, 2026',
-                time: 'IIT Guwahati',
-                description: 'After completing registration through Unstop, create an account on Techniche website and register via dashboard.',
-              ),
-            ],
+            rounds: [],
             whoCanParticipate: [
               'Any student with a valid college ID.',
               'Teams of 2 to 6 members.',
@@ -406,24 +399,7 @@ final List<MainCategory> eventData = [
                 phone: '+91 9303900573',
               ),
             ],
-            prizeCategories: [
-              PrizeCategory(
-                categoryName: 'Category: 30kg',
-                prizes: {
-                  '1st Place': 'Rs 50,000',
-                  '2nd Place': 'Rs 35,000',
-                  '3rd Place': 'Rs 25,000',
-                },
-              ),
-              PrizeCategory(
-                categoryName: 'Category: 15kg',
-                prizes: {
-                  '1st Place': 'Rs 40,000',
-                  '2nd Place': 'Rs 30,000',
-                  '3rd Place': 'Rs 20,000',
-                },
-              ),
-            ],
+            prizeCategories: [],
             prizeBreakdown: {
               '30kg - 1st': '₹ 50,000',
               '30kg - 2nd': '₹ 35,000',
@@ -435,32 +411,25 @@ final List<MainCategory> eventData = [
             redirectUrl: 'https://unstop.com/p/robowars-iit-guwahati-1698835',
             rulebookUrl: 'https://forms.gle/3u7UQLV4v4szEH3WA',
           ),
+        ],
+      ),
+      SubCategory(
+        title: 'Aquawars',
+        imageAsset: 'assets/events/aquawars-reduced.jpg',
+        events: const [
           EventDetail(
             title: 'Aquawars',
             subtitle: 'Naval Robotics & Aquatic Combat',
-            category: 'Robotics',
-            imageAsset: 'assets/robotics.jpeg',
+            category: 'Competitions',
+            imageAsset: 'assets/events/aquawars-reduced.jpg',
             prizePool: '₹ 5,00,000',
             teamSize: 'Team Event',
             date: '29th - 30th August 2026',
             time: 'Offline Arena',
             venue: 'Water Arena, IIT Guwahati',
             description:
-                'Dive into the action-packed world of Aqua Wars, an electrifying game that combines the thrill of robotics with the challenge of aquatic battles. In this multiplayer competitive game, players take control of powerful robotic machines and engage in intense combat within dynamic water arenas.\n\nThe aim of the competition is to provide a conceptual design of a water surface robot with good speed, manoeuvring capabilities, stability against high velocity and turbulence in the water, can fight with another robot, and has the power to damage it.',
-            rounds: [
-              EventRound(
-                title: 'Stage 1 (Online): Report Submission',
-                date: 'Online',
-                time: 'Report',
-                description: 'Registered teams must submit an SRE (System Review Evaluation) report following guidelines.',
-              ),
-              EventRound(
-                title: 'Stage 2 (Offline): Finals',
-                date: '29th - 30th Aug, 2026',
-                time: 'IIT Guwahati',
-                description: 'Offline finals conducted on campus at IIT Guwahati during Techniche 26.',
-              ),
-            ],
+                'Dive into the action-packed world of Aqua Wars, an electrifying game that combines the thrill of robotics with the challenge of aquatic battles.',
+            rounds: [],
             rules: [
               'Water surface robot with high speed, manoeuvrability, and water turbulence stability.',
               'Must engage in battle with opponent robots.',
@@ -483,32 +452,25 @@ final List<MainCategory> eventData = [
             redirectUrl: 'https://unstop.com/o/0Dn74Co?lb=VYBEMRf&utm_medium=Share&utm_source=WhatsApp',
             rulebookUrl: 'https://forms.gle/3u7UQLV4v4szEH3WA',
           ),
+        ],
+      ),
+      SubCategory(
+        title: 'Escalade',
+        imageAsset: 'assets/events/exclade-reduced.jpg',
+        events: const [
           EventDetail(
             title: 'Escalade',
             subtitle: 'Escalade 15.0 - Flagship National Robotics Competition',
-            category: 'Robotics',
-            imageAsset: 'assets/escalade.png',
+            category: 'Competitions',
+            imageAsset: 'assets/events/exclade-reduced.jpg',
             prizePool: '₹ 1,40,000',
             teamSize: 'Team Event',
             date: 'Prelims: 14th June 2026 | Mains: 28-29th Aug 2026',
             time: '9 Zonal Prelims & IIT Guwahati Mains',
             venue: 'IIT Guwahati Campus',
             description:
-                'Escalade, the flagship National Robotics Competition organized by the Robotics module of Techniche, is the largest and fastest-growing robotics event in the northeast. In Escalade 15.0, autonomous or remote-controlled robots must climb a vertical pole and accurately launch balls at designated targets.\n\nPrelims will be conducted in 9 zones across India.',
-            rounds: [
-              EventRound(
-                title: 'Prelims Round',
-                date: '14th June 2026',
-                time: '9 Zones',
-                description: 'Sub-round conducted across 9 zones: Delhi NCR, Mumbai, Hyderabad, Lucknow, Pune, Guwahati, Gunupur, Raipur, Bangalore.',
-              ),
-              EventRound(
-                title: 'Mains Round',
-                date: '28th & 29th Aug 2026',
-                time: 'IIT Guwahati',
-                description: 'Final showdown conducted live at IIT Guwahati.',
-              ),
-            ],
+                'Escalade, the flagship National Robotics Competition organized by the Robotics module of Techniche, is the largest and fastest-growing robotics event in the northeast.',
+            rounds: [],
             prizeBreakdown: {
               'Winner': 'Rs. 70,000',
               '1st Runner Up': 'Rs. 40,000',
@@ -524,32 +486,25 @@ final List<MainCategory> eventData = [
             redirectUrl: 'https://unstop.com/competitions/escalade-150-escalade-150-iit-guwahati-1667939',
             rulebookUrl: 'https://forms.gle/3u7UQLV4v4szEH3WA',
           ),
+        ],
+      ),
+      SubCategory(
+        title: 'Track Titans',
+        imageAsset: 'assets/events/tracktitians.png',
+        events: const [
           EventDetail(
             title: 'Track Titans',
             subtitle: 'High-Performance RC Car Racing & Endurance',
-            category: 'Robotics',
-            imageAsset: 'assets/robotics.jpeg',
+            category: 'Competitions',
+            imageAsset: 'assets/events/tracktitians.png',
             prizePool: '₹ 90,000',
             teamSize: 'Team Event',
             date: 'Abstract: 15th Aug 2026 | Finale: 29th Aug 2026',
             time: 'Online & On-Campus',
             venue: 'IIT Guwahati Campus',
             description:
-                'Track Titans challenges participants to design and build remote-controlled cars with exceptional speed, agility, and endurance while adhering to technical specifications. The primary objective is to achieve the fastest lap times and outmanoeuvring competitors on a challenging race track.',
-            rounds: [
-              EventRound(
-                title: 'Round 1: Abstract Submission',
-                date: '15th August 2026',
-                time: 'Online Submission',
-                description: 'Submit machine presentation comprising a written abstract and video of working model.',
-              ),
-              EventRound(
-                title: 'Round 2: Track Titans Finale',
-                date: '29th August 2026',
-                time: 'IIT Guwahati',
-                description: 'Epic final showdown on campus at IIT Guwahati.',
-              ),
-            ],
+                'Track Titans challenges participants to design and build remote-controlled cars with exceptional speed, agility, and endurance.',
+            rounds: [],
             prizeBreakdown: {
               '1st Place': 'Rs. 40,000',
               '2nd Place': 'Rs. 30,000',
@@ -565,10 +520,16 @@ final List<MainCategory> eventData = [
             redirectUrl: 'https://unstop.com/p/track-titans-iit-guwahati-1699196',
             rulebookUrl: 'https://forms.gle/3u7UQLV4v4szEH3WA',
           ),
+        ],
+      ),
+      SubCategory(
+        title: 'LineQuest',
+        imageAsset: 'assets/micro.png',
+        events: const [
           EventDetail(
             title: 'LineQuest',
             subtitle: 'Autonomous Line Maze Navigation Challenge',
-            category: 'Robotics',
+            category: 'Competitions',
             imageAsset: 'assets/micro.png',
             prizePool: '₹ 70,000',
             teamSize: 'Team Event',
@@ -576,21 +537,8 @@ final List<MainCategory> eventData = [
             time: 'On-Campus Arena',
             venue: 'IIT Guwahati Campus',
             description:
-                'Line Quest is Techniche IIT Guwahati\'s flagship autonomous line-following challenge where innovation meets speed, precision, and intelligent decision-making. Design and build an autonomous robot capable of navigating a complex line maze during Dry Run and Actual Run following the shortest path in minimum possible time.',
-            rounds: [
-              EventRound(
-                title: 'Abstract Submission',
-                date: '15th August 2026',
-                time: 'Online',
-                description: 'Abstract submission deadline for shortlisting.',
-              ),
-              EventRound(
-                title: 'Final Round',
-                date: '29th August 2026',
-                time: 'IIT Guwahati',
-                description: 'Dry Run and Actual Run live on campus arena.',
-              ),
-            ],
+                'Line Quest is Techniche IIT Guwahati\'s flagship autonomous line-following challenge where innovation meets speed, precision, and intelligent decision-making.',
+            rounds: [],
             prizeBreakdown: {
               'Winner': 'Rs. 35,000',
               '1st Runner Up': 'Rs. 20,000',
@@ -609,21 +557,26 @@ final List<MainCategory> eventData = [
         ],
       ),
       SubCategory(
+        title: 'Avinya',
+        imageAsset: 'assets/events/avinya.png',
+        events: const [],
+      ),
+      SubCategory(
         title: 'Funniche',
-        imageAsset: 'assets/funniche.png',
+        imageAsset: 'assets/events/funniche-reduced.jpg',
         events: const [
           EventDetail(
             title: 'BGMI',
             subtitle: 'Battlegrounds Mobile India Championship',
             category: 'Funniche',
-            imageAsset: 'assets/funniche.png',
+            imageAsset: 'assets/events/funniche-reduced.jpg',
             prizePool: '₹ 35,000',
             teamSize: '4 Players (Squad)',
             date: 'Sep 4 - Sep 5, 2026',
             time: '4:00 PM Onwards',
             venue: 'SAC Gaming Arena / Online',
             description:
-                'Squad up for the most intense battle royale esports tournament of Techniche. Drop into Erangel and Miramar, clutch gunfights, and claim the Chicken Dinner.',
+                'Squad up for the most intense battle royale esports tournament of Techniche.',
             rules: [
               'Only mobile devices are allowed (No emulators, iPad, or tablet devices).',
               'Maps: Erangel, Miramar, Sanhok in TPP Squad mode.',
@@ -647,14 +600,14 @@ final List<MainCategory> eventData = [
             title: 'Valorant',
             subtitle: '5v5 Tactical FPS Showdown',
             category: 'Funniche',
-            imageAsset: 'assets/funniche.png',
+            imageAsset: 'assets/events/funniche-reduced.jpg',
             prizePool: '₹ 45,000',
             teamSize: '5 Players (+1 Sub)',
             date: 'Sep 5 - Sep 6, 2026',
             time: '11:00 AM Onwards',
             venue: 'Computer Center LAN Arena, IITG',
             description:
-                'Lock in your duelists, initiate executes, and outplay your opponents in the Premier Techniche Valorant LAN tournament. Standard competitive plant/defuse format.',
+                'Lock in your duelists, initiate executes, and outplay your opponents in the Premier Techniche Valorant LAN tournament.',
             rules: [
               'Tournament mode with standard map veto system.',
               'Matches are Best of 1 until Semi-Finals, Finals are Best of 3.',
@@ -678,7 +631,7 @@ final List<MainCategory> eventData = [
             title: 'Chess',
             subtitle: 'Rapid & Blitz Strategic Tournament',
             category: 'Funniche',
-            imageAsset: 'assets/funniche.png',
+            imageAsset: 'assets/events/funniche-reduced.jpg',
             prizePool: '₹ 20,000',
             teamSize: 'Individual (1 Player)',
             date: 'Sep 5, 2026',
@@ -708,7 +661,7 @@ final List<MainCategory> eventData = [
             title: 'Smash Karts',
             subtitle: 'Fast-Paced 3D Arcade Kart Battle',
             category: 'Funniche',
-            imageAsset: 'assets/funniche.png',
+            imageAsset: 'assets/events/funniche-reduced.jpg',
             prizePool: '₹ 15,000',
             teamSize: 'Individual (1 Player)',
             date: 'Sep 6, 2026',
@@ -737,198 +690,13 @@ final List<MainCategory> eventData = [
         ],
       ),
       SubCategory(
-        title: 'Avinya',
-        imageAsset: 'assets/avinya.webp',
+        title: 'STPI',
+        imageAsset: 'assets/stpi.jpg',
         events: const [],
       ),
       SubCategory(
-        title: 'STPI',
-        imageAsset: 'assets/stpi.jpg',
-        events: const [
-          EventDetail(
-            title: 'IoT in Agriculture',
-            subtitle: 'Smart Farming & AgriTech Innovations',
-            category: 'STPI',
-            imageAsset: 'assets/stpi.jpg',
-            prizePool: '₹ 50,000',
-            teamSize: '1 - 4 Members',
-            date: 'Sep 5, 2026',
-            time: '10:00 AM - 4:00 PM',
-            venue: 'Core 1 Lecture Hall, IITG',
-            description:
-                'Develop IoT-enabled agricultural solutions such as smart soil moisture monitoring, automated irrigation, crop health detection, and supply chain telemetry.',
-            rules: [
-              'Prototypes must include functional hardware sensors and cloud/mobile dashboards.',
-              'Judging based on novelty, feasibility, cost efficiency, and societal impact.'
-            ],
-            prizeBreakdown: {
-              '1st Place': '₹ 28,000',
-              '2nd Place': '₹ 14,000',
-              '3rd Place': '₹ 8,000',
-            },
-            coordinators: [
-              EventCoordinator(
-                name: 'Sneha Agarwal',
-                role: 'Domain Lead',
-                phone: '+91 98111 22334',
-              ),
-            ],
-            redirectUrl: 'https://unstop.com/hackathons/stpi-iot-techniche-2026',
-          ),
-          EventDetail(
-            title: 'Gaming & Entertainment',
-            subtitle: 'Next-Gen Game Development Hackathon',
-            category: 'STPI',
-            imageAsset: 'assets/stpi.jpg',
-            prizePool: '₹ 50,000',
-            teamSize: '1 - 4 Members',
-            date: 'Sep 4 - Sep 5, 2026',
-            time: '24 Hours Hackathon',
-            venue: 'Computer Center, IITG',
-            description:
-                'Create captivating 2D/3D games, immersive narrative experiences, or interactive entertainment apps using Unity, Unreal, Godot, or WebGL.',
-            rules: [
-              'Games must be developed during the fest based on the announced theme.',
-              'Asset store usage must be clearly disclosed and justified.'
-            ],
-            prizeBreakdown: {
-              '1st Place': '₹ 28,000',
-              '2nd Place': '₹ 14,000',
-              '3rd Place': '₹ 8,000',
-            },
-            coordinators: [
-              EventCoordinator(
-                name: 'Manish Kaul',
-                role: 'GameDev Lead',
-                phone: '+91 97222 33445',
-              ),
-            ],
-            redirectUrl: 'https://unstop.com/hackathons/stpi-gamedev-techniche-2026',
-          ),
-          EventDetail(
-            title: 'AR/VR & Emerging Tech',
-            subtitle: 'Spatial Computing & Virtual Reality Solutions',
-            category: 'STPI',
-            imageAsset: 'assets/stpi.jpg',
-            prizePool: '₹ 50,000',
-            teamSize: '1 - 4 Members',
-            date: 'Sep 5, 2026',
-            time: '11:00 AM',
-            venue: 'Design Department, IITG',
-            description:
-                'Build interactive augmented reality or virtual reality applications for education, healthcare, industrial simulation, or architectural visualization.',
-            rules: [
-              'Applications can target Meta Quest, VisionOS, ARCore, or WebXR.',
-              'Demo must be executable live in front of the jury panel.'
-            ],
-            prizeBreakdown: {
-              '1st Place': '₹ 28,000',
-              '2nd Place': '₹ 14,000',
-              '3rd Place': '₹ 8,000',
-            },
-            coordinators: [
-              EventCoordinator(
-                name: 'Kavita Rao',
-                role: 'Coordinator',
-                phone: '+91 94333 22110',
-              ),
-            ],
-            redirectUrl: 'https://unstop.com/hackathons/stpi-arvr-techniche-2026',
-          ),
-          EventDetail(
-            title: 'Data Analytics & AI',
-            subtitle: 'Predictive Modeling & Generative AI Solutions',
-            category: 'STPI',
-            imageAsset: 'assets/stpi.jpg',
-            prizePool: '₹ 50,000',
-            teamSize: '1 - 3 Members',
-            date: 'Sep 4 - Sep 6, 2026',
-            time: 'Full Fest Challenge',
-            venue: 'Online / Lab 3',
-            description:
-                'Tackle complex real-world datasets with machine learning, deep learning, LLMs, and computer vision models to solve predictive problems.',
-            rules: [
-              'Notebooks and reproducibility documentation must be submitted on GitHub.',
-              'Standard evaluation metric (F1-score / RMSE) will determine top leaderboard.'
-            ],
-            prizeBreakdown: {
-              '1st Place': '₹ 28,000',
-              '2nd Place': '₹ 14,000',
-              '3rd Place': '₹ 8,000',
-            },
-            coordinators: [
-              EventCoordinator(
-                name: 'Deepak Nair',
-                role: 'AI Track Head',
-                phone: '+91 98888 11223',
-              ),
-            ],
-            redirectUrl: 'https://unstop.com/hackathons/stpi-ai-techniche-2026',
-          ),
-          EventDetail(
-            title: 'Graphic Design & Animation',
-            subtitle: 'Visual Identity, Motion Design & 3D Art',
-            category: 'STPI',
-            imageAsset: 'assets/stpi.jpg',
-            prizePool: '₹ 40,000',
-            teamSize: 'Individual (1 Participant)',
-            date: 'Sep 5, 2026',
-            time: '2:00 PM - 6:00 PM',
-            venue: 'Design Dept Media Lab, IITG',
-            description:
-                'Craft breathtaking motion graphics, visual brand identity, UI/UX concept designs, and 3D renders addressing a prompt released on spot.',
-            rules: [
-              'All design assets and source files (.psd, .ai, .blend) must be submitted.',
-              'Plagiarism from uncredited templates results in immediate disqualification.'
-            ],
-            prizeBreakdown: {
-              '1st Place': '₹ 22,000',
-              '2nd Place': '₹ 12,000',
-              '3rd Place': '₹ 6,000',
-            },
-            coordinators: [
-              EventCoordinator(
-                name: 'Ritika Sen',
-                role: 'Design Convener',
-                phone: '+91 97711 44556',
-              ),
-            ],
-            redirectUrl: 'https://unstop.com/competitions/stpi-design-techniche-2026',
-          ),
-          EventDetail(
-            title: 'GIS Applications',
-            subtitle: 'Spatial Mapping & Remote Sensing Challenge',
-            category: 'STPI',
-            imageAsset: 'assets/stpi.jpg',
-            prizePool: '₹ 40,000',
-            teamSize: '1 - 3 Members',
-            date: 'Sep 6, 2026',
-            time: '10:00 AM',
-            venue: 'Civil Engineering Seminar Hall',
-            description:
-                'Harness satellite imagery, geospatial databases (QGIS, ArcGIS, Mapbox), and spatial analysis to solve urban planning and disaster relief challenges.',
-            rules: [
-              'Submissions must include interactive geospatial maps and methodology reports.'
-            ],
-            prizeBreakdown: {
-              '1st Place': '₹ 22,000',
-              '2nd Place': '₹ 12,000',
-              '3rd Place': '₹ 6,000',
-            },
-            coordinators: [
-              EventCoordinator(
-                name: 'Prateek Jain',
-                role: 'GIS Coordinator',
-                phone: '+91 93344 55667',
-              ),
-            ],
-            redirectUrl: 'https://unstop.com/hackathons/stpi-gis-techniche-2026',
-          ),
-        ],
-      ),
-      SubCategory(
         title: 'CatalysisT',
-        imageAsset: 'assets/cata.jpg',
+        imageAsset: 'assets/events/catalysisT.png',
         events: const [],
       ),
       SubCategory(
@@ -1429,13 +1197,13 @@ final List<MainCategory> eventData = [
     subCategories: [
       SubCategory(
         title: 'Tech-Expo',
-        imageAsset: 'assets/techexpo.jpg',
+        imageAsset: 'assets/events/techexpo-reduced.jpg',
         events: const [
           EventDetail(
             title: 'Tech-Expo (Juniors)',
             subtitle: 'School Innovations & Science Showcase',
             category: 'Exhibitions',
-            imageAsset: 'assets/techexpo.jpg',
+            imageAsset: 'assets/events/techexpo-reduced.jpg',
             prizePool: '₹ 50,000',
             teamSize: '1 - 4 Students',
             venue: 'Exhibition Hall A, IIT Guwahati',
@@ -1446,7 +1214,7 @@ final List<MainCategory> eventData = [
             title: 'Tech-Expo (Seniors)',
             subtitle: 'National Research & College Innovation Showcase',
             category: 'Exhibitions',
-            imageAsset: 'assets/techexpo.jpg',
+            imageAsset: 'assets/events/techexpo-reduced.jpg',
             prizePool: '₹ 1,50,000',
             teamSize: '1 - 5 Members',
             venue: 'Exhibition Hall B, IIT Guwahati',
@@ -1492,13 +1260,13 @@ final List<MainCategory> eventData = [
     subCategories: [
       SubCategory(
         title: 'Mr. Ashneer Grover',
-        imageAsset: 'assets/ash.jpg',
+        imageAsset: 'assets/events/lectureSeries-reduced.jpg',
         events: const [
           EventDetail(
             title: 'Keynote by Mr. Ashneer Grover',
             subtitle: 'Entrepreneurship, Fintech & Startup Ecosystem',
             category: 'Lecture Series',
-            imageAsset: 'assets/ash.jpg',
+            imageAsset: 'assets/events/lectureSeries-reduced.jpg',
             venue: 'Main Auditorium, IIT Guwahati',
             date: 'Sep 5, 2026',
             time: '5:00 PM',
@@ -1547,35 +1315,36 @@ final List<MainCategory> eventData = [
     title: 'Nexus',
     subCategories: [
       SubCategory(
-        title: 'Networking Events',
-        imageAsset: 'assets/nexus.jpg',
+        title: 'Conference',
+        imageAsset: 'assets/events/nexus1.png',
         events: const [
           EventDetail(
-            title: 'Icebreaking & Keynote',
-            subtitle: 'Connect with Industry Titans & Fellow Founders',
+            title: 'Nexus Conference',
+            subtitle: 'Connect with Industry Leaders & Pioneer Thinkers',
             category: 'Nexus',
-            imageAsset: 'assets/nexus.jpg',
-            venue: 'Conference Center, IIT Guwahati',
+            imageAsset: 'assets/events/nexus1.png',
+            date: '29th August 2026',
+            time: '9:00 AM - 12:00 PM',
+            venue: 'Conference Hall, IIT Guwahati',
             description:
-                'Structured networking session bringing together startup founders, investors, researchers, and aspiring tech enthusiasts.',
+                'Exclusive flagship conference uniting visionary startup founders, researchers, venture capitalists, and industry leaders for groundbreaking keynotes and panel discussions.',
           ),
+        ],
+      ),
+      SubCategory(
+        title: 'Hackathon',
+        imageAsset: 'assets/events/nexusHackathon.png',
+        events: const [
           EventDetail(
-            title: 'Live Project',
-            subtitle: 'Real-world Corporate Problem Solving',
+            title: 'Nexus Hackathon',
+            subtitle: 'High-Stakes Technical Innovation & Hackathon',
             category: 'Nexus',
-            imageAsset: 'assets/nexus.jpg',
-            venue: 'Seminar Hall 3, IIT Guwahati',
+            imageAsset: 'assets/events/nexusHackathon.png',
+            date: '29th - 30th August 2026',
+            time: '24 Hours Hackathon',
+            venue: 'Computer Center, IIT Guwahati',
             description:
-                'Collaborate in multidisciplinary teams to tackle real-world industry case studies with mentorship from corporate executives.',
-          ),
-          EventDetail(
-            title: 'Mentorship',
-            subtitle: '1-on-1 Guidance with Domain Experts',
-            category: 'Nexus',
-            imageAsset: 'assets/nexus.jpg',
-            venue: 'SAC Executive Lounge, IIT Guwahati',
-            description:
-                'Get personalized feedback on your startup pitch, research thesis, career trajectory, and technical roadmaps from experienced mentors.',
+                'Intense multi-track hackathon challenging developers and designers to build transformative tech solutions addressing real-world corporate challenges.',
           ),
         ],
       ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../constant/appTheme.dart';
 
 class HomeCampusAmbassadorSection extends StatelessWidget {
   final bool isDark;
@@ -119,26 +120,32 @@ class HomeCampusAmbassadorSection extends StatelessWidget {
                   ),
                 ),
                 // Join Now button
-                ElevatedButton(
-                  onPressed: onJoinTap,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF1B3D96),
-                    foregroundColor: Colors.white,
-                    elevation: 0,
-                    minimumSize: Size.zero,
-                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
+                GestureDetector(
+                  onTap: onJoinTap,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 10,
                     ),
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  ),
-                  child: const Text(
-                    'Join Now',
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'General Sans',
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(20),
+                      gradient: AppTheme.primaryGradient,
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF4A63BA).withOpacity(0.35),
+                          blurRadius: 8,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: const Text(
+                      'Join Now',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        fontFamily: 'General Sans',
+                      ),
                     ),
                   ),
                 ),

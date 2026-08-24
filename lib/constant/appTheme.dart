@@ -19,13 +19,15 @@ class AppTheme {
   static const Color darkTextSecondary = Color(0xFF9090A8); // rgb(144, 144, 168)
 
   // Brand Accent & Gradients
-  static const Color primaryBlue = Color(0xFF30499E); // rgb(48, 73, 158)
-  static const Color accentBlue = Color(0xFF4C7AAB); // rgb(76, 122, 171)
+  static const Color primaryBlue = Color(0xFF4A63BA); // #4A63BA
+  static const Color darkBlueAccent = Color(0xFF1A3385); // #1A3385
+  static const Color accentBlue = Color(0xFF4C7AAB);
   static const LinearGradient primaryGradient = LinearGradient(
-    colors: [Color(0xFF30499E), Color(0xFF4C7AAB)],
-    begin: Alignment.centerLeft,
-    end: Alignment.centerRight,
+    colors: [Color(0xFF4A63BA), Color(0xFF1A3385)],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
   );
+  static const LinearGradient buttonGradient = primaryGradient;
 
   // ── Backward Compatibility Constants ────────────────────────────
   static const Color backgroundGray = lightPageBg;

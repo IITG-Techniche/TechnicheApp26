@@ -102,17 +102,10 @@ class _HomeMerchandiseSectionState extends State<HomeMerchandiseSection> {
                       horizontal: 20, vertical: 11),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(24),
-                    gradient: const LinearGradient(
-                      colors: [
-                        Color(0xFF3363EC),
-                        Color(0xFF193798),
-                      ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
+                    gradient: AppTheme.primaryGradient,
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFF244ECC).withOpacity(0.40),
+                        color: const Color(0xFF4A63BA).withOpacity(0.40),
                         blurRadius: 10,
                         offset: const Offset(0, 4),
                       ),
@@ -169,7 +162,11 @@ class _HomeMerchandiseSectionState extends State<HomeMerchandiseSection> {
                         autoRotate: true,
                         rotationPerSecond: "28deg",
                         autoRotateDelay: 0,
+                        cameraControls: true,
                         disableZoom: true,
+                        cameraOrbit: "0deg 75deg 105%",
+                        minCameraOrbit: "-Infinity 75deg auto",
+                        maxCameraOrbit: "Infinity 75deg auto",
                         backgroundColor: Colors.transparent,
                         loading: Loading.eager,
                       ),

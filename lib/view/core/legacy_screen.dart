@@ -38,7 +38,7 @@ class LegacyScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final screenWidth = MediaQuery.of(context).size.width;
-    final cardWidth = (screenWidth * 0.30).clamp(300.0, 420.0);
+    final cardWidth = (screenWidth * 0.90).clamp(320.0, 480.0);
 
     return Scaffold(
       backgroundColor: isDark ? const Color(0xFF070B19) : const Color(0xFFF8F9FA),
@@ -98,7 +98,7 @@ class LegacyScreen extends StatelessWidget {
               sliver: SliverList(
                 delegate: SliverChildListDelegate(
                   [
-                    // 1. MEET THE TEAM FOLDER CARD (mainhead.svg for both modes)
+                    // 1. MEET THE TEAM FOLDER CARD
                     Center(
                       child: GestureDetector(
                         behavior: HitTestBehavior.opaque,
@@ -117,24 +117,6 @@ class LegacyScreen extends StatelessWidget {
                             'assets/hero/meetheads/mainhead.svg',
                             width: cardWidth,
                             fit: BoxFit.contain,
-                            placeholderBuilder: (_) => Container(
-                              height: 180,
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF1E3A8A),
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: const Center(
-                                child: Text(
-                                  'MEET THE TEAM',
-                                  style: TextStyle(
-                                    fontFamily: AppTheme.fontUnivers,
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ),
-                            ),
                           ),
                         ),
                       ),
@@ -142,7 +124,7 @@ class LegacyScreen extends StatelessWidget {
 
                     const SizedBox(height: 12),
 
-                    // 2. LEGACY FOLDER CARD (legacy.svg for both modes)
+                    // 2. LEGACY FOLDER CARD
                     Center(
                       child: GestureDetector(
                         behavior: HitTestBehavior.opaque,
@@ -161,24 +143,6 @@ class LegacyScreen extends StatelessWidget {
                             'assets/hero/meetheads/legacy.svg',
                             width: cardWidth,
                             fit: BoxFit.contain,
-                            placeholderBuilder: (_) => Container(
-                              height: 180,
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF1E3A8A),
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: const Center(
-                                child: Text(
-                                  'LEGACY',
-                                  style: TextStyle(
-                                    fontFamily: AppTheme.fontUnivers,
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ),
-                            ),
                           ),
                         ),
                       ),
@@ -186,7 +150,7 @@ class LegacyScreen extends StatelessWidget {
 
                     const SizedBox(height: 16),
 
-                    // 3. OUR SOCIALS INTERACTIVE GRAPHIC WITH DIRECT TAP TARGETS
+                    // 3. OUR SOCIALS INTERACTIVE GRAPHIC BUILT WITH SPECIFIED ASSETS
                     Center(
                       child: SizedBox(
                         width: cardWidth,
@@ -206,8 +170,8 @@ class LegacyScreen extends StatelessWidget {
   }
 
   Widget _buildInteractiveSocialsGraphic(BuildContext context, bool isDark, double width) {
-    final height = width * (372 / 355);
-    final buttonSize = width * 0.17; // Generous tap target
+    final height = width * 1.0;
+    final iconSize = width * 0.13;
 
     return SizedBox(
       width: width,
@@ -215,130 +179,120 @@ class LegacyScreen extends StatelessWidget {
       child: Stack(
         alignment: Alignment.center,
         children: [
-          // 1. Background Socials Vector / Image Graphic
-          SvgPicture.asset(
-            isDark
-                ? 'assets/hero/meetheads/socialsindark.svg'
-                : 'assets/hero/meetheads/socialinbright.svg',
-            width: width,
-            height: height,
+          // 1. Central Social Background Image
+          Image.asset(
+            isDark ? 'assets/socialdark.png' : 'assets/socialbright.png',
+            width: width * 0.52,
             fit: BoxFit.contain,
-            placeholderBuilder: (_) => Image.asset(
-              isDark
-                  ? 'assets/hero/meetheads/logodark.png'
-                  : 'assets/hero/meetheads/logoinbright.png',
-              width: width,
-              height: height,
+          ),
+
+          // 2. OUR SOCIALS Title Header Asset (OUR SOCIALS.png) - Top Center
+          Positioned(
+            top: height * 0.12,
+            child: Image.asset(
+              'assets/OUR SOCIALS.png',
+              width: width * 0.65,
               fit: BoxFit.contain,
             ),
           ),
 
-          // 2. Clickable Hotspots overlay directly placed on the 5 icons:
-          // [1] Instagram (Left)
+          // 3. Five Social Buttons in a Circle around the central image:
+          // [1] X / Twitter (Far Left)
           Positioned(
-            left: width * 0.10,
+            left: width * 0.08,
             top: height * 0.44,
-            width: buttonSize,
-            height: buttonSize,
-            child: Tooltip(
-              message: 'Instagram',
-              child: Material(
-                color: Colors.transparent,
-                shape: const CircleBorder(),
-                child: InkWell(
-                  customBorder: const CircleBorder(),
-                  splashColor: const Color(0xFFE1306C).withOpacity(0.4),
-                  highlightColor: const Color(0xFFE1306C).withOpacity(0.2),
-                  onTap: () => _launchUrl('https://www.instagram.com/techniche.iitg/'),
-                ),
-              ),
+            child: _buildSocialAssetButton(
+              size: iconSize,
+              assetPath: 'assets/x.png',
+              fallbackIcon: Icons.close_rounded,
+              url: 'https://x.com/techniche_iitg',
             ),
           ),
 
-          // [2] LinkedIn (Bottom-Left)
+          // [2] LinkedIn (Bottom Left)
           Positioned(
             left: width * 0.20,
-            top: height * 0.63,
-            width: buttonSize,
-            height: buttonSize,
-            child: Tooltip(
-              message: 'LinkedIn',
-              child: Material(
-                color: Colors.transparent,
-                shape: const CircleBorder(),
-                child: InkWell(
-                  customBorder: const CircleBorder(),
-                  splashColor: const Color(0xFF0A66C2).withOpacity(0.4),
-                  highlightColor: const Color(0xFF0A66C2).withOpacity(0.2),
-                  onTap: () => _launchUrl('https://www.linkedin.com/company/techniche-iitg/'),
-                ),
-              ),
+            top: height * 0.70,
+            child: _buildSocialAssetButton(
+              size: iconSize,
+              assetPath: 'assets/linkdin.png',
+              fallbackIcon: Icons.business_center_rounded,
+              url: 'https://www.linkedin.com/company/techniche-iitg/',
             ),
           ),
 
-          // [3] X / Twitter (Bottom-Center)
+          // [3] Instagram (Bottom Center)
           Positioned(
-            left: width * 0.415,
-            top: height * 0.69,
-            width: buttonSize,
-            height: buttonSize,
-            child: Tooltip(
-              message: 'X (Twitter)',
-              child: Material(
-                color: Colors.transparent,
-                shape: const CircleBorder(),
-                child: InkWell(
-                  customBorder: const CircleBorder(),
-                  splashColor: Colors.white.withOpacity(0.4),
-                  highlightColor: Colors.white.withOpacity(0.2),
-                  onTap: () => _launchUrl('https://x.com/techniche_iitg'),
-                ),
-              ),
+            top: height * 0.82,
+            child: _buildSocialAssetButton(
+              size: iconSize,
+              assetPath: 'assets/instagram.png',
+              fallbackIcon: Icons.camera_alt_rounded,
+              url: 'https://www.instagram.com/techniche.iitg/',
             ),
           ),
 
-          // [4] YouTube (Bottom-Right)
+          // [4] YouTube (Bottom Right)
           Positioned(
-            left: width * 0.63,
-            top: height * 0.63,
-            width: buttonSize,
-            height: buttonSize,
-            child: Tooltip(
-              message: 'YouTube',
-              child: Material(
-                color: Colors.transparent,
-                shape: const CircleBorder(),
-                child: InkWell(
-                  customBorder: const CircleBorder(),
-                  splashColor: const Color(0xFFFF0000).withOpacity(0.4),
-                  highlightColor: const Color(0xFFFF0000).withOpacity(0.2),
-                  onTap: () => _launchUrl('https://www.youtube.com/@technicheiitg'),
-                ),
-              ),
+            right: width * 0.20,
+            top: height * 0.70,
+            child: _buildSocialAssetButton(
+              size: iconSize,
+              assetPath: 'assets/youtube.png',
+              fallbackIcon: Icons.play_arrow_rounded,
+              url: 'https://www.youtube.com/@technicheiitg',
             ),
           ),
 
-          // [5] Facebook (Right)
+          // [5] Facebook (Far Right)
           Positioned(
-            left: width * 0.73,
+            right: width * 0.08,
             top: height * 0.44,
-            width: buttonSize,
-            height: buttonSize,
-            child: Tooltip(
-              message: 'Facebook',
-              child: Material(
-                color: Colors.transparent,
-                shape: const CircleBorder(),
-                child: InkWell(
-                  customBorder: const CircleBorder(),
-                  splashColor: const Color(0xFF1877F2).withOpacity(0.4),
-                  highlightColor: const Color(0xFF1877F2).withOpacity(0.2),
-                  onTap: () => _launchUrl('https://www.facebook.com/techniche.iitg/'),
-                ),
-              ),
+            child: _buildSocialAssetButton(
+              size: iconSize,
+              assetPath: 'assets/facebook.png',
+              fallbackIcon: Icons.facebook_rounded,
+              url: 'https://www.facebook.com/techniche.iitg/',
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildSocialAssetButton({
+    required double size,
+    required String assetPath,
+    required IconData fallbackIcon,
+    required String url,
+  }) {
+    return GestureDetector(
+      onTap: () => _launchUrl(url),
+      behavior: HitTestBehavior.opaque,
+      child: SizedBox(
+        width: size,
+        height: size,
+        child: Image.asset(
+          assetPath,
+          width: size,
+          height: size,
+          fit: BoxFit.contain,
+          errorBuilder: (_, __, ___) => Container(
+            width: size,
+            height: size,
+            decoration: const BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: AppTheme.primaryGradient,
+            ),
+            child: Center(
+              child: Icon(
+                fallbackIcon,
+                color: Colors.white,
+                size: size * 0.5,
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }

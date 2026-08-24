@@ -12,200 +12,212 @@ class HomeComedyNightSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final textPrimary = isDark ? Colors.white : const Color(0xFF1E293B);
-    final textSecondary =
-        isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B);
-
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Special Night',
-            style: TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-              color: textSecondary,
-              fontFamily: AppTheme.fontUnivers,
+      child: GestureDetector(
+        onTap: () {
+          Navigator.pushNamed(context, ComedyNightScreen.routeName);
+        },
+        child: Container(
+          width: double.infinity,
+          height: 215,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(24),
+            gradient: LinearGradient(
+              colors: isDark
+                  ? [const Color(0xFF1A1A2E), const Color(0xFF0F172A)]
+                  : [const Color(0xFFE8F1FC), const Color(0xFFF7FAFC)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
             ),
-          ),
-          const SizedBox(height: 12),
-          GestureDetector(
-            onTap: () {
-              Navigator.pushNamed(context, ComedyNightScreen.routeName);
-            },
-            child: Container(
-              width: double.infinity,
-              height: 180,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(24),
-                gradient: const LinearGradient(
-                  colors: [
-                    Color(0xFF2E1065),
-                    Color(0xFF5B21B6),
-                    Color(0xFF4C1D95),
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF5B21B6).withOpacity(0.35),
-                    blurRadius: 18,
-                    offset: const Offset(0, 8),
-                  ),
-                ],
+            border: Border.all(
+              color: isDark
+                  ? Colors.white.withOpacity(0.08)
+                  : AppTheme.primaryBlue.withOpacity(0.12),
+              width: 1.5,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: isDark
+                    ? Colors.black.withOpacity(0.35)
+                    : AppTheme.primaryBlue.withOpacity(0.08),
+                blurRadius: 16,
+                offset: const Offset(0, 6),
               ),
-              child: Stack(
-                children: [
-                  // Decorative background shapes & glow
-                  Positioned(
-                    right: -30,
-                    top: -30,
-                    child: Container(
-                      width: 140,
-                      height: 140,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.amber.withOpacity(0.15),
+            ],
+          ),
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              // Ambient Glowing Circle Backdrop (Right Side)
+              Positioned(
+                right: -10,
+                top: 20,
+                child: Container(
+                  width: 140,
+                  height: 140,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppTheme.accentBlue.withOpacity(isDark ? 0.35 : 0.20),
+                        blurRadius: 40,
+                        spreadRadius: 10,
                       ),
-                    ),
+                    ],
                   ),
-                  Positioned(
-                    right: 20,
-                    bottom: -20,
-                    child: Icon(
-                      Icons.theater_comedy_rounded,
-                      size: 130,
-                      color: Colors.white.withOpacity(0.08),
-                    ),
-                  ),
+                ),
+              ),
 
-                  // Main Content
-                  Padding(
-                    padding: const EdgeInsets.all(20.0),
-                    child: Row(
+              // Watermark Icon
+              Positioned(
+                right: 12,
+                bottom: 12,
+                child: Icon(
+                  Icons.theater_comedy_rounded,
+                  size: 135,
+                  color: isDark
+                      ? Colors.white.withOpacity(0.04)
+                      : AppTheme.primaryBlue.withOpacity(0.05),
+                ),
+              ),
+
+              // Title & Subtitle (Top Left)
+              Positioned(
+                left: 22,
+                top: 22,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
                       children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 10,
-                                  vertical: 4,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: Colors.amber.withOpacity(0.2),
-                                  borderRadius: BorderRadius.circular(8),
-                                  border: Border.all(
-                                    color: Colors.amber.withOpacity(0.5),
-                                    width: 1,
-                                  ),
-                                ),
-                                child: const Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(
-                                      Icons.stars_rounded,
-                                      color: Colors.amber,
-                                      size: 14,
-                                    ),
-                                    SizedBox(width: 4),
-                                    Text(
-                                      'EXCLUSIVE ENTRY',
-                                      style: TextStyle(
-                                        color: Colors.amber,
-                                        fontSize: 10.5,
-                                        fontWeight: FontWeight.bold,
-                                        letterSpacing: 0.5,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              const Text(
-                                'COMEDY NIGHT 2026',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                  fontFamily: AppTheme.fontUnivers,
-                                  letterSpacing: 0.5,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                '29th August 2026 • Main Auditorium',
-                                style: TextStyle(
-                                  color: Colors.white.withOpacity(0.85),
-                                  fontSize: 12,
-                                  fontFamily: AppTheme.fontGeneralSans,
-                                ),
-                              ),
-                              const SizedBox(height: 14),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 14,
-                                  vertical: 8,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: const Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Text(
-                                      'Get Pass',
-                                      style: TextStyle(
-                                        color: Color(0xFF4C1D95),
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    SizedBox(width: 4),
-                                    Icon(
-                                      Icons.arrow_forward_rounded,
-                                      color: Color(0xFF4C1D95),
-                                      size: 16,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
+                        Container(
+                          width: 6,
+                          height: 6,
+                          decoration: const BoxDecoration(
+                            color: Color(0xFFF59E0B),
+                            shape: BoxShape.circle,
                           ),
                         ),
-                        Container(
-                          width: 70,
-                          height: 70,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: Colors.white.withOpacity(0.12),
-                            border: Border.all(
-                              color: Colors.white.withOpacity(0.25),
-                              width: 1.5,
-                            ),
-                          ),
-                          child: const Center(
-                            child: Icon(
-                              Icons.theater_comedy_rounded,
-                              color: Colors.amber,
-                              size: 40,
-                            ),
+                        const SizedBox(width: 6),
+                        Text(
+                          'SPECIAL NIGHT',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: const Color(0xFFF59E0B),
+                            fontFamily: AppTheme.fontGeneralSans,
+                            letterSpacing: 0.8,
                           ),
                         ),
                       ],
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 4),
+                    Text(
+                      'Comedy Night',
+                      style: TextStyle(
+                        fontSize: 25,
+                        fontWeight: FontWeight.bold,
+                        fontStyle: FontStyle.italic,
+                        color: isDark ? Colors.white : const Color(0xFF0F172A),
+                        fontFamily: AppTheme.fontUnivers,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      '29th Aug 2026 • Main Auditorium',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                        color: isDark
+                            ? const Color(0xFF94A3B8)
+                            : const Color(0xFF64748B),
+                        fontFamily: AppTheme.fontGeneralSans,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
+
+              // Action Button (Bottom Left)
+              Positioned(
+                left: 22,
+                bottom: 22,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 11,
+                  ),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(24),
+                    gradient: AppTheme.primaryGradient,
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppTheme.primaryBlue.withOpacity(0.40),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'Get Pass',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                          fontFamily: AppTheme.fontGeneralSans,
+                        ),
+                      ),
+                      SizedBox(width: 6),
+                      Icon(
+                        Icons.arrow_forward_rounded,
+                        color: Colors.white,
+                        size: 15,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              // Right Highlight Badge Graphic
+              Positioned(
+                right: 22,
+                top: 36,
+                child: Container(
+                  width: 72,
+                  height: 72,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: isDark
+                        ? AppTheme.darkCardsBg
+                        : AppTheme.lightCardsBg,
+                    border: Border.all(
+                      color: AppTheme.primaryBlue.withOpacity(0.3),
+                      width: 2,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Center(
+                    child: Icon(
+                      Icons.theater_comedy_rounded,
+                      color: isDark ? AppTheme.accentBlue : AppTheme.primaryBlue,
+                      size: 38,
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

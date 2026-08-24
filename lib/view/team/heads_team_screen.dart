@@ -102,6 +102,7 @@ class _HeadsTeamScreenState extends State<HeadsTeamScreen> {
                   if (_selectedTab == 0) {
                     final head = widget.heads[index];
                     return _buildTeamCard(
+                      index: index,
                       teamName: head.teamName,
                       name: head.name,
                       imageUrl: head.imageUrl,
@@ -116,6 +117,7 @@ class _HeadsTeamScreenState extends State<HeadsTeamScreen> {
                   } else {
                     final dev = widget.developers[index];
                     return _buildTeamCard(
+                      index: index,
                       teamName: dev.teamName,
                       name: dev.name,
                       imageUrl: dev.imageUrl,
@@ -232,6 +234,7 @@ class _HeadsTeamScreenState extends State<HeadsTeamScreen> {
   }
 
   Widget _buildTeamCard({
+    required int index,
     required String teamName,
     required String name,
     required String imageUrl,
@@ -243,84 +246,156 @@ class _HeadsTeamScreenState extends State<HeadsTeamScreen> {
     required Color nameColor,
     required bool isDark,
   }) {
+    // Select beetle asset dynamically based on index (beetle1..4)
+    final beetleAssets = [
+      'assets/hero/meetheads/bettle1.png',
+      'assets/hero/meetheads/beetle2.png',
+      'assets/hero/meetheads/bettle3.png',
+      'assets/hero/meetheads/bettle4.png',
+    ];
+    final leftBeetle = beetleAssets[index % beetleAssets.length];
+    final rightBeetle = beetleAssets[(index + 1) % beetleAssets.length];
+
     return Center(
       child: Container(
         width: double.infinity,
-        margin: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0),
-        padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 20.0),
-        decoration: BoxDecoration(
-          color: cardBgColor,
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(
-            color: borderColor.withOpacity(0.8),
-            width: 1.5,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: isDark
-                  ? const Color(0xFF3B82F6).withOpacity(0.12)
-                  : const Color(0xFF3B82F6).withOpacity(0.06),
-              blurRadius: 20,
-              spreadRadius: 1,
-              offset: const Offset(0, 8),
+        margin: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 6.0),
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            // Base Card Container
+            Container(
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: cardBgColor,
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(
+                  color: borderColor.withOpacity(0.8),
+                  width: 1.5,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: isDark
+                        ? const Color(0xFF3B82F6).withOpacity(0.12)
+                        : const Color(0xFF3B82F6).withOpacity(0.06),
+                    blurRadius: 20,
+                    spreadRadius: 1,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 20.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // Team Title Header (Fixed 2 lines height max to prevent card jumping)
+                  SizedBox(
+                    height: 52,
+                    child: Center(
+                      child: Text(
+                        teamName.toUpperCase(),
+                        textAlign: TextAlign.center,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontFamily: AppTheme.fontUnivers,
+                          fontSize: 22,
+                          fontWeight: FontWeight.w900,
+                          color: teamTitleColor,
+                          letterSpacing: 1.5,
+                          height: 1.15,
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  // Circular Avatar (150px)
+                  _buildAvatar(imageUrl, name, isDark),
+
+                  const SizedBox(height: 14),
+
+                  // Name Header
+                  SizedBox(
+                    height: 38,
+                    child: Center(
+                      child: Text(
+                        name.toUpperCase(),
+                        textAlign: TextAlign.center,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontFamily: AppTheme.fontUnivers,
+                          fontSize: 26,
+                          fontWeight: FontWeight.w900,
+                          color: nameColor,
+                          letterSpacing: 1.5,
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 16),
+
+
+                  _buildRolePill(role.toUpperCase(), isDark),
+
+                  const SizedBox(height: 10),
+
+                  _buildExplorePill(
+                    label: 'EXPLORE',
+                    icon: Icons.link_rounded,
+                    isDark: isDark,
+                    onTap: () => _launchUrl(context, linkedinUrl),
+                  ),
+                ],
+              ),
+            ),
+
+            // Left Beetle Overflowing outside the Card with randomized rotation angle
+            Positioned(
+              left: -42,
+              top: 90,
+              width: 145,
+              height: 145,
+              child: IgnorePointer(
+                child: Opacity(
+                  opacity: isDark ? 0.90 : 0.70,
+                  child: Transform.rotate(
+                    angle: (index * 0.7853 + 0.35), // Varied angles (~20deg to 180deg)
+                    child: Image.asset(
+                      leftBeetle,
+                      fit: BoxFit.contain,
+                      errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+
+            // Right Beetle Overflowing outside the Card with randomized rotation angle
+            Positioned(
+              right: -45,
+              bottom: 30,
+              width: 155,
+              height: 155,
+              child: IgnorePointer(
+                child: Opacity(
+                  opacity: isDark ? 0.90 : 0.70,
+                  child: Transform.rotate(
+                    angle: -(index * 1.047 + 0.52), // Varied opposite angles
+                    child: Image.asset(
+                      rightBeetle,
+                      fit: BoxFit.contain,
+                      errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                    ),
+                  ),
+                ),
+              ),
             ),
           ],
-        ),
-        child: SingleChildScrollView(
-          physics: const BouncingScrollPhysics(),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // Team Title
-              Text(
-                teamName.toUpperCase(),
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontFamily: AppTheme.fontUnivers,
-                  fontSize: 15,
-                  fontWeight: FontWeight.w800,
-                  color: teamTitleColor,
-                  letterSpacing: 1.5,
-                ),
-              ),
-
-              const SizedBox(height: 12),
-
-              // Avatar with Glow Aura
-              _buildAvatar(imageUrl, name, isDark),
-
-              const SizedBox(height: 12),
-
-              // Name
-              Text(
-                name.toUpperCase(),
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontFamily: AppTheme.fontUnivers,
-                  fontSize: 24,
-                  fontWeight: FontWeight.w900,
-                  color: nameColor,
-                  letterSpacing: 1.5,
-                ),
-              ),
-
-              const SizedBox(height: 16),
-
-              // Pill 1: Designation/Role
-              _buildRolePill(role.toUpperCase(), isDark),
-
-              const SizedBox(height: 10),
-
-              // Pill 2: Explore / LinkedIn
-              _buildExplorePill(
-                label: 'EXPLORE',
-                icon: Icons.link_rounded,
-                isDark: isDark,
-                onTap: () => _launchUrl(context, linkedinUrl),
-              ),
-            ],
-          ),
         ),
       ),
     );
@@ -328,8 +403,8 @@ class _HeadsTeamScreenState extends State<HeadsTeamScreen> {
 
   Widget _buildAvatar(String imageUrl, String name, bool isDark) {
     return Container(
-      width: 120,
-      height: 120,
+      width: 155,
+      height: 155,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         gradient: RadialGradient(
@@ -343,14 +418,14 @@ class _HeadsTeamScreenState extends State<HeadsTeamScreen> {
       ),
       child: Center(
         child: Container(
-          width: 100,
-          height: 100,
+          width: 140,
+          height: 140,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: isDark ? const Color(0xFF1E293B) : const Color(0xFFDBEAFE),
             border: Border.all(
               color: const Color(0xFF60A5FA).withOpacity(0.5),
-              width: 2,
+              width: 2.5,
             ),
           ),
           child: ClipOval(
@@ -360,7 +435,7 @@ class _HeadsTeamScreenState extends State<HeadsTeamScreen> {
                       name.isNotEmpty ? name[0].toUpperCase() : 'D',
                       style: TextStyle(
                         fontFamily: AppTheme.fontUnivers,
-                        fontSize: 38,
+                        fontSize: 44,
                         fontWeight: FontWeight.w900,
                         color: isDark
                             ? const Color(0xFF60A5FA)

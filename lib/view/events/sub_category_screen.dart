@@ -114,7 +114,7 @@ class _SubCategoryScreenState extends State<SubCategoryScreen> {
           child: Column(
             children: leftCol.map((index) {
               final subCat = widget.subCategories[index];
-              final double height = _getSubCardHeight(index, isLeft: true);
+              final double height = _getSubCardHeight(index, subCat, isLeft: true);
               return Padding(
                 padding: const EdgeInsets.only(bottom: 16.0),
                 child: _SubCategoryCard(
@@ -132,7 +132,7 @@ class _SubCategoryScreenState extends State<SubCategoryScreen> {
           child: Column(
             children: rightCol.map((index) {
               final subCat = widget.subCategories[index];
-              final double height = _getSubCardHeight(index, isLeft: false);
+              final double height = _getSubCardHeight(index, subCat, isLeft: false);
               return Padding(
                 padding: const EdgeInsets.only(bottom: 16.0),
                 child: _SubCategoryCard(
@@ -149,9 +149,13 @@ class _SubCategoryScreenState extends State<SubCategoryScreen> {
     );
   }
 
-  double _getSubCardHeight(int index, {required bool isLeft}) {
-    final heightsLeft = [180.0, 260.0, 140.0, 220.0, 190.0];
-    final heightsRight = [280.0, 170.0, 220.0, 160.0, 240.0];
+  double _getSubCardHeight(int index, SubCategory subCategory, {required bool isLeft}) {
+    final lowerTitle = subCategory.title.toLowerCase();
+    if (lowerTitle.contains('conference')) return 290.0;
+    if (lowerTitle.contains('hackathon')) return 240.0;
+
+    final heightsLeft = [200.0, 260.0, 180.0, 220.0, 190.0];
+    final heightsRight = [280.0, 190.0, 230.0, 180.0, 240.0];
 
     if (isLeft) {
       return heightsLeft[index ~/ 2 % heightsLeft.length];
@@ -171,7 +175,7 @@ class _SubCategoryScreenState extends State<SubCategoryScreen> {
           ),
         ),
       );
-    } else {
+    } else if (subCategory.events.isNotEmpty) {
       showEventDetail(context, subCategory);
     }
   }

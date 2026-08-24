@@ -240,122 +240,74 @@ class _CategoryGraphic extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final lower = categoryTitle.toLowerCase();
+    String? assetPath;
 
-    if (lower.contains('competition')) {
-      return Stack(
-        children: [
-          Positioned.fill(
-            child: CustomPaint(
-              painter: _ArchedLinesPainter(
-                color: const Color(0xFF8B5CF6).withOpacity(0.4),
-                arcCount: 5,
-              ),
-            ),
-          ),
-          Positioned(
-            bottom: 12,
-            left: 12,
-            right: 12,
-            height: 140,
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(14),
-              child: Image.asset(
-                'assets/robo.png',
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => Container(
-                  color: const Color(0xFF232542),
-                  child: const Icon(Icons.smart_toy_rounded, color: Colors.white54, size: 40),
-                ),
-              ),
-            ),
-          ),
-        ],
-      );
+    if (lower.contains('competition') || lower.contains('robotics')) {
+      assetPath = 'assets/robotics.png';
     } else if (lower.contains('workshop')) {
-      return Stack(
-        children: [
-          Positioned(
-            bottom: -10,
-            right: -10,
-            width: 140,
-            height: 110,
-            child: ClipRRect(
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(50),
-                topRight: Radius.circular(50),
-                bottomLeft: Radius.circular(20),
-              ),
-              child: Image.asset(
-                'assets/robotics.jpeg',
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => Container(
-                  color: const Color(0xFF232542),
-                  child: const Icon(Icons.build_rounded, color: Colors.white54, size: 30),
+      assetPath = 'assets/workshops.png';
+    } else if (lower.contains('nexus')) {
+      assetPath = 'assets/nexus.png';
+    } else if (lower.contains('lecture') || lower.contains('keynote')) {
+      assetPath = 'assets/ls.png';
+    } else if (lower.contains('night') || lower.contains('event')) {
+      assetPath = 'assets/nightEvents.png';
+    } else if (lower.contains('exhibition')) {
+      assetPath = 'assets/exhibtions.png';
+    } else if (lower.contains('hackathon')) {
+      assetPath = 'assets/hackathons.png';
+    }
+
+    if (assetPath != null) {
+      final String path = assetPath;
+      return LayoutBuilder(
+        builder: (context, constraints) {
+          final imageHeight = constraints.maxHeight * 0.65;
+          final borderRadius = imageHeight * 0.16;
+
+          return Stack(
+            children: [
+              // Background painter accent
+              Positioned.fill(
+                child: CustomPaint(
+                  painter: _WaveLinesPainter(
+                    color: AppTheme.accentBlue.withOpacity(0.20),
+                  ),
                 ),
               ),
-            ),
-          ),
-          Positioned.fill(
-            child: CustomPaint(
-              painter: _ConcentricArchesPainter(
-                color: Colors.white.withOpacity(0.2),
+
+              // Proportionally sized artwork with circular rounded corners
+              Positioned(
+                bottom: 12,
+                left: 12,
+                right: 12,
+                height: imageHeight,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(borderRadius),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.04),
+                      borderRadius: BorderRadius.circular(borderRadius),
+                      border: Border.all(
+                        color: Colors.white.withOpacity(0.12),
+                        width: 1,
+                      ),
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(borderRadius),
+                      child: Image.asset(
+                        path,
+                        fit: BoxFit.fill,
+                        alignment: Alignment.center,
+                        errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                      ),
+                    ),
+                  ),
+                ),
               ),
-            ),
-          ),
-        ],
-      );
-    } else if (lower.contains('nexus')) {
-      return Stack(
-        children: [
-          Positioned(
-            bottom: 0,
-            left: 10,
-            width: 120,
-            height: 90,
-            child: ClipRRect(
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(45),
-                topRight: Radius.circular(45),
-              ),
-              child: Container(
-                color: const Color(0xFF25284B),
-                child: const Icon(Icons.record_voice_over_rounded, color: Colors.white60, size: 36),
-              ),
-            ),
-          ),
-          Positioned.fill(
-            child: CustomPaint(
-              painter: _WaveLinesPainter(
-                color: AppTheme.accentBlue.withOpacity(0.5),
-              ),
-            ),
-          ),
-        ],
-      );
-    } else if (lower.contains('lecture')) {
-      return Stack(
-        children: [
-          Positioned(
-            bottom: -10,
-            left: -10,
-            child: CustomPaint(
-              size: const Size(180, 130),
-              painter: _StackedSheetsPainter(),
-            ),
-          ),
-        ],
-      );
-    } else if (lower.contains('exhibition')) {
-      return Stack(
-        children: [
-          Positioned.fill(
-            child: CustomPaint(
-              painter: _FanArchPainter(
-                color: const Color(0xFF93C5FD).withOpacity(0.4),
-              ),
-            ),
-          ),
-        ],
+            ],
+          );
+        },
       );
     }
 

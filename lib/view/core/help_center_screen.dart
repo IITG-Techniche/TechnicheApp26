@@ -136,15 +136,6 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
                     ),
 
                     const SizedBox(height: 24),
-
-                    // ── 5. Socials Section ──
-                    _buildSocialsSection(
-                      isDark: isDark,
-                      textPrimary: textPrimary,
-                      textSecondary: textSecondary,
-                    ),
-
-                    const SizedBox(height: 40),
                   ],
                 ),
               ),
@@ -620,103 +611,6 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
     );
   }
 
-  // ─────────────────────────────────────────────────────────────
-  // 5. SOCIALS SECTION (APP ICON BUTTONS)
-  // ─────────────────────────────────────────────────────────────
-  Widget _buildSocialsSection({
-    required bool isDark,
-    required Color textPrimary,
-    required Color textSecondary,
-  }) {
-    final socials = HelpCenterData.socials;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Socials',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w700,
-            fontFamily: AppTheme.fontUnivers,
-            color: textPrimary,
-          ),
-        ),
-        const SizedBox(height: 14),
-
-        // Horizontal Row of 5 Squarish Rounded Logo Buttons
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: socials.map((item) {
-            return _buildSocialAppButton(
-              item: item,
-              isDark: isDark,
-            );
-          }).toList(),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildSocialAppButton({
-    required HelpSocialLink item,
-    required bool isDark,
-  }) {
-    return InkWell(
-      onTap: () => _launchExternalUrl(item.url),
-      borderRadius: BorderRadius.circular(16),
-      child: Container(
-        width: 54,
-        height: 54,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
-          gradient: LinearGradient(
-            colors: isDark
-                ? const [
-                    Color(0xFF3355A6),
-                    Color(0xFF233B78),
-                  ]
-                : const [
-                    Color(0xFFE4F0FF),
-                    Color(0xFFD3E6FD),
-                  ],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
-          border: Border.all(
-            color: isDark
-                ? const Color(0xFF4C75D0).withOpacity(0.5)
-                : const Color(0xFFBEDBFE),
-            width: 1.2,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: isDark
-                  ? const Color(0xFF1D3570).withOpacity(0.4)
-                  : Colors.black.withOpacity(0.06),
-              blurRadius: 8,
-              offset: const Offset(0, 3),
-            ),
-          ],
-        ),
-        alignment: Alignment.center,
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(10),
-          child: Image.asset(
-            item.iconAsset,
-            width: 26,
-            height: 26,
-            fit: BoxFit.contain,
-            errorBuilder: (_, __, ___) => Icon(
-              Icons.share_outlined,
-              color: isDark ? Colors.white : const Color(0xFF1E40AF),
-              size: 22,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
 
   // ─────────────────────────────────────────────────────────────
   // REUSABLE PILL TAG
