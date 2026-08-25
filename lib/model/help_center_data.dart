@@ -34,59 +34,56 @@ class HelpSocialLink {
   });
 }
 
-/// ============================================================================
-/// 📚 TECHNICHE HELP CENTER DATA BANK
-/// ============================================================================
-/// You can easily edit, add, or update any contact numbers, hospitality heads,
-/// transport buggy / e-rickshaw time slots, FAQs, and social links below anytime!
-/// ============================================================================
+
 class HelpCenterData {
+  static bool hasLoadedFromFirestore = false;
+
   // ── 1. Hospital Contacts ──
-  static const List<HelpContact> hospitalContacts = [
-    HelpContact(name: 'Ambulance', number: '3612586666'),
-    HelpContact(name: 'Reception', number: '3612585555'),
+  static List<HelpContact> hospitalContacts = [
+    const HelpContact(name: 'Ambulance', number: '3612586666'),
+    const HelpContact(name: 'Reception', number: '3612585555'),
   ];
 
   // ── 2. Accommodation & Hospitality Contacts ──
-  static const List<HelpContact> accommodationContacts = [
-    HelpContact(name: 'Hospitality Head (Uday)', number: '9075438210'),
-    HelpContact(name: 'Hospitality Head (Raghav)', number: '9075438210'),
-    HelpContact(name: 'Hospitality Head (Vibha)', number: '9075438210'),
+  static List<HelpContact> accommodationContacts = [
+    const HelpContact(name: 'Hospitality Head (Uday)', number: '9075438210'),
+    const HelpContact(name: 'Hospitality Head (Raghav)', number: '9075438210'),
+    const HelpContact(name: 'Hospitality Head (Vibha)', number: '9075438210'),
   ];
 
   // ── 3. Transport (Buggy & E-Rickshaw) Contacts & Time Slots ──
-  static const List<HelpContact> transportContacts = [
-    HelpContact(name: 'Buggy', number: '9213546678', timeSlot: '9:00-12:00'),
-    HelpContact(name: 'Erickshaw 1', number: '6001440472', timeSlot: '8:00-14:00'),
-    HelpContact(name: 'Erickshaw 2', number: '7896513761', timeSlot: '12:00-18:00'),
-    HelpContact(name: 'Erickshaw 3', number: '8486664856', timeSlot: '16:00-22:00'),
-    HelpContact(name: 'Erickshaw 4', number: '9123456780', timeSlot: '8:00-20:00'),
-    HelpContact(name: 'Erickshaw 5', number: '9876543210', timeSlot: '8:00-20:00'),
+  static List<HelpContact> transportContacts = [
+    const HelpContact(name: 'Buggy', number: '9213546678', timeSlot: '9:00-12:00'),
+    const HelpContact(name: 'Erickshaw 1', number: '6001440472', timeSlot: '8:00-14:00'),
+    const HelpContact(name: 'Erickshaw 2', number: '7896513761', timeSlot: '12:00-18:00'),
+    const HelpContact(name: 'Erickshaw 3', number: '8486664856', timeSlot: '16:00-22:00'),
+    const HelpContact(name: 'Erickshaw 4', number: '9123456780', timeSlot: '8:00-20:00'),
+    const HelpContact(name: 'Erickshaw 5', number: '9876543210', timeSlot: '8:00-20:00'),
   ];
 
   // ── 4. Frequently Asked Questions (FAQs) ──
-  static const List<HelpFaq> faqs = [
-    HelpFaq(
+  static List<HelpFaq> faqs = [
+    const HelpFaq(
       question: 'How do i register for events?',
       answer:
           'Visit the official website (techniche.org.in) or click on any event in the app to view details and register directly on Unstop.',
     ),
-    HelpFaq(
+    const HelpFaq(
       question: 'Where can i find the event schedule?',
       answer:
           'The complete event schedule with date-wise filtering, live venue navigation, and timing is available under the Schedule tab.',
     ),
-    HelpFaq(
+    const HelpFaq(
       question: 'Is accomodation provided?',
       answer:
           'Hostel accommodation is available on campus for registered participants on a first-come, first-served basis. Please contact the Hospitality Team heads listed above.',
     ),
-    HelpFaq(
+    const HelpFaq(
       question: 'Who do i contact in case of emergency?',
       answer:
           'For any medical emergencies, call the IIT Guwahati Hospital Ambulance (0361-2586666) or the Security Reception immediately.',
     ),
-    HelpFaq(
+    const HelpFaq(
       question: 'How do I reach IIT Guwahati campus?',
       answer:
           'IIT Guwahati is located around 20 km from Guwahati Railway Station and 22 km from Lokpriya Gopinath Bordoloi International Airport. Institute buses and pre-paid taxis/autos are readily available.',

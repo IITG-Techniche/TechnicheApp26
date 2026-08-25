@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../constant/appTheme.dart';
 import '../../model/help_center_data.dart';
 
@@ -15,6 +16,64 @@ class HelpCenterScreen extends StatefulWidget {
 
 class _HelpCenterScreenState extends State<HelpCenterScreen> {
   final Set<int> _expandedFaqIndices = {};
+
+  @override
+  void initState() {
+    super.initState();
+    if (!HelpCenterData.hasLoadedFromFirestore) {
+      _fetchHelpCenterData();
+    }
+  }
+
+  Future<void> _fetchHelpCenterData() async {
+    try {
+      final doc = await FirebaseFirestore.instance
+          .collection('app_config')
+          .doc('help_center')
+          .get();
+      if (doc.exists && doc.data() != null && mounted) {
+        final data = doc.data()!;
+
+        final List<dynamic>? hospitalData = data['hospital'] as List<dynamic>?;
+        if (hospitalData != null) {
+          HelpCenterData.hospitalContacts = hospitalData.map((e) => HelpContact(
+            name: (e['name'] as String?) ?? '',
+            number: (e['number'] as String?) ?? '',
+          )).toList();
+        }
+
+        final List<dynamic>? accommodationData = data['accommodation'] as List<dynamic>?;
+        if (accommodationData != null) {
+          HelpCenterData.accommodationContacts = accommodationData.map((e) => HelpContact(
+            name: (e['name'] as String?) ?? '',
+            number: (e['number'] as String?) ?? '',
+          )).toList();
+        }
+
+        final List<dynamic>? transportData = data['transport'] as List<dynamic>?;
+        if (transportData != null) {
+          HelpCenterData.transportContacts = transportData.map((e) => HelpContact(
+            name: (e['name'] as String?) ?? '',
+            number: (e['number'] as String?) ?? '',
+            timeSlot: e['timeSlot'] as String?,
+          )).toList();
+        }
+
+        final List<dynamic>? faqsData = data['faqs'] as List<dynamic>?;
+        if (faqsData != null) {
+          HelpCenterData.faqs = faqsData.map((e) => HelpFaq(
+            question: (e['question'] as String?) ?? '',
+            answer: (e['answer'] as String?) ?? '',
+          )).toList();
+        }
+
+        HelpCenterData.hasLoadedFromFirestore = true;
+        setState(() {});
+      }
+    } catch (e) {
+      debugPrint('⚠️ Help Center Firestore fetch failed: $e');
+    }
+  }
 
   Future<void> _makePhoneCall(String phoneNumber) async {
     final cleanNumber = phoneNumber.replaceAll(RegExp(r'[^0-9+]'), '');

@@ -21,6 +21,8 @@ class ProfileScreen extends ConsumerStatefulWidget {
 class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   final GoogleSignIn _googleSignIn = GoogleSignIn(
     scopes: ['email', 'profile'],
+    serverClientId:
+        '209325871242-119p3tsu97h2vr70to5q9hln31mq5u38.apps.googleusercontent.com',
   );
   bool _isEditing = false;
   bool _isLoading = false;

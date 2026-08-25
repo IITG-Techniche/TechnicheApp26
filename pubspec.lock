@@ -17,30 +17,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "6.1.0"
-  animated_glitch:
-    dependency: "direct main"
-    description:
-      name: animated_glitch
-      sha256: "0e9dac2a8863f3a77861192d9f136062d1776e50a63ab8d2325f331bd2cd3f63"
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.0.0+2"
-  animated_stack_widget:
-    dependency: transitive
-    description:
-      name: animated_stack_widget
-      sha256: ce4788dd158768c9d4388354b6fb72600b78e041a37afc4c279c63ecafcb9408
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.0.4"
-  animated_text_kit:
-    dependency: "direct main"
-    description:
-      name: animated_text_kit
-      sha256: "1d41486860885321972dd332179357a535d50d4780fc2ba5e1805bde085c81f2"
-      url: "https://pub.dev"
-    source: hosted
-    version: "4.3.0"
   app_links:
     dependency: transitive
     description:
@@ -526,14 +502,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.0"
-  flutter_map_marker_popup:
-    dependency: "direct main"
-    description:
-      name: flutter_map_marker_popup
-      sha256: a7540538114b5d1627ab67b498273d66bc36090385412ae49ef215af4a2861c5
-      url: "https://pub.dev"
-    source: hosted
-    version: "7.0.0"
   flutter_riverpod:
     dependency: "direct main"
     description:
@@ -542,14 +510,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.6.1"
-  flutter_staggered_animations:
-    dependency: "direct main"
-    description:
-      name: flutter_staggered_animations
-      sha256: "81d3c816c9bb0dca9e8a5d5454610e21ffb068aedb2bde49d2f8d04f75538351"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.1.1"
   flutter_svg:
     dependency: "direct main"
     description:
@@ -968,14 +928,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.10.0"
-  nested:
-    dependency: transitive
-    description:
-      name: nested
-      sha256: "03bac4c528c64c95c722ec99280375a6f2fc708eec17c7b3f07253b626cd2a20"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.0.0"
   objective_c:
     dependency: transitive
     description:
@@ -1200,14 +1152,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.0"
-  provider:
-    dependency: "direct main"
-    description:
-      name: provider
-      sha256: "4e82183fa20e5ca25703ead7e05de9e4cceed1fbd1eadc1ac3cb6f565a09f272"
-      url: "https://pub.dev"
-    source: hosted
-    version: "6.1.5+1"
   pub_semver:
     dependency: transitive
     description:
@@ -1493,14 +1437,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.7.7"
-  timeline_tile:
-    dependency: "direct main"
-    description:
-      name: timeline_tile
-      sha256: "85ec2023c67137397c2812e3e848b2fb20b410b67cd9aff304bb5480c376fc0c"
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.0.0"
   timezone:
     dependency: "direct main"
     description:

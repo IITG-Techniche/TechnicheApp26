@@ -23,69 +23,98 @@ class _MerchScreenState extends State<MerchScreen> {
   bool _isSoldOut = false;
   String _orderFormUrl = 'https://forms.gle/87Zf6bjNXU8hwwAdA';
 
-  // Firestore-driven network image URLs, keyed by firestoreId
-  final Map<String, String> _networkImages = {};
+  // Dynamic merchandise items loaded from Firestore (falls back to hardcoded initially)
+  final List<Map<String, dynamic>> _dynamicMerchItems = [];
 
   // firestoreId maps to a document in the `merch_items` Firestore collection
   final List<Map<String, String>> merchItems = [
     {
-      "firestoreId": "glitched_gameboy",
-      "title": "Glitched GameBoy",
-      "fallbackImage": "assets/glitched.png",
+      "firestoreId": "black_tee",
+      "title": "Regular Fit Black Tshirt",
+      "fallbackImage": "assets/black tee back.png",
       "price": "₹449",
-      "badge": "Limited Edition",
+      "badge": "Xenogenesis",
       "description":
-          "When circuits fry but style survives. It's rebellious, loud, and built for those who'd rather crash the system than play by its rules.",
+          "This year's official Techniche Black T-Shirt. Showcasing premium design and comfort.",
     },
     {
-      "firestoreId": "glorified_goodboy",
-      "title": "Glorified GoodBoy",
-      "fallbackImage": "assets/goodboy.png",
-      "price": "₹399",
-      "badge": "Official Drop",
+      "firestoreId": "white_tee",
+      "title": "Regular Fit White Tshirt",
+      "fallbackImage": "assets/whiteback.png",
+      "price": "₹499",
+      "badge": "Metamorphosis",
       "description":
-          "Channeling collective consciousness, algorithms, and aesthetics that scream main character energy. Rock it, & Beyond the club, you are the vibe.",
+          "This year's official Techniche White T-Shirt. Showcasing premium design and comfort.",
     },
   ];
-
-
 
   @override
   void initState() {
     super.initState();
-    final initialPage = merchItems.length * 1000;
+    // Initialize with fallback/hardcoded items
+    _dynamicMerchItems.addAll(merchItems);
+
+    final initialPage = _dynamicMerchItems.length * 1000;
     _pageController = PageController(
       initialPage: initialPage,
       viewportFraction: 0.90,
     );
-    _activePageIndex = initialPage % merchItems.length;
+    _activePageIndex = initialPage % _dynamicMerchItems.length;
 
     _fetchMerchConfig();
-    _fetchMerchImages();
+    _fetchMerchData();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) _startAutoScroll();
     });
   }
 
-  /// Fetches imageUrl for each merch item from `merch_items` Firestore collection.
-  Future<void> _fetchMerchImages() async {
+  /// Fetches all merch details from `merch_items` Firestore collection.
+  Future<void> _fetchMerchData() async {
     try {
-      for (final item in merchItems) {
-        final id = item['firestoreId']!;
-        final doc = await FirebaseFirestore.instance
-            .collection('merch_items')
-            .doc(id)
-            .get();
-        if (doc.exists && mounted) {
-          final url = (doc.data()?['imageUrl'] as String?) ?? '';
-          if (url.isNotEmpty) {
-            setState(() => _networkImages[id] = _convertDriveUrl(url));
-          }
+      final querySnapshot = await FirebaseFirestore.instance
+          .collection('merch_items')
+          .get();
+
+      if (querySnapshot.docs.isNotEmpty && mounted) {
+        final List<Map<String, dynamic>> loadedItems = [];
+        for (var doc in querySnapshot.docs) {
+          final data = doc.data();
+          final id = doc.id;
+
+          // Look up local hardcoded merchItem by ID for fallbackImage and description
+          final localFallback = merchItems.firstWhere(
+            (item) => item['firestoreId'] == id,
+            orElse: () => <String, String>{},
+          );
+
+          loadedItems.add({
+            "firestoreId": id,
+            "title": (data['title'] as String?) ?? (localFallback['title'] ?? 'Official Merch'),
+            "price": (data['price'] as String?) ?? (localFallback['price'] ?? '₹0'),
+            "badge": (data['badge'] as String?) ?? (localFallback['badge'] ?? 'Official Drop'),
+            "description": localFallback['description'] ?? '',
+            "imageUrl": _convertDriveUrl((data['imageUrl'] as String?) ?? ''),
+            "fallbackImage": localFallback['fallbackImage'] ?? 'assets/black tee front.png',
+          });
+        }
+
+        setState(() {
+          _dynamicMerchItems.clear();
+          _dynamicMerchItems.addAll(loadedItems);
+        });
+
+        // Safely reset/jump PageController to avoid page indices boundary problems
+        if (_pageController.hasClients) {
+          final newInitialPage = _dynamicMerchItems.length * 1000;
+          _pageController.jumpToPage(newInitialPage);
+          setState(() {
+            _activePageIndex = newInitialPage % _dynamicMerchItems.length;
+          });
         }
       }
     } catch (e) {
-      debugPrint('⚠️ Merch image fetch failed: $e');
+      debugPrint('⚠️ Merch data fetch failed: $e');
     }
   }
 
@@ -192,13 +221,18 @@ class _MerchScreenState extends State<MerchScreen> {
                 child: PageView.builder(
                   controller: _pageController,
                   onPageChanged: (index) {
-                    setState(() {
-                      _activePageIndex = index % merchItems.length;
-                    });
+                    if (_dynamicMerchItems.isNotEmpty) {
+                      setState(() {
+                        _activePageIndex = index % _dynamicMerchItems.length;
+                      });
+                    }
                   },
                   itemBuilder: (context, index) {
-                    final item = merchItems[index % merchItems.length];
-                    final networkUrl = _networkImages[item['firestoreId']];
+                    if (_dynamicMerchItems.isEmpty) {
+                      return const SizedBox.shrink();
+                    }
+                    final item = _dynamicMerchItems[index % _dynamicMerchItems.length];
+                    final networkUrl = item['imageUrl'] as String?;
                     return _merchCard(
                       context: context,
                       isDark: isDark,
@@ -225,7 +259,7 @@ class _MerchScreenState extends State<MerchScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: List.generate(
-                  merchItems.length,
+                  _dynamicMerchItems.length,
                   (index) => AnimatedContainer(
                     duration: const Duration(milliseconds: 300),
                     margin: const EdgeInsets.symmetric(horizontal: 5),
@@ -451,7 +485,10 @@ class _MerchScreenState extends State<MerchScreen> {
                     // Image — network if available, else local asset
                     ClipRRect(
                       borderRadius: BorderRadius.circular(16),
-                      child: networkImageUrl != null && networkImageUrl.isNotEmpty
+                      child: networkImageUrl != null &&
+                              networkImageUrl.isNotEmpty &&
+                              (networkImageUrl.startsWith('http://') ||
+                                  networkImageUrl.startsWith('https://'))
                           ? Image.network(
                               networkImageUrl,
                               height: 280,
@@ -480,9 +517,16 @@ class _MerchScreenState extends State<MerchScreen> {
                               ),
                             )
                           : Image.asset(
-                              fallbackImagePath,
+                              (networkImageUrl != null && networkImageUrl.isNotEmpty)
+                                  ? networkImageUrl
+                                  : fallbackImagePath,
                               height: 280,
                               fit: BoxFit.contain,
+                              errorBuilder: (_, __, ___) => Image.asset(
+                                fallbackImagePath,
+                                height: 280,
+                                fit: BoxFit.contain,
+                              ),
                             ),
                     ),
                   ],

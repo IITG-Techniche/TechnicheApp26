@@ -12,7 +12,36 @@
           "package_name": "com.techniche.techniche_app"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "209325871242-akp4m0phnm33t6g90g114rd9as0bvb30.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.techniche.techniche_app",
+            "certificate_hash": "697370043a48579c30331d8948944a081d111e8b"
+          }
+        },
+        {
+          "client_id": "209325871242-d8ep38p11vni07j67b1mglf46hgfij3f.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.techniche.techniche_app",
+            "certificate_hash": "fa630fb6fcb049e51dae2d0346a62b05166dfa6e"
+          }
+        },
+        {
+          "client_id": "209325871242-voqmt9bimln273enq2cak7rct6t23mk2.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.techniche.techniche_app",
+            "certificate_hash": "db21753c83c4543bffa26274db198d4abaecbb3c"
+          }
+        },
+        {
+          "client_id": "209325871242-119p3tsu97h2vr70to5q9hln31mq5u38.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyCvkXzgZMaj0p9FKebFJubg0CSYxYG5uig"
@@ -20,7 +49,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "209325871242-119p3tsu97h2vr70to5q9hln31mq5u38.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "209325871242-1o53e1b5uctb4et47bft16gt40no3kpq.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.amazonClone"
+              }
+            }
+          ]
         }
       }
     }

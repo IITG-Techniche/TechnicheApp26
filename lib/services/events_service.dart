@@ -12,9 +12,10 @@ class EventsService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   List<MainCategory>? _cachedCategories;
 
-  /// Fetches main event categories from Firebase Firestore if available,
-  /// falling back to assets/data/events_data.json, and finally local eventData.
-  Future<List<MainCategory>> getCategories() async {
+  Future<List<MainCategory>> getCategories({bool force = false}) async {
+    if (force) {
+      _cachedCategories = null;
+    }
     if (_cachedCategories != null) return _cachedCategories!;
 
     // 1. Try Firebase Firestore

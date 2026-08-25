@@ -31,21 +31,20 @@ const db = getFirestore();
 // The app will auto-convert them to direct image URLs.
 const merchItems = [
   {
-    id: 'glitched_gameboy',
-    title: 'Glitched GameBoy',
-    imageUrl: 'https://drive.google.com/file/d/1YYuZnQO8qE_1URvyFYDDhDUfwHDZRjwl/view?usp=sharing',
+    id: 'black_tee',
+    title: 'Regular Fit Black Tshirt',
+    imageUrl: 'https://res.cloudinary.com/gtrkjyre/image/upload/v1787643044/black_tee_back.png',
     price: '₹449',
-    badge: 'Limited Edition',
+    badge: 'Xenogenesis',
   },
   {
-    id: 'glorified_goodboy',
-    title: 'Glorified GoodBoy',
-    imageUrl: '',  // ← Paste your Google Drive link here
-    price: '₹399',
-    badge: 'Official Drop',
+    id: 'white_tee',
+    title: 'Regular Fit White Tshirt',
+    imageUrl: 'https://res.cloudinary.com/gtrkjyre/image/upload/v1787643017/whiteback.png',  
+    price: '₹499',
+    badge: 'Metamorphosis',
   },
-];
-// ─────────────────────────────────────────────────────────────────────────────
+]
 
 async function seedMerchItems() {
   console.log('\n🚀 Seeding merch_items collection...');

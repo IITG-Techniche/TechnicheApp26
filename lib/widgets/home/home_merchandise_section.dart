@@ -20,14 +20,14 @@ class _HomeMerchandiseSectionState extends State<HomeMerchandiseSection> {
   // Static merch list — firestoreId maps to merch_items/{id} for the image
   final List<Map<String, String>> _merchList = const [
     {
-      'firestoreId': 'glitched_gameboy',
-      'name': 'Glitched GameBoy',
-      'fallback': 'assets/glitched.png',
+      'firestoreId': 'black_tee',
+      'name': 'Regular Fit Black Tshirt',
+      'fallback': 'assets/black tee back.png',
     },
     {
-      'firestoreId': 'glorified_goodboy',
-      'name': 'Glorified GoodBoy',
-      'fallback': 'assets/goodboy.png',
+      'firestoreId': 'white_tee',
+      'name': 'Regular Fit White Tshirt',
+      'fallback': 'assets/whiteback.png',
     },
   ];
 

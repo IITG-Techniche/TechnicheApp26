@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../model/events_data.dart';
 import '../../constant/appTheme.dart';
+import '../../services/events_service.dart';
 import 'sub_category_screen.dart';
 
 class EventsScreen extends StatefulWidget {
@@ -17,6 +18,35 @@ class EventsScreen extends StatefulWidget {
 }
 
 class _EventsScreenState extends State<EventsScreen> {
+  bool _isLoadingEvents = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchEvents();
+  }
+
+  Future<void> _fetchEvents() async {
+    if (eventData.isEmpty) {
+      setState(() => _isLoadingEvents = true);
+    }
+    try {
+      final categories = await EventsService().getCategories(force: true);
+      if (categories.isNotEmpty && mounted) {
+        setState(() {
+          eventData.clear();
+          eventData.addAll(categories);
+        });
+      }
+    } catch (e) {
+      debugPrint('⚠️ Error fetching events: $e');
+    } finally {
+      if (mounted) {
+        setState(() => _isLoadingEvents = false);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -31,10 +61,16 @@ class _EventsScreenState extends State<EventsScreen> {
           children: [
             _buildHeader(context, textPrimary: textPrimary),
             Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
-                child: _buildStaggeredCategoryGrid(context, isDark: isDark),
-              ),
+              child: _isLoadingEvents && eventData.isEmpty
+                  ? const Center(
+                      child: CircularProgressIndicator(
+                        color: AppTheme.primaryBlue,
+                      ),
+                    )
+                  : SingleChildScrollView(
+                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+                      child: _buildStaggeredCategoryGrid(context, isDark: isDark),
+                    ),
             ),
           ],
         ),

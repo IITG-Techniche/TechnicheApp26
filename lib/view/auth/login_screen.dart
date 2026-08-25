@@ -20,6 +20,8 @@ class LoginScreen extends ConsumerStatefulWidget {
 class _LoginScreenState extends ConsumerState<LoginScreen> {
   final GoogleSignIn _googleSignIn = GoogleSignIn(
     scopes: ['email', 'profile'],
+    serverClientId:
+        '209325871242-119p3tsu97h2vr70to5q9hln31mq5u38.apps.googleusercontent.com',
   );
   bool _isLoading = false;
 

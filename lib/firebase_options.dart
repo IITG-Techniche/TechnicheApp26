@@ -45,22 +45,24 @@ class DefaultFirebaseOptions {
     projectId: 'techniche-269b1',
     storageBucket: 'techniche-269b1.firebasestorage.app',
   );
-
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyDLI_U0Bzd3-6-TEfbFN539EHk2Pa84bww',
     appId: '1:209325871242:ios:c3915e302e702535b6dd73',
     messagingSenderId: '209325871242',
     projectId: 'techniche-269b1',
     storageBucket: 'techniche-269b1.firebasestorage.app',
-    iosBundleId: 'com.techniche.techniche-app',
+    androidClientId: '209325871242-akp4m0phnm33t6g90g114rd9as0bvb30.apps.googleusercontent.com',
+    iosClientId: '209325871242-1o53e1b5uctb4et47bft16gt40no3kpq.apps.googleusercontent.com',
+    iosBundleId: 'com.example.amazonClone',
   );
-
   static const FirebaseOptions macos = FirebaseOptions(
     apiKey: 'AIzaSyDLI_U0Bzd3-6-TEfbFN539EHk2Pa84bww',
     appId: '1:209325871242:ios:c3915e302e702535b6dd73',
     messagingSenderId: '209325871242',
     projectId: 'techniche-269b1',
     storageBucket: 'techniche-269b1.firebasestorage.app',
+    androidClientId: '209325871242-akp4m0phnm33t6g90g114rd9as0bvb30.apps.googleusercontent.com',
+    iosClientId: '209325871242-1o53e1b5uctb4et47bft16gt40no3kpq.apps.googleusercontent.com',
     iosBundleId: 'com.example.amazonClone',
   );
 
@@ -73,5 +75,4 @@ class DefaultFirebaseOptions {
     storageBucket: 'techniche-269b1.firebasestorage.app',
     measurementId: 'G-8GC3WD55YQ',
   );
-
 }

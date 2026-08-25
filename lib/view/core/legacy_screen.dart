@@ -228,7 +228,7 @@ class LegacyScreen extends StatelessWidget {
               size: iconSize,
               assetPath: 'assets/instagram.png',
               fallbackIcon: Icons.camera_alt_rounded,
-              url: 'https://www.instagram.com/techniche.iitg/',
+              url: 'https://www.instagram.com/techniche_iitguwahati/',
             ),
           ),
 
@@ -240,7 +240,7 @@ class LegacyScreen extends StatelessWidget {
               size: iconSize,
               assetPath: 'assets/youtube.png',
               fallbackIcon: Icons.play_arrow_rounded,
-              url: 'https://www.youtube.com/@technicheiitg',
+              url: 'https://www.youtube.com/technicheiitg',
             ),
           ),
 
@@ -252,7 +252,7 @@ class LegacyScreen extends StatelessWidget {
               size: iconSize,
               assetPath: 'assets/facebook.png',
               fallbackIcon: Icons.facebook_rounded,
-              url: 'https://www.facebook.com/techniche.iitg/',
+              url: 'https://www.facebook.com/techniche.iitguwahati/',
             ),
           ),
         ],

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 import '../../../constant/appTheme.dart';
 import '../../../providers/user_provider.dart';
 import '../../../providers/comedy_provider.dart';
@@ -198,11 +199,14 @@ class ComedyConfirmedTicketView extends StatelessWidget {
                             ),
                           ],
                         ),
-                        child: CustomPaint(
-                          size: const Size(186, 186),
-                          painter: _Scannable2DQrPainter(
+                        child: SizedBox(
+                          width: 200,
+                          height: 200,
+                          child: QrImageView(
                             data: comedyState.ticketCode ??
                                 'TCH26-${userState.rollNumber.isNotEmpty ? userState.rollNumber : "ENTRY"}-PASS',
+                            version: QrVersions.auto,
+                            backgroundColor: Colors.white,
                           ),
                         ),
                       ),

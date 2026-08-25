@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:intl/intl.dart';
 import '../constant/appTheme.dart';
 import '../model/events_data.dart';
 import 'core/map_screen.dart';
@@ -328,6 +329,102 @@ class _EventDetailPageState extends State<EventDetailPage> {
     );
   }
 
+  String _formatEventDate(String? date) {
+    if (date == null || date.trim().isEmpty) return '';
+    try {
+      if (RegExp(r'^\d{1,2}-\d{1,2}-\d{4}$').hasMatch(date.trim())) {
+        final parts = date.trim().split('-');
+        final day = int.parse(parts[0]);
+        final month = int.parse(parts[1]);
+        final year = int.parse(parts[2]);
+        final dt = DateTime(year, month, day);
+        return DateFormat('dd MMM yyyy').format(dt).toUpperCase();
+      }
+    } catch (_) {}
+    return date.toUpperCase();
+  }
+
+  Widget _buildTimeDateVenueBlock(BuildContext context, {required bool isDark}) {
+    final timeText = (_event.time ?? '').trim().toUpperCase();
+    final dateText = _formatEventDate(_event.date);
+    final venueText = (_event.venue ?? '').trim().toUpperCase();
+
+    if (timeText.isEmpty && dateText.isEmpty && venueText.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(bottom: 20),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: const Color(0xFF2563EB).withOpacity(0.3),
+          width: 1.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF2563EB).withOpacity(0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (timeText.isNotEmpty) ...[
+            Text(
+              timeText,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 22,
+                fontWeight: FontWeight.w900,
+                fontFamily: AppTheme.fontGeneralSans,
+                letterSpacing: 0.5,
+                height: 1.2,
+              ),
+            ),
+            const SizedBox(height: 6),
+          ],
+          if (dateText.isNotEmpty) ...[
+            Text(
+              dateText,
+              style: TextStyle(
+                color: Colors.white.withOpacity(0.9),
+                fontSize: 18,
+                fontWeight: FontWeight.w800,
+                fontFamily: AppTheme.fontGeneralSans,
+                letterSpacing: 0.5,
+                height: 1.2,
+              ),
+            ),
+            const SizedBox(height: 6),
+          ],
+          if (venueText.isNotEmpty) ...[
+            Text(
+              venueText,
+              style: TextStyle(
+                color: Colors.white.withOpacity(0.75),
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+                fontFamily: AppTheme.fontGeneralSans,
+                letterSpacing: 0.5,
+                height: 1.2,
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
   // ─────────────────────────────────────────────────────────────
   // 2. OVERVIEW & SCHEDULE CARD
   // ─────────────────────────────────────────────────────────────
@@ -366,6 +463,9 @@ class _EventDetailPageState extends State<EventDetailPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // ── Time, Date, Venue Block ──
+          _buildTimeDateVenueBlock(context, isDark: isDark),
+
           // ── Location Row ──
           if (hasLocation) ...[
             InkWell(
